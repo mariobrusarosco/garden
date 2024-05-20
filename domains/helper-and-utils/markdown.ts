@@ -4,6 +4,17 @@ import fs from "fs/promises";
 
 // ? [IMPROVEMENT]: Type the dynamic return value of data property
 // so we can check data.author?.name when data is { auhtor: { name: "John" }
+type FrontMatterProps = {
+  author: {
+    name: string;
+    url: string;
+  };
+  title: string;
+  "planted-in": Date;
+  "last-watered-in": Date;
+  "related-topics": string[];
+  "reference-links": { text: string; url: string }[];
+};
 
 export const parseFrontMatterFromSlug = (slug: string) => {
   const filepath = path.join(
@@ -13,8 +24,9 @@ export const parseFrontMatterFromSlug = (slug: string) => {
   ("utf8");
 
   const { content: mdxContent, data } = matter.read(filepath);
+  const metadata = data as FrontMatterProps;
 
-  return { mdxContent, data };
+  return { mdxContent, metadata };
 };
 
 export const getFileContentFromSlug = async (slug: string) => {
