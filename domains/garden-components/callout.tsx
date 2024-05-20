@@ -1,5 +1,10 @@
 const Callout = ({ ...props }) => {
-  return <aside className="p-4 my-4 bg-slate-100 rounded-lg" {...props} />;
+  return (
+    <aside
+      className="text-lg font-sans font-light p-4 my-8 bg-wenge text-misty_rose rounded-lg"
+      {...props}
+    />
+  );
 };
 
 export { Callout };
