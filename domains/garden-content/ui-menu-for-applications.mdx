@@ -1,0 +1,87 @@
+---
+title: UI - Menu for Applications
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "ui"
+  - "menu"
+  - "react"
+planted-in: 2021-10-05
+last-watered-in: 2021-10-05
+---
+
+# UI - Menu for Applications
+
+## Splitting the Menu in Primary and Secondary Items
+
+When we have a menu with a lot of items, it's a good idea to split them into primary and secondary items. The primary items are the most important ones, and the secondary items are the less important ones.
+Primary will always appear. Secondary will appear only when the user clicks on a button to show them.
+This is highly recommended for mobile applications.
+
+```tsx
+const primaryMenuItems = [
+  {
+    title: "Dashboard",
+    path: "/dashboard",
+    icon: <Icon name="" />,
+  },
+  {
+    title: "Tables",
+    path: "/tables",
+    icon: <Icon name="" />,
+  },
+  {
+    title: "Games",
+    path: "/games",
+    icon: <Icon name="" />,
+  },
+];
+
+const renderPrimarymenutems = () => {
+  return primaryMenuItems.map((item) => (
+    <MenuItem className="flex gap-x-6">
+      {item.icon}
+      <span>{item.title}</span>
+    </MenuItem>
+  ));
+};
+
+const secondaryMenuItems = [
+  {
+    title: "Stats",
+    path: "/stats",
+    icon: <Icon name="" />,
+  },
+  {
+    title: "Account",
+    path: "/account",
+    icon: <Icon name="" />,
+  },
+];
+
+const renderSecondaryMenutems = () => {
+  return secondaryMenuItems.map((item) => (
+    <MenuItem className="flex-row gap-x-6">
+      {item.icon}
+      <span>{item.title}</span>
+    </MenuItem>
+  ));
+};
+
+// ... rendering...
+return (
+  <div>
+    <div>
+      {renderPrimarymenutems()}
+    </div>
+
+    <span className="separator" />
+
+    <button onClick={...}>more items</button>
+    <div>
+      {renderSecondaryMenutems()}
+    </div>
+  </div>
+)
+```

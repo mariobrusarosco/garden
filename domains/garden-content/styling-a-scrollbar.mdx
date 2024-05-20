@@ -1,0 +1,43 @@
+---
+title: Styling a Scrollbar
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "css"
+  - "styling"
+  - "scrollbar"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+reference-links:
+  - link: "https://css-tricks.com/custom-scrollbars-in-webkit/"
+    text: "Custom Scrollbar in webkit"
+---
+
+```css
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.scrollbar {
+  scrollbar-color: theme(colors.secondary-dark) theme(colors.primary-white);
+  scrollbar-width: thin;
+}
+```

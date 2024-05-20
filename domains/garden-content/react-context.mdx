@@ -1,0 +1,44 @@
+---
+title: React Context
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "react-context"
+  - "state-management"
+  - "react"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
+
+# React Context
+
+<Callout>
+  A friend reminder. React Context is not a `State Maanger`. It's a way to pass
+  data through the component tree without having to pass props down manually at
+  every level.
+</Callout>
+
+## Understanding Nested Contexts and Hierarchy
+
+When you have nested contexts, the innermost context takes precedence over the outer context. This means that the innermost context will be used when a component consumes multiple contexts.
+
+On the example below the ChildComponent doesn't have its own context, so it uses the context provided by the ParentComponent. So the value is `light`. If, we didn't have ParentComponent with a Context, only then, the Context's default value would be used: `light`.
+
+```tsx
+import * as React from "react";
+
+const ParentComponent = () => {
+  return (
+    <themeContext.Provider value="dark">
+      <ChildComponent />
+    </themeContext.Provider>
+  );
+};
+
+const ChildComponent = () => {
+  const theme = React.useContext(themeContext);
+
+  return <div>Theme is {theme}</div>;
+};
+```

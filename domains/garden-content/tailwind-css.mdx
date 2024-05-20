@@ -1,0 +1,201 @@
+---
+title: Tailwind CSS
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "tailwind"
+  - "css"
+  - "styling"
+  - "react"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
+
+# Tailwind CSS
+
+### Customizing
+
+### Fonts
+
+1. Add a font to the project
+
+- !If you're hosting the font:
+
+`your-global-css-file.css`
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(/fonts/Roboto.woff2) format("woff2");
+  }
+}
+```
+
+- If you're using from Google Fonts
+
+```html
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+/>
+```
+
+- If you're using Next JS
+
+```tsx
+const cormorant = Cormorant({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+export const metadata: Metadata = {
+  title: "Digital Garden - Mario Brusarosco",
+  description: "Digital Garden - Mario Brusarosco",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${cormorant.className} ${openSans.className}`}>
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+2. Add the font to the `tailwind.config.js` file
+
+```ts
+module.exports = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        serif: ["Slab", "serif"],
+      },
+    },
+  },
+};
+```
+
+3. Use the font in the project
+
+```tsx
+  <h1 className="text-4xl pb-20 font-serif"></h1>
+  <h2 className="text-4xl pb-20 font-sans"></h2>
+```
+
+#### Breakppoints
+
+1. Changing Default breakpoints values, not their names
+
+```ts
+module.exports = {
+  theme: {
+    screens: {
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+    },
+  },
+};
+```
+
+2. Changing breakpoints names
+
+```ts
+module.exports = {
+  theme: {
+    screens: {
+      tablet: "640px",
+      laptop: "1024px",
+      desktop: "1280px",
+    },
+  },
+};
+```
+
+## Glass Effect - Glassmorphism
+
+- backdrop-filter
+- backdrop-blur-md
+- bg-opacity-10
+
+```tsx
+<footer
+  className="fixed flex min-h-[116px] w-screen bottom-0 backdrop-filter 
+  backdrop-blur-md 
+  bg-opacity-10 desktop:bg-transparent m-w-[132px]"
+>
+  <div className="container flex-1 py-6 desktop:flex desktop:justify-start items-center">
+    lorem ipsum
+  </div>
+</footer>
+```
+
+## Referencing Tailwind on Typescript or Javascript
+
+https://tailwindcss.com/docs/configuration#referencing-in-java-script
+
+````tsx
+## Referencing Tailwind on CSS
+## Using a Tailwind Custom Color inside a CSS File
+
+```css
+.swiper-button-prev {
+  color: theme("colors.primary-white");
+}
+````
+
+_ps. `theme()` is globally availableParallelism, no need to import it_
+
+## Using CSS Varibles for Colors
+
+### Enable the advantage of using the opacity utility
+
+If we want Custom Colors, via CSS Variables we need to set the values of a varible following two steps:
+
+`globals.css`
+
+```css
+@layer base {
+  :root {
+    --red-700: 187 34 83;
+    --blue-green: 0 17 44;
+  }
+}
+```
+
+`tailwind.config.ts`
+
+```ts
+  ...,
+  theme: {
+    extend: {
+      colors: {
+        "blue-green": "rgb(var(--blue-green) / <alpha-value>)",
+      },
+    ...
+```
+
+import css from "styled-jsx/css";

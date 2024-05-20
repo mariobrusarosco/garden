@@ -1,6 +1,18 @@
-##
-
-[Material Reference](https://www.notion.so/86f2148babd54eaf81ebd056524ec167?pvs=21)
+---
+title: React Query
+author: mariobrusarosco.github.com
+related-topics:
+  - "react-query"
+  - "react"
+  - "query"
+reference-links:
+  - link: "https://www.notion.so/86f2148babd54eaf81ebd056524ec167?pvs=21"
+    text: "Notion"
+  - link: "https://www.notion.so"
+    text: "Notion"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
 
 # Recap
 
@@ -26,10 +38,10 @@ This section groups tips and explanations so I can argue about React Query with 
 
 ### About too much Rendering/re-renders
 
-<aside>
+<Callout>
 💡 First of all: React Query does *not* invoke the `queryFn` on every re-render, even with the default `staleTime` of zero. Your app can re-render for various reasons at any time, so fetching every time would be insane.
 
-</aside>
+</Callout>
 
 https://mdxjs.com/
 
@@ -42,10 +54,7 @@ Every `query` requires two things:
 
 # Query Keys
 
-<aside>
-💡 Start ***generic*** and then go ***specific***
-
-</aside>
+<Callout>Start **_generic_** and then go **_specific_**</Callout>
 
 React query will keep track of all items for the given array. If any of them change, React Query will invalidate the `cache` , call the given `query function` again and, store the result in the cache again!
 
@@ -86,14 +95,16 @@ We’re watching three variations: 1) status and id are null. 2)status is active
 
 With the “order” approach we would have “duplicated” entries.
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/9dde9cc9-5274-419b-a33c-db14c24cce68/5c12c266-7a7c-463a-8ec4-5c527ac02385/Untitled.png)
+![Untitled](/react-context-01.png)
 
 ### Using Prefixes
 
 - asdsada
   sdasdsa
   asdsadsa
+
   ### dasdsad
+
   ```tsx
   const usersQuery = useQuery({
     queryKey: ["users"],

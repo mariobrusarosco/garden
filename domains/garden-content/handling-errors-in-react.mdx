@@ -1,0 +1,185 @@
+---
+title: Handling Errors in React
+author: mariobrusarosco.github.com
+reference-links:
+	- link: "https://legacy.reactjs.org/docs/error-boundaries.html#introducing-error-boundaries"
+	text: "Legacy Related Docs"
+	- link: "https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary"
+	text: "Official and Active Related Docs"
+	- link: "https://codepen.io/gaearon/pen/wqvxGa?editors=0010"
+	text: "React Classic Error Boundary Example"
+related-topics:
+	- "react"
+	- "error"
+	- "error-handling"
+	- "react-error-handling"
+	- "react-error-boundaries"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
+
+# Handling Errors in React
+
+These are the most common types of errors that can occur in a React application:
+
+1. `Render Errors`: .
+2. `API Errors / Data Manipulation Errors`:
+3. `Route Errors`:
+
+Let's start by understanding how to handle them.
+
+## Render Errors
+
+By default, if out application throws an error during rendering, React will remove its UI from the screen. The `<body>` tag will be almost empty. Our UI gets removed!
+
+![Untitled](/handling-errors-in-react-01.png)
+
+These are errors that occur when we:
+
+- Access a property of an undefined object. A) when're we creating variables before the _block of a component_ B) when we're declaring our UI inside the `return` _block of a component_.
+  e.g. Let's simulate an user which doesn't have an street nor a city.
+
+<CodeSnippet lang="tsx">
+const ComponentThatWillBreak = ({ user }) => {
+  const userStreet = user.address.street; // A)
+
+    return (
+    	<div>
+    		<p>
+    			User Street: <span>{userStreet}</span>
+    		</p>
+    		<p>
+        User City
+        <span>{user.address.city}</span> // B)
+      </p>
+    </div>
+
+); };
+
+<ComponentThatWillBreak user={{ name: "Mario" }} />
+
+</CodeSnippet>
+
+1. Our screen will break
+   ![Untitled](/handling-errors-in-react-02.png)
+2. The error will be thrown in the console only. The user won't know what's happening.
+   ![Untitled](/handling-errors-in-react-03.png)
+3. The whole application will be unmounted.
+   ![Untitled](/handling-errors-in-react-04.png)
+
+To prevent this, we can use an approach called "Error Boundary".
+
+### Error Boundary
+
+<Quote>
+  An error boundary is a special component that lets you display some fallback
+  UI instead of the part that crashed—for example, an error message.
+</Quote>
+
+Currently, the official doc only points to solution using React Class Components. To use a function component `Error Boundary`, we can use `<ErrorBoundary />` or `useErrorBoundary` hook from `react-error-boundary` library.
+
+#### How does it work?
+
+It focus on wrapping the components that might throw an error.
+If it happens, the error is caught by the nearest error boundary. The error boundary will then display a fallback UI.
+
+#### What does it not cover?
+
+Before continuing, if anything does't work as expected, we need to remember that some situations are not covered by error boundaries:
+
+- Error boundaries do not catch errors for:
+  - Event handlers
+  - Asynchronous code (e.g. setTimeout or requestAnimationFrame callbacks)
+  - The <ErrorBoundary> can't be set inside the component that might throw an error. It must be set outside of it!! For god's sake, don't forget this! It will save you a lot of time!
+  - Errors thrown in the error boundary itself (rather than its children)
+
+These cases will be covered in the next sections.
+
+### Example One
+
+We'll create an Fallback UI to informe the user about the error.
+We'll put the `ErrorBoundary` component outside the `ComponentThatWillBreak`.
+
+<CodeSnippet lang="tsx">
+import { ErrorBoundary } from 'react-error-boundary';
+
+const FallbackComponent = ({ error }: { error: Error }) => {
+return (
+
+<div role="alert">
+  <p>Something went wrong:</p>
+  <pre style={{ color: "red" }}>{error.message}</pre> // Just for example purposes
+</div>
+); };
+
+const ComponentThatWillBreak = ({ user }) => {
+const userStreet = user.address.street; // A)
+
+    return (
+    	<div>
+    		<p>
+    			User Street: <span>{userStreet}</span>
+    		</p>
+    		<p>
+        User City
+        <span>{user.address.city}</span> // B)
+      </p>
+    </div>
+
+); };
+
+<ComponentThatWillBreak user={{ name: "Mario" }} />
+
+</CodeSnippet>
+
+1. Our screen didn't break!
+2. We can show an generic message and we can even grab/show/treat the error.
+   ![Untitled](/handling-errors-in-react-05.png)
+3. The application didn't get unmounted.
+   ![Untitled](/handling-errors-in-react-06.png)
+
+Real world application will have nested Components. So, can have level's of "Error Handling"
+
+Level 1: It's a global treatment. If in the future, any Component is added in the App and it's not wrapped in a Error Boundary, we can rest assured that if it breaks, we'll know and we'll display a properly Fallback UI. A Generic one? 100%. But still better tha
+n a blank page!
+
+... write the example here
+
+Level 2: It's a more specific treatment. We can wrap a specific Component that we know that might break. We can display a more specific Fallback UI. We can even grab the error and treat it.
+
+... write the example here
+
+Writting Roadmap
+-> Write an error that happens on a Child Component
+-> Write an error that happens on a Child Component Write an error that happens on a Child Component
+-> Write an erro on event handlers. A click will do!
+-> Write an Error simulating a fetch that does not fail, but returns empty data
+-> Write an Error simulating a fetch that fails
+
+## API Errors / Data Manipulation Errors
+
+## Route Errors
+
+<Callout>
+  Error boundaries are React components that catch JavaScript errors anywhere in
+  their child component tree, log those errors, and display a fallback UI
+  instead of crashing the entire React component tree.
+</Callout>{" "}
+
+## Create Root
+
+https://react.dev/reference/react-dom/client/createRoot#displaying-error-boundary-errors
+
+## Recoverable errors
+
+https://react.dev/reference/react-dom/client/createRoot#displaying-a-dialog-for-recoverable-errors
+
+```
+
+# Approaches
+
+## Starting Small
+
+Wrap UIs in components to isolate the error. Aka Error Boundaries.
+An Error Boundary is a component that catches JavaScript errors anywhere in its child component tree, logs those errors, and displays a fallback UI instead of the component tree that crashed.
+```

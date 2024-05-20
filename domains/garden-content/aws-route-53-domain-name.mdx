@@ -1,0 +1,68 @@
+---
+title: AWS Route 53 Domain Name
+author: mariobrusarosco.github.com
+related-topics:
+  - "aws"
+  - "hosting"
+  - "route-53"
+  - "domains"
+reference-links:
+  - link: "https://www.youtube.com/watch?v=jDz4j_kkyLA&list=PL0X6fGhFFNTcU-_MCPe9dkH6sqmgfhy_M&index=18"
+    text: "AWS Route 53 Domain Name"
+planted-in: 2024-05-02
+last-watered-in: 2024-05-02
+---
+
+# What is AWS Route 53?
+
+It's a Domain Name System (DNS) web service. It's designed to give developers and businesses a way to route end users to Internet applications by translating human-readable names like www.example.com into the numeric IP addresses like 192.457.1.1!!
+
+## How to use AWS Route 53 to register a domain name?
+
+### Create a Hosted Zone
+
+The first thing we need to do is to create a Hosted Zone. A Hosted Zone is a container for records. It's where we store information about how we want to route traffic for a domain.
+
+### Register a Domain Name
+
+After creating a Hosted Zone, we can register a domain name, but first, we need to buy one.
+
+### Buy a Domain Name
+
+We could buy a domain inside the AWS console or use a third-party service. We're following with the second option.
+
+### Create a Hosted Zone for Real
+
+With a domain name in hand, we need to go back to the Hosted Zone and create one. The most important part is to fill the domain name just purchesed. We can keep the pre filled configs, go ahead and create the Hosted Zone.
+![Create a Hosted Zone](/aws-route-53-domain-name-01.png)
+
+### Update the Nameservers
+
+Now we need to update the nameservers of this new domain to point to the AWS Route 53 nameservers.
+
+When selecting our Zone, we'll see a record of type `NS`. It contains the AWS Routes we need to point to our purchased domain.
+
+_The order of the Routes doesn't matter!_
+![Nameservers List](/aws-route-53-domain-name-02.png)
+
+<Callout>
+  Using the namecheap service, we need to find a section named `Namespaces`.
+  Then select a `Custom DNS` option. Fill all routes and save it!
+</Callout>
+
+### Propagation
+
+We need to wait this change to propagate around the world, which could take more than a day!
+
+### Access in the meantime
+
+We can create a new record to point to EC2 instance.
+
+1. Go to Route 53 again and click on `Create record` button.
+2. Click on "Switch to Wizard"
+3. Select `Simple routing` option.
+4. Click on `Define simple record`.
+5. For `Record type` we must choose `A - Routes traffic...`
+6. The `Route traffic to` field can point to the IP address of the EC2 instance. (IPv4 address)
+
+![Poiting to EC2 Instance](/aws-route-53-domain-name-03.png)

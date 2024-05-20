@@ -1,0 +1,28 @@
+---
+title: Typescript
+author: mariobrusarosco.github.com
+related-topics:
+  - "typescript"
+  - "ts"
+reference-links:
+  - link: ""
+    text: ""
+planted-in: 2024-05-06
+last-watered-in: 2024-05-06
+---
+
+# Typescript
+
+
+## Add a global declaration type to a project
+
+To add a global declaration type to a project, you can create a file in the `src` folder called `global.d.ts` and add the following content:
+
+```ts
+declare module "*.svg" {
+  const content: string;
+  export default content;
+}
+```
+
+This will allow you to import SVG files in your project without TypeScript complaining about it.

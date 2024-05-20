@@ -1,0 +1,204 @@
+---
+title: Material UI
+author: mariobrusarosco.github.com
+related-topics:
+  - "ui"
+  - "css"
+  - "material-ui"
+  - "styling"
+reference-links:
+  - link: ""
+    text: ""
+planted-in: 2024-05-06
+last-watered-in: 2024-05-06
+---
+
+# Material UI
+
+<Quote>
+Material UI is an open-source React component library that implements Google's Material Design.
+
+It includes a comprehensive collection of prebuilt components that are ready for use in production right out of the box, and features a suite of customization options that make it easy to implement your own custom design system on top of our components.
+
+</Quote>
+
+# Material UI x Base UI
+
+<Quote>
+Material UI and Base UI feature many of the same UI components, but Base UI comes without any default styles or styling solutions.
+
+Base UI, by contrast, could be considered the "skeletal" or "headless" counterpart to Material UI—in fact, future versions of Material UI will use Base UI components and hooks for its foundational structure.
+
+</Quote>
+
+# Setup
+
+## Quick Intro
+
+- React and React DOM are peer dependencies
+- Material UI uses Emotion as its default styling engine.
+- But we can use with Styled Components
+
+## Installation
+
+```bash
+yarn add @mui/material @emotion/react @emotion/styled
+```
+
+## Usage
+
+We can starting using MUIs Components right away
+But we wouldn't have the MUI's default Font working. It uses Roboto, the font-family is already set with the correct value, but we need to install the font:
+
+1. Install Roboto via NPM and bundle the font.
+2. Import Roboto via CDN e.g Google Fonts
+
+### Using via Google Fonts
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+/>
+```
+
+### Using via NPM Package
+
+```bash
+yarn add @fontsource/roboto
+```
+
+Then we can import it in our App TS/TSX
+
+```jsx
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
+```
+
+Now can already start coding UIs with Material UI!
+But, from now on, let's enhance our knowledge about MUI as much as possible. Let's start filling the real world needs of a Web App.
+
+## Breakpoints
+
+1. Create a theme and provide it to the App
+2. Customize the App's theme:
+   It's very likely we'll need to target different screens sizes than the MUI's default values. We just need to chose if we're keeping the breakpoints abbreviations like "xs", "md" ..., or if we're going to use different words like "mobile", "tablet", "desktop".
+
+In case there's no naming changing:
+
+```ts
+const theme = createTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 767,
+      md: 768,
+      lg: 1439,
+      xl: 1440,
+    },
+  },
+});
+```
+
+In case there is naming changing:
+
+```ts
+const theme = createTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 767,
+      md: 768,
+      lg: 1439,
+      xl: 1440,
+    },
+  },
+});
+```
+
+If we're using Typescript, we can extend the default theme; Let's set a global declaration file to hold all the extensions we need. Further, we can better organize the `.d` files:
+
+`tsconfig.json`
+
+```json
+	"include": ["...", "global.d.ts"],
+```
+
+`global.d.ts`
+
+```ts
+declare module "@mui/material/styles" {
+  interface BreakpointOverrides {
+    xs: false;
+    sm: false;
+    md: false;
+    lg: false;
+    xl: false;
+    mobile: true;
+    tablet: true;
+    laptop: true;
+    desktop: true;
+  }
+}
+```
+
+## Custom Fonts
+
+We'll like have to change the default font-family. We can do it setting it on the custom theme:
+
+```ts
+const theme = createTheme({
+  typography: {
+    fontFamily: "Libre Baskerville',Montserrat Variable, sans-serif",
+  },
+});
+```
+
+## Icons
+
+### Via package
+
+```bash
+yarn add @mui/icons-material
+```
+
+### Via Google Fonts
+
+```html
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/icon?family=Material+Icons"
+/>
+```
+
+<Quote>
+  "We do not recommend using this approach in production. It requires the client
+  to download the entire library—regardless of which components are actually
+  used—which negatively impacts performance and bandwidth utilization."
+</Quote>
+
+## Reset / Normalization
+
+## Server Side Rendering (SSR)
+
+### Disbale Media Queries on SSR for MUI components
+
+```ts
+const theme = createTheme({
+  components: {
+    MuiUseMediaQuery: {
+      defaultProps: {
+        noSsr: true,
+      },
+    },
+  },
+});
+```
+
+# Issues
+
+## Customization of Breakpoints

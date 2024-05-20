@@ -1,0 +1,36 @@
+---
+title: Indicate a element was scrolled - With CSS
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "css"
+  - "styling"
+  - "scroll"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
+
+```css
+.shadow-container-scroll {
+  background: linear-gradient(
+        theme(colors.primary-base) 30%,
+        rgba(255, 255, 255, 0)
+      ) center top, linear-gradient(
+        rgba(255, 255, 255, 0),
+        theme(colors.primary-base) 70%
+      ) center bottom,
+    radial-gradient(
+        farthest-side at 50% 0,
+        rgba(0, 0, 0, 0.5),
+        rgba(0, 0, 0, 0)
+      ) center top, radial-gradient(
+        farthest-side at 50% 100%,
+        rgba(0, 0, 0, 0.5),
+        rgba(0, 0, 0, 0)
+      ) center bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 30px, 100% 30px, 100% 15px, 100% 15px;
+  background-attachment: local, local, scroll, scroll;
+}
+```

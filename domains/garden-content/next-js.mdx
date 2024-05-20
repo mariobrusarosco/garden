@@ -1,0 +1,41 @@
+---
+title: Next JS
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "next"
+  - "next-js"
+  - "react"
+  - "ssr"
+  - "server-side-rendering"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
+
+# Next JS
+
+### Cons
+
+#### Working with Framer Motion
+
+We can see lagged animations during development time specially, when using Framer Motion with Next JS. This is because Next JS is server-side rendered and Framer Motion is a client-side library. To fix this
+we can use the `useEffect` hook to render the animations only on the client-side.
+
+```tsx
+import { useEffect } from "react";
+import { motion } from "framer-motion";
+
+const MyComponent = () => {
+  useEffect(() => {
+    const { animate } = require("framer-motion");
+    animate();
+  }, []);
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      Hello World
+    </motion.div>
+  );
+};
+```

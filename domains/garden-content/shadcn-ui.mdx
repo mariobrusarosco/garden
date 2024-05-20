@@ -1,0 +1,35 @@
+---
+title: SHADCN UI
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - shadcn-ui
+  - "tailwind"
+  - "css"
+  - "styling"
+  - "react"
+  - "css library"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
+
+# SHADCN UI
+
+## Components
+
+### DropdownMenu
+
+- We don't need to create the "toggle logic".
+- If we wanna to customize click behavior of a Dropdown item, we need to preventDefatul().
+
+```tsx
+<DropdownMenuItem
+  onClick={(e) => {
+    e.preventDefault();
+    console.log(1);
+  }}
+>
+  Profile
+</DropdownMenuItem>
+```
