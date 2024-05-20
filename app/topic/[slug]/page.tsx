@@ -17,44 +17,45 @@ export default async function Topic({ params }: Props) {
   return (
     <div className="container global-spacing">
       <div>
-        <h2 className="text-wenge font-serif font-thin text-4xl pb-6 my-4">
+        <h2 className="text-wenge font-serif font-thin text-5xl pb-6 my-4">
           {metadata.title}
         </h2>
 
-        <div className="bg-puce-800 p-4 rounded-lg mb-8">
-          {hasRelatedTopics ? (
-            <>
-              <h2 className="text-wenge lowercase font-sans font-thin text-lg">
-                Related Topics
-              </h2>
-              <ul className="flex gap-4 my-2">
-                {metadata["related-topics"].map((topic) => (
-                  <li
-                    className="rounded-lg bg-misty_rose-700 p-2 text-wenge lowecase uppercase font-sans font-light text-xs"
-                    key={topic}
-                  >
-                    {topic}
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : null}
+        {hasRelatedTopics ? (
+          <div className="bg-puce-800 p-4 rounded-lg mb-4">
+            <h2 className="text-wenge lowercase font-sans font-thin text-lg">
+              Related Topics
+            </h2>
+            <ul className="flex gap-4 my-2">
+              {metadata["related-topics"].map((topic) => (
+                <li
+                  className="rounded-lg bg-misty_rose-700 p-2 text-wenge lowecase uppercase font-sans font-light text-xs"
+                  key={topic}
+                >
+                  {topic}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
-          {hasReferencesLink ? (
-            <div>
-              <h2>Reference Links</h2>
-              <ul>
-                {metadata["reference-links"].map((link) => (
-                  <li key={link?.text}>
-                    <a href={link?.url} target="_blank" rel="noreferrer">
-                      {link?.text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-        </div>
+        {hasReferencesLink ? (
+          <div className="bg-puce-800 p-4 rounded-lg mb-8">
+            <h2 className="text-wenge lowercase font-sans font-thin text-lg">
+              Referece Links
+            </h2>
+            <ul className="flex gap-4 my-2">
+              {metadata["reference-links"].map((link) => (
+                <li
+                  className="rounded-lg bg-misty_rose-700 p-2 text-wenge lowecase uppercase font-sans font-light text-xs"
+                  key={link.url}
+                >
+                  {link.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <div className="flex gap-x-4 items-center text-wenge mb-8">
           <IconFlower className="min-w-6" />

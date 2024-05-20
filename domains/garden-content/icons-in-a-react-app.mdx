@@ -1,0 +1,111 @@
+---
+title: Icons in a React App
+related-topics:
+  - "icons"
+  - "react"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
+
+# Using React Aria / React Spectrum
+
+1. We need to set a Provider at the root of our application. This will allow us to use the `useIcon` hook or Icon Component
+
+```tsx
+import { Provider } from "@react-aria/provider";
+import { defaultTheme } from "@react-spectrum/theme-default";
+
+return (
+  <Provider theme={defaultTheme}>
+    <App />
+  </Provider>
+);
+```
+
+2. We can use the `useIcon` hook to get the icon we want to use
+
+```tsx
+import { useIcon } from "@react-aria/icon";
+
+const icon = useIcon("Home");
+```
+
+3. We can use the `Icon` component to render the icon
+
+```tsx
+import { Icon } from '@react-spectrum/icon';
+
+<Icon size="S" slot="start">
+  <svg ..... />
+</Icon>
+```
+
+# Using React Icons from third party libs
+
+... in progress
+
+## Tabler
+
+`icon-mapper.tsx`
+
+```tsx
+import {
+  IconX,
+  IconPlus,
+  IconChevronUp,
+  IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
+} from "@tabler/icons-react";
+
+type names =
+  | "chevron-down"
+  | "chevron-up"
+  | "chevron-right"
+  | "chevron-left"
+  | "close"
+  | "icon-plus"
+  | "plus";
+
+export const iconMapper: Record<names, any> = {
+  ["chevron-down"]: IconChevronDown,
+  ["chevron-up"]: IconChevronUp,
+  ["chevron-right"]: IconChevronRight,
+  ["chevron-left"]: IconChevronLeft,
+  close: IconX,
+  "icon-plus": IconPlus,
+  plus: IconPlus,
+};
+
+export type iconSizes = "extra-small" | "small" | "medium" | "large";
+
+export const sizeMapper: Record<iconSizes, string> = {
+  "extra-small": "w-4 h-4",
+  small: "w-6 h-6",
+  medium: "w-8 h-8",
+  large: "w-10 h-10",
+};
+```
+
+`Icon.tsx`
+
+```tsx
+import { cn } from "../../../utils";
+import { iconMapper, iconSizes, sizeMapper } from "./mapper";
+
+export const Icon = (props: IconProps) => {
+  const { name, size = "small", ...rest } = props;
+
+  const IconComponent = iconMapper[name];
+  const className = cn(sizeMapper[size], props.className);
+
+  return <IconComponent className={className} {...rest} />;
+};
+
+export type IconProps = {
+  // Get all the possible keys from iconMapper
+  name: keyof typeof iconMapper;
+  size?: iconSizes;
+  className?: string;
+};
+```

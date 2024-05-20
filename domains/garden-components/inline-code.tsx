@@ -1,7 +1,7 @@
 const InlineCode = ({ ...props }) => {
   return (
     <span
-      className="text-base text-red-500 font-semibold bg-teal-100  py-1 px-2 rounded-lg"
+      className="font-semibold text-puce font-sans bg-misty_rose p-2 rounded-lg"
       {...props}
     />
   );

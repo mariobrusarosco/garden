@@ -12,9 +12,55 @@ planted-in: 2021-10-01
 last-watered-in: 2021-10-01
 ---
 
-# Tailwind CSS
+## Grouping multiple classes into a single custom class
 
-### Customizing
+This is useful when you have a set of classes that you use together frequently and you wanna use Tailwind's breakpoints like `md:something`, `lg:something-else`, etc.
+
+`your-global-css-file.css`
+
+```css
+@layer utilities {
+  .global-spacing {
+    @apply global-x-spacing global-y-spacing;
+  }
+
+  .global-y-spacing {
+    @apply py-4;
+  }
+
+  .global-x-spacing {
+    @apply px-4;
+  }
+}
+```
+
+## Customizing
+
+### Colors
+
+We can create a custom palette and use them as if they were made by Tailwind itself.
+
+`tailwind.config.ts`
+
+```ts
+const config: Config = {
+  content: [....],
+  theme: {
+    extend: {
+         colors: {
+          primary: "#dbd1d1",
+          secondary: "#dbd1d1",
+          }
+        }
+      },
+    },
+  },
+  plugins: [],
+};
+```
+
+- If we wanna use CSS Variables
+  // TODO
 
 ### Fonts
 
@@ -50,16 +96,23 @@ last-watered-in: 2021-10-01
 ```
 
 - If you're using Next JS
+  <Callout>
+    `next/font` can be used with Tailwind CSS through a *CSS variable*.
+  </Callout>
+
+1. Add the font to `layout.tsx` file at the `root` level
 
 ```tsx
 const cormorant = Cormorant({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-cormorant",
 });
 
 const openSans = Open_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-open-sans",
 });
 
 export const metadata: Metadata = {
@@ -89,8 +142,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        serif: ["Slab", "serif"],
+        serif: ["var(--font-cormorant)", "serif"],
+        sans: ["var(--font-open-sans)", "sans-serif"],
       },
     },
   },
@@ -157,15 +210,15 @@ module.exports = {
 
 https://tailwindcss.com/docs/configuration#referencing-in-java-script
 
-````tsx
 ## Referencing Tailwind on CSS
+
 ## Using a Tailwind Custom Color inside a CSS File
 
 ```css
 .swiper-button-prev {
   color: theme("colors.primary-white");
 }
-````
+```
 
 _ps. `theme()` is globally availableParallelism, no need to import it_
 
@@ -197,5 +250,3 @@ If we want Custom Colors, via CSS Variables we need to set the values of a varib
       },
     ...
 ```
-
-import css from "styled-jsx/css";
