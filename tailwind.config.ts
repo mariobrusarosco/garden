@@ -9,11 +9,16 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Open Sans", "sans-serif"],
-        serif: ["Cormorant", "serif"],
+        serif: ["var(--font-cormorant)", "serif"],
+        sans: ["var(--font-open-sans)", "sans-serif"],
+      },
+      colors: {
+        primary: "#dbd1d1",
+        secondary: "#dbd1d1",
       },
     },
   },
   plugins: [],
 };
+
 export default config;

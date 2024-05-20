@@ -17,7 +17,6 @@
 }
 
 body {
-  background-color: #dbd1d1;
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -31,5 +30,17 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .global-spacing {
+    @apply global-x-spacing global-y-spacing;
+  }
+
+  .global-y-spacing {
+    @apply py-4;
+  }
+
+  .global-x-spacing {
+    @apply px-4;
   }
 }

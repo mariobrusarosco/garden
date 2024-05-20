@@ -14,18 +14,19 @@ export default async function Topic({ params }: Props) {
   const hasReferencesLink = !!metadata?.["reference-links"]?.length;
 
   return (
-    <div className="container pt-20">
+    <div className="container global-spacing">
       <div>
-        <h1 className="text-5xl pb-6">{metadata.title}</h1>
-        <p className="text-sm">
-          {metadata.author.name}
+        <h1 className="font-serif font-thin text-5xl pb-6">{metadata.title}</h1>
+        <p className="font-sans text-md">
+          <span>author: </span>
           {metadata.author.url ? (
             <a
               href={metadata.author.url}
               target="_blank"
-              className="text-xs text-indigo-700 ml-1"
+              rel="noreferrer noopener"
+              className=" text-indigo-700 ml-1"
             >
-              (link)
+              {metadata.author.name}
             </a>
           ) : null}
         </p>
