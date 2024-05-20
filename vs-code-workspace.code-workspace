@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../monorepo"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"testing.automaticallyOpenPeekView": "never"
+	}
+}

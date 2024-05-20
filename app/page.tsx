@@ -1,4 +1,4 @@
-import { MDXParser } from "@/domains/components/mdx-parser";
+import { MDXParser } from "@/domains/garden-components/mdx-parser";
 
 export default function Home() {
   return (
