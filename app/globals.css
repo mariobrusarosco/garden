@@ -43,4 +43,8 @@ body {
   .global-x-spacing {
     @apply px-4;
   }
+
+  .heading-border {
+    @apply border-b-2 border-wenge-800 pb-1;
+  }
 }

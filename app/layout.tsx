@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bitter.variable} ${josefinSans.variable} bg-misty_rose-700`}
+        className={`${bitter.variable} ${josefinSans.variable} bg-french_gray-600`}
       >
         <header className="container global-spacing sticky top-0 shadow-xl bg-puce">
           <h1 className="text-misty_rose text-2xl font-sans font-light flex items-center justify-between">

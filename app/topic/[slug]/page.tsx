@@ -47,7 +47,7 @@ export default async function Topic({ params }: Props) {
             <ul className="flex gap-4 my-2">
               {metadata["reference-links"].map((link) => (
                 <li
-                  className="rounded-lg bg-misty_rose-700 p-2 text-wenge lowecase uppercase font-sans font-light text-xs"
+                  className="rounded-lg bg-misty_rose-700 p-2 text-wenge uppercase font-sans font-light text-xs"
                   key={link.url}
                 >
                   {link.text}
@@ -62,7 +62,7 @@ export default async function Topic({ params }: Props) {
           <div className="flex flex-col">
             <p className="flex gap-x-2 items-baseline">
               <span className="font-semibold font-sans text-sm uppercase">
-                Planted in{" "}
+                In the ground since{" "}
               </span>
               <span className="font-serif font-thin text-md">
                 {metadata["planted-in"].toDateString()}
