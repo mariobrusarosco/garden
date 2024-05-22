@@ -1,0 +1,136 @@
+{
+  "react": [
+    "animations-with-framer.mdx",
+    "example.mdx",
+    "icons-in-a-react-app.mdx",
+    "icons.mdx",
+    "next-js.mdx",
+    "react-context.mdx",
+    "react-form-elements.mdx",
+    "react-query.mdx",
+    "shadcn-ui.mdx",
+    "tailwind-css.mdx",
+    "ui-menu-for-applications.mdx",
+    "use-id.mdx"
+  ],
+  "animations": [
+    "animations-with-framer.mdx"
+  ],
+  "framer": [
+    "animations-with-framer.mdx"
+  ],
+  "aws": [
+    "aws-route-53-domain-name.mdx"
+  ],
+  "hosting": [
+    "aws-route-53-domain-name.mdx"
+  ],
+  "route-53": [
+    "aws-route-53-domain-name.mdx"
+  ],
+  "domains": [
+    "aws-route-53-domain-name.mdx"
+  ],
+  "css": [
+    "css.mdx",
+    "indicate-a-element-was-scrolled-with-css.mdx",
+    "material-ui.mdx",
+    "normalize-css.mdx",
+    "shadcn-ui.mdx",
+    "styling-a-scrollbar.mdx",
+    "tailwind-css.mdx"
+  ],
+  "styling": [
+    "css.mdx",
+    "indicate-a-element-was-scrolled-with-css.mdx",
+    "material-ui.mdx",
+    "normalize-css.mdx",
+    "shadcn-ui.mdx",
+    "styling-a-scrollbar.mdx",
+    "tailwind-css.mdx"
+  ],
+  "react-context": [
+    "example.mdx",
+    "react-context.mdx"
+  ],
+  "state-management": [
+    "example.mdx",
+    "react-context.mdx"
+  ],
+  "icons": [
+    "icons-in-a-react-app.mdx",
+    "icons.mdx"
+  ],
+  "ui": [
+    "icons.mdx",
+    "material-ui.mdx",
+    "ui-menu-for-applications.mdx"
+  ],
+  "scroll": [
+    "indicate-a-element-was-scrolled-with-css.mdx"
+  ],
+  "material-ui": [
+    "material-ui.mdx"
+  ],
+  "next": [
+    "next-js.mdx"
+  ],
+  "next-js": [
+    "next-js.mdx"
+  ],
+  "ssr": [
+    "next-js.mdx"
+  ],
+  "server-side-rendering": [
+    "next-js.mdx"
+  ],
+  "normalize": [
+    "normalize-css.mdx"
+  ],
+  "reset": [
+    "normalize-css.mdx"
+  ],
+  "text-wrap": [
+    "normalize-css.mdx"
+  ],
+  "forms": [
+    "react-form-elements.mdx"
+  ],
+  "inputs": [
+    "react-form-elements.mdx"
+  ],
+  "react-query": [
+    "react-query.mdx"
+  ],
+  "query": [
+    "react-query.mdx"
+  ],
+  "shadcn-ui": [
+    "shadcn-ui.mdx"
+  ],
+  "tailwind": [
+    "shadcn-ui.mdx",
+    "tailwind-css.mdx"
+  ],
+  "css library": [
+    "shadcn-ui.mdx"
+  ],
+  "scrollbar": [
+    "styling-a-scrollbar.mdx"
+  ],
+  "typescript": [
+    "typescript.mdx"
+  ],
+  "ts": [
+    "typescript.mdx"
+  ],
+  "menu": [
+    "ui-menu-for-applications.mdx"
+  ],
+  "hooks": [
+    "use-id.mdx"
+  ],
+  "useId": [
+    "use-id.mdx"
+  ]
+}

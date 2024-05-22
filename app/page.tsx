@@ -1,10 +1,5 @@
 import { IconFlower } from "@/domains/garden-components/icons/flower";
 import { IconGithub } from "@/domains/garden-components/icons/github";
-import { MDXParser } from "@/domains/garden-components/mdx-parser";
-
-const HomeParagraph = ({ children }: { children: React.ReactNode }) => (
-  <p className="mb-8 text-3xl font-thin font-sans text-wenge">{children}</p>
-);
 
 export default function Home() {
   return (

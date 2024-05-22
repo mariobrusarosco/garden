@@ -1,12 +1,13 @@
 {
   "name": "digital-garden",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "yarn create-metadata & next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "create-metadata": "node scripts/create-metadata.js"
   },
   "dependencies": {
     "bright": "^0.8.5",
