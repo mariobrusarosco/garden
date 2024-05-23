@@ -61,3 +61,14 @@ export default function Home() {
     </main>
   );
 }
+
+const Header = () => {
+  return (
+    <header className="container">
+      <h1 className="text-5xl font-serif text-wenge">The Backyard</h1>
+      <p className="text-2xl font-sans font-thin text-wenge">
+        A digital garden about software development.
+      </p>
+    </header>
+  );
+};
