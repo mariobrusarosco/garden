@@ -1,3 +1,6 @@
+
+![image](https://github.com/mariobrusarosco/digital-garden/assets/12510938/8df86aea-2a1f-4963-9c0d-aa3226be26cb)
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
