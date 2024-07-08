@@ -1,0 +1,26 @@
+---
+title: useRef
+author: mariobrusarosco.github.com
+reference-links:
+  - link: "https://ui.dev/c/react/refs"
+    text: "React GG"
+related-topics:
+  - "react"
+  - "hooks"
+planted-in: 2024-05-24
+last-watered-in: 2024-05-24
+---
+
+# useRef
+
+A hook that creates a value that is preserved across renders, but it doesn't trigger a re-render when it changes.
+
+<Callout>
+  This value is indeed mutable! We're changing it directly and it's ok!
+</Callout>
+
+## When to use?
+
+One tip is to use it when we need a state that's not related to UI element of our component. For example, if this state doesn't change the color of a `<div>`, the text of a `<p>`... This state is important for our Component, but it's related to the Component's behavior, not Component's appearance.
+
+Another tip is to use it when we need to access a DOM element directly. For example, if we need to focus on an input field, we can use `useRef` to get the reference of this input field.

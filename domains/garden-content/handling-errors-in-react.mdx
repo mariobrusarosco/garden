@@ -1,6 +1,9 @@
 ---
 title: Handling Errors in React
 author: mariobrusarosco.github.com
+related-topics:
+  - "error-handling"
+  - "react"
 reference-links:
   - link: "https://legacy.reactjs.org/docs/error-boundaries.html#introducing-error-boundaries"
     text: "Legacy Related Docs"
@@ -24,7 +27,7 @@ Let's start by understanding how to handle them.
 
 ## Render Errors
 
-By default, if out application throws an error during rendering, React will remove its UI from the screen. The `<body>` tag will be almost empty. Our UI gets removed!
+By default, if out application throws an error during rendering or effects, did-mount/did-update. React will remove its UI from the screen. The `<body>` tag will be almost empty. Our UI gets removed!
 
 ![Untitled](/handling-errors-in-react-01.png)
 
@@ -33,26 +36,25 @@ These are errors that occur when we:
 - Access a property of an undefined object. A) when're we creating variables before the _block of a component_ B) when we're declaring our UI inside the `return` _block of a component_.
   e.g. Let's simulate an user which doesn't have an street nor a city.
 
-<CodeSnippet lang="tsx">
+```tsx
 const ComponentThatWillBreak = ({ user }) => {
   const userStreet = user.address.street; // A)
 
-    return (
-    	<div>
-    		<p>
-    			User Street: <span>{userStreet}</span>
-    		</p>
-    		<p>
+  return (
+    <div>
+      <p>
+        User Street: <span>{userStreet}</span>
+      </p>
+      <p>
         User City
         <span>{user.address.city}</span> // B)
       </p>
     </div>
+  );
+};
 
-); };
-
-<ComponentThatWillBreak user={{ name: "Mario" }} />
-
-</CodeSnippet>
+<ComponentThatWillBreak user={{ name: "Mario" }} />;
+```
 
 1. Our screen will break
    ![Untitled](/handling-errors-in-react-02.png)
@@ -70,7 +72,7 @@ To prevent this, we can use an approach called "Error Boundary".
   UI instead of the part that crashed—for example, an error message.
 </Quote>
 
-Currently, the official doc only points to solution using React Class Components. To use a function component `Error Boundary`, we can use `<ErrorBoundary />` or `useErrorBoundary` hook from `react-error-boundary` library.
+Currently, the official doc only points to solution using React Class Components. To use a function component `Error Boundary`, we can use `ErrorBoundary` or `useErrorBoundary` hook from `react-error-boundary` library.
 
 #### How does it work?
 
@@ -82,83 +84,364 @@ If it happens, the error is caught by the nearest error boundary. The error boun
 Before continuing, if anything does't work as expected, we need to remember that some situations are not covered by error boundaries:
 
 - Error boundaries do not catch errors for:
-  - Event handlers
-  - Asynchronous code (e.g. setTimeout or requestAnimationFrame callbacks)
-  - The <ErrorBoundary> can't be set inside the component that might throw an error. It must be set outside of it!! For god's sake, don't forget this! It will save you a lot of time!
-  - Errors thrown in the error boundary itself (rather than its children)
 
-These cases will be covered in the next sections.
+* Event handlers
+* Asynchronous code (e.g. setTimeout or requestAnimationFrame callbacks)
+* The `ErrorBoundary` can't be set inside the component that might throw an error. It must be set outside of it!! For god's sake, don't forget this! It will save you a lot of time!
+* Errors thrown in the error boundary itself (rather than its children)
 
-### Example One
+These cases will be covered in the next sections. But furst, let's ignore them!
+
+### Let's Start
 
 We'll create an Fallback UI to informe the user about the error.
-We'll put the `ErrorBoundary` component outside the `ComponentThatWillBreak`.
+We'll wrap `ComponentThatWillBreak` with `ErrorBoundary`.
 
-<CodeSnippet lang="tsx">
-import { ErrorBoundary } from 'react-error-boundary';
+```tsx
+import { ErrorBoundary } from "react-error-boundary";
 
 const FallbackComponent = ({ error }: { error: Error }) => {
-return (
-
-<div role="alert">
-  <p>Something went wrong:</p>
-  <pre style={{ color: "red" }}>{error.message}</pre> // Just for example purposes
-</div>
-); };
+  return (
+    <div role="alert">
+      <p>Ops! Something went wrong. The reason is:</p>
+      <pre style={{ color: "red" }}>{error.message}</pre>
+    </div>
+  );
+};
 
 const ComponentThatWillBreak = ({ user }) => {
-const userStreet = user.address.street; // A)
+  const userStreet = user.address.street; // A)
 
-    return (
-    	<div>
-    		<p>
-    			User Street: <span>{userStreet}</span>
-    		</p>
-    		<p>
+  return (
+    <div>
+      <p>
+        User Street: <span>{userStreet}</span>
+      </p>
+      <p>
         User City
         <span>{user.address.city}</span> // B)
       </p>
     </div>
+  );
+};
 
-); };
-
-<ComponentThatWillBreak user={{ name: "Mario" }} />
-
-</CodeSnippet>
+const App = () => {
+  return (
+    <ErrorBoundary FallbackComponent={FallbackComponent}>
+      <ComponentThatWillBreak user={{ name: "Mario" }} />
+    </ErrorBoundary>;
+  )
+}
+```
 
 1. Our screen didn't break!
 2. We can show an generic message and we can even grab/show/treat the error.
    ![Untitled](/handling-errors-in-react-05.png)
-3. The application didn't get unmounted.
+3. The application didn't get unmounted. Check this out! Our HTML is there!
    ![Untitled](/handling-errors-in-react-06.png)
 
-Real world application will have nested Components. So, can have level's of "Error Handling"
+Way Better! But...
 
-Level 1: It's a global treatment. If in the future, any Component is added in the App and it's not wrapped in a Error Boundary, we can rest assured that if it breaks, we'll know and we'll display a properly Fallback UI. A Generic one? 100%. But still better tha
+Real world applications are complex and grow fast. They will have nested Components. `ErrorBoundary` will look for errors in a Parent Component. If everything's fine, it will keep going down the tree to check if nested/children Components are throwing errors.
+
+```tsx
+import { ErrorBoundary } from "react-error-boundary";
+
+const FallbackComponent = ...
+
+
+const ComponentThatWillBreak = ({ user }) => {
+  const userStreet = user.address.street;
+
+  return (
+    <div>
+      <p>
+        User Street
+        <span>{userStreet}</span>
+      </p>
+      <p>
+        User City
+        <span>{user.address.city}</span>
+      </p>
+
+      <MyChildComponent user={user} />
+    </div>
+  );
+};
+
+const MyChildComponent = ({ user }) => {
+  const userLastLogin = user.lastLogin.date; // A)
+
+  return (
+    <div>
+      <p>
+        Last login at: <span>{userLastLogin}</span>
+      </p>
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <ErrorBoundary FallbackComponent={FallbackComponent}>
+      <ComponentThatWillBreak user={{
+        name: "Mario",
+      }} />
+    </ErrorBoundary>;
+  )
+}
+
+```
+
+Now the app have two errors:
+
+| ComponentThatWillBreak -> "user.address is undefined"
+| - MyChildComponent -> "user.lastLogin is undefined"
+
+`ErrorBoundary` will catch the first error only and display it.
+Only that.
+
+If we fix the first error, the second one will be displayed.
+![Untitled](/handling-errors-in-react-07.png)
+
+Nice! It's safe to assume that we can create a "Global" `Error Boundary` and place it at the Top Level of our App. Fallback a generic message to all possible errors that might happen.
+
+It's not perfect, but at least our App doesn't show an Empty screen and we can in the future use the `FallbackComponent` to log the error and send it to a monitoring tool.
+
+### Nested Error Levels aka "Being more specific"
+
+We can definetly have one `ErrorBoundary` nested for the whole App. But we can also have multiple `ErrorBoundary` for specific Components. It's up to us to decide which one to use. It's a matter of context and complexity of the App
+
+Let's create an approach:
+
+**Mental Model**
+
+1. A `Generic Fallback Component` for the whole App. This is the `Level 1` _Better safe than sorry!_
+2. Lots of `Specific FallBack Components` for specific Components. This is the `Level 2`
+
+`Level 1` It's a global treatment. If in the future, any Component is added in the App and it's not wrapped in a Error Boundary, we can rest assured that if it breaks, we'll know and we'll display a properly Fallback UI. A Generic one? 100%. But still better tha
 n a blank page!
 
-... write the example here
+```tsx
+const GlobalFallbackUI = () => {
+  return (
+    <div role="alert" style={{ color: "red" }}>
+      <p>Ops! Something went wrong</p>
+    </div>
+  );
+};
 
-Level 2: It's a more specific treatment. We can wrap a specific Component that we know that might break. We can display a more specific Fallback UI. We can even grab the error and treat it.
+const GlobalFallback = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <ErrorBoundary FallbackComponent={GlobalFallbackUI}>
+      {children}
+    </ErrorBoundary>
+  );
+};
+```
 
-... write the example here
+`Level 2` It's a more specific treatment. We can wrap a specific Component that we know that might break. We can display a more specific Fallback UI. We can even grab the error and treat it.
 
-Writting Roadmap
--> Write an error that happens on a Child Component
--> Write an error that happens on a Child Component Write an error that happens on a Child Component
--> Write an erro on event handlers. A click will do!
--> Write an Error simulating a fetch that does not fail, but returns empty data
+```tsx
+const ChildFallbackUI = ({ error }: { error: Error }) => {
+  console.log("calling mom and dad because:", error);
+
+  return (
+    <div role="alert" style={{ color: "red" }}>
+      <p>I am a Child but I can take care of my self</p>
+    </div>
+  );
+};
+
+const ChildFallback = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <ErrorBoundary FallbackComponent={ChildFallbackUI}>
+      {children}
+    </ErrorBoundary>
+  );
+};
+```
+
+Now it's time to use them:
+
+```tsx
+const ComponentThatWillBreak = ({ user }) => {
+  const userStreet = user.address.street;
+
+  return (
+    <div>
+      <p>
+        User Street:
+        <span>{userStreet}</span>
+      </p>
+      <p>
+        User City:
+        <span>{user.address.city}</span>
+      </p>
+
+      <ChildFallback>  {/*  This a the Level 2 usage  */}
+        <MyChildComponent user={user} />
+      </ChildFallback>
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <GlobalFallback>{/*  This a the Level 1 usage  */}
+      <ComponentThatWillBreak user={{
+        name: "Mario",
+      }} />
+    </GlobalFallback>;
+  )
+}
+
+```
+
+When an error is caught by the `GlobalFallback`:
+
+```tsx
+
+const App = () => {
+  return (
+    <GlobalFallback>{/*  This a the Level 1 usage  */}
+      <ComponentThatWillBreak user={{
+        name: "Mario",
+        // We don't have address nor city
+      }} />
+    </GlobalFallback>;
+  )
+}
+
+```
+
+![Untitled](/handling-errors-in-react-08.png)
+
+When an error is caught by the `ChildFallback`:
+
+```tsx
+
+const App = () => {
+  return (
+    <GlobalFallback>{/*  This a the Level 1 usage  */}
+      <ComponentThatWillBreak user={{
+        name: "Mario",
+        address: {
+          city: 'São Paulo',
+          street: 'Rua das Flores',
+        },
+        // We don't have lasstLogin
+      }} />
+    </GlobalFallback>;
+  )
+}
+```
+
+![Untitled](/handling-errors-in-react-09.png)
+
+Cool! But writting two Components `SomethingFallback` `SomethingFallbackUI` to all Components of a complex App will add complexity to the code.
+
+We can use `Higher Order Components` to wrap the Components that might break. A `HOC` is a function that takes a Component, alter the given Component, in any matter and returns a new Component. We can use it to wrap the Components that might break.
+
+```tsx
+
+const MyChildComponent: React.FC<{ user: any }> = withErrorBoundary(
+  ({ user }) => {
+    const userLastLogin = user.lastLogin.date; // A)
+
+    return (
+      <p>
+        Last login at: <span>{userLastLogin}</span>
+      </p>
+    );
+  },
+  { FallbackComponent: ChildFallbackUI }
+);
+
+const ComponentThatWillBreak = ... // it stays the same
+
+const App = withErrorBoundary(() => {
+  return (
+    <ComponentThatWillBreak
+      user={{
+        name: "Mario",
+        address: {
+          city: "São Paulo",
+          street: "Rua das Flores",
+        },
+        // We don't have lasstLogin
+      }}
+    />
+  );
+}, { FallbackComponent: GlobalFallbackUI });
+
+```
+
+### Retry Rendering
+
+We can forçe a re-render after an error. It make sense if we're dealing with a fetch that failed or if we have a strategy where we would fix the cause of the error.
+
+We have two options. By calling a hook `useErrorBoundary` or by using a prop `onReset` in the `ErrorBoundary` component.
+
+**Calling the hook inside the Component which we want to recover for**
+
+```tsx
+const ChildFallbackUI = () => {
+  const { resetBoundary } = useErrorBoundary();
+
+  return (
+    <div role="alert" style={{ color: "red" }}>
+      <p>I am a Child but I can take care of my self</p>
+      <button onClick={() => resetBoundary()}>reset</button>
+    </div>
+  );
+};
+```
+
+**Calling onReset**
+
+```tsx
+const MyChildComponent: React.FC<{ user: any }> = withErrorBoundary(
+  ({ user }) => {
+    ...
+  },
+  {
+    FallbackComponent: ChildFallbackUI,
+    onReset: (details) => {
+      console.log('details:', details);
+    },
+  }
+);
+```
+
+### Logging Errors
+
+In real-world App we might want to store all errors using a monitoring tool. We can use the `onError` prop in the `ErrorBoundary` component to log the error.
+
+```tsx
+withErrorBoundary(
+  () => {
+    return ( ...);
+  },
+  {
+    FallbackComponent: GlobalFallbackUI,
+    onError: logError,
+  }
+);
+
+const logError = (error: Error, info: { componentStack: string }) => {
+  Sentry.captureException(error);
+};
+```
+
+#### Writting Roadmap
+
+-> Write an error on event handlers. A click will do!
 -> Write an Error simulating a fetch that fails
 
 ## API Errors / Data Manipulation Errors
 
 ## Route Errors
-
-<Callout>
-  Error boundaries are React components that catch JavaScript errors anywhere in
-  their child component tree, log those errors, and display a fallback UI
-  instead of crashing the entire React component tree.
-</Callout>{" "}
 
 ## Create Root
 
@@ -168,12 +451,9 @@ https://react.dev/reference/react-dom/client/createRoot#displaying-error-boundar
 
 https://react.dev/reference/react-dom/client/createRoot#displaying-a-dialog-for-recoverable-errors
 
+````
+
 ```
 
-# Approaches
-
-## Starting Small
-
-Wrap UIs in components to isolate the error. Aka Error Boundaries.
-An Error Boundary is a component that catches JavaScript errors anywhere in its child component tree, logs those errors, and displays a fallback UI instead of the component tree that crashed.
 ```
+````

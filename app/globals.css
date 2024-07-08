@@ -17,14 +17,13 @@
 }
 
 body {
-  background-repeat: no-repeat;
-  background-size: cover;
+  min-height: 100dvh;
 }
 
 .main-container {
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr min(300px, 600px);
+  width: 100%;
+  height: 100%;
 }
 
 @layer utilities {
@@ -37,11 +36,11 @@ body {
   }
 
   .global-y-spacing {
-    @apply py-4;
+    @apply py-4 lg:py-10 fh:py-20;
   }
 
   .global-x-spacing {
-    @apply px-4;
+    @apply px-4 lg:px-8 fh:px-20;
   }
 
   .heading-border {

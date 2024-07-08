@@ -12,6 +12,14 @@ planted-in: 2021-10-01
 last-watered-in: 2021-10-01
 ---
 
+## Hover Child Elements
+
+```tsx
+<div className="group">
+  <div className="group-hover:opacity-100 opacity-0">...</div>
+</div>
+```
+
 ## Grouping multiple classes into a single custom class
 
 This is useful when you have a set of classes that you use together frequently and you wanna use Tailwind's breakpoints like `md:something`, `lg:something-else`, etc.
@@ -242,11 +250,40 @@ If we want Custom Colors, via CSS Variables we need to set the values of a varib
 `tailwind.config.ts`
 
 ```ts
-  ...,
   theme: {
     extend: {
       colors: {
         "blue-green": "rgb(var(--blue-green) / <alpha-value>)",
       },
-    ...
+    }
+  }
 ```
+
+<Callout>
+  The synxta matter! We didn't declare the RGB values between quotes we split
+  them with isWhiteSpaceSingleLine. This is `mandatory`. Otherwise `Tailwind`
+  would't be able to this: `bg-blue-green/10` to add opacity to the color. So
+  far this is the only way Tailwind works.
+</Callout>
+
+### Problem when using Motion
+
+````css
+We've declared the colors in this format: `--red-700: 187 34 83;`. Motion won't be able to work with this color and we'll face an error.
+
+One solution is to set this CSS Variables during the Mount phase of the `App`.
+
+`It wokrs! But a blink may occur for a tiny millisecond.`
+
+```tsx
+export default function App({ Component, pageProps }: AppProps) {
+  useEffect(() => {
+    document.documentElement.style.setProperty("--red-700", "187 34 83");
+    document.documentElement.style.setProperty("--blue-green", "0 17 44");
+  }, []);
+
+  return <Component {...pageProps} />;
+}
+````
+
+![tailwind-motion-and-css-variables](/handling-errors-in-react-01.png)

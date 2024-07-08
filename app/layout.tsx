@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { Bitter, Cormorant, Josefin_Sans, Open_Sans } from "next/font/google";
+import { Bitter, Josefin_Sans } from "next/font/google";
 import "./globals.css";
-import Link from "next/link";
-import { IconFlower } from "@/domains/garden-components/icons/flower";
+
 import { Header } from "@/domains/garden-components/header";
+import { Navbar } from "@/domains/garden-components/navbar";
+import { Suspense } from "react";
+import LoadingScreen from "./loading";
 
 const bitter = Bitter({
   subsets: ["latin"],
@@ -30,10 +32,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bitter.variable} ${josefinSans.variable} bg-french_gray-600`}
+        className={`${bitter.variable} ${josefinSans.variable} bg-misty_rose-800 grid grid-rows-[70px_70px_1fr]`}
       >
         <Header />
-        {children}
+        <Navbar />
+        <main className="main-container">
+          <Suspense fallback={<LoadingScreen />}>{children}</Suspense>
+        </main>
       </body>
     </html>
   );

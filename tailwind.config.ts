@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { AppBreakpoints } from "./theming/constants";
 
 const config: Config = {
   content: [
@@ -8,6 +9,13 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        sm: { min: AppBreakpoints.sm },
+        md: { min: AppBreakpoints.md },
+        lg: { min: AppBreakpoints.lg },
+        xl: { min: AppBreakpoints.xl },
+        fh: { min: AppBreakpoints.fh },
+      },
       fontFamily: {
         serif: ["var(--font-bitter)", "serif"],
         sans: ["var(--font-josefin-sans)", "sans-serif"],

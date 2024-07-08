@@ -28,3 +28,44 @@ https://medium.com/@satisshtechie/sticky-navbar-with-animation-react-3d7efc49159
 ### `overflow` on `<body> / <html>` doesn't work
 
 https://stackoverflow.com/questions/41506456/why-body-overflow-not-working
+
+## CSS Variables
+
+### Setting CSS Variables via Typescript (TS)
+
+`https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties`
+
+```tsx
+export const ThemeSetup = () => {
+  useEffect(() => {
+    const root = document?.documentElement;
+
+    root.style.setProperty("--active-primary", "someColorHere");
+    root.style.setProperty("--active-secondary", "someOtherColorHere");
+  }, []);
+
+  return null;
+};
+```
+
+# Grid
+
+### Make the child element grows the maximum of the parent height when the parent is a Grid Item
+
+```css
+.container {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+}
+
+.parent {
+  // Parent ocuppies 1fr - 50% of the container
+  ...;
+}
+
+.child {
+  // Child is inside the parent, and should grows vertically the maximum of the parent height
+  height: 0;
+  min-height: 100%;
+}
+```

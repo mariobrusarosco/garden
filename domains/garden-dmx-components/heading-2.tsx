@@ -1,7 +1,7 @@
 const Heading2 = ({ ...props }) => {
   return (
     <h2
-      className="lowecase text-puce font-thin text-4xl my-4 font-sans heading-border"
+      className="lowecase text-puce font-thin text-lg my-4 font-sans heading-border lg:text-4xl"
       {...props}
     />
   );

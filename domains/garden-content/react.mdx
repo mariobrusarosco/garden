@@ -1,0 +1,74 @@
+---
+title: React
+author: mariobrusarosco.github.com
+reference-links:
+  - link: ""
+    text: ""
+related-topics:
+  - "react"
+  - "framework"
+planted-in: 2024-05-24
+last-watered-in: 2024-05-24
+---
+
+# React
+
+A hook that creates a value that is preserved across renders, but it doesn't trigger a re-render when it changes.
+
+<Callout>
+  This value is indeed mutable! We're changing it directly and it's ok!
+</Callout>
+
+# Mental Modal
+
+One of the trickest parts of React is the unnopiative mental modal. We can do a lot of things in different ways.
+
+I believe we can split the React world in two segments: the "Displaying a UI" and the "Interacting with a UI".
+
+## Displaying a UI
+
+This is the part where we want give orders to our UI on how it should `look like`:
+
+"Hey, render this button here. Render it in "green". But, if a specific value, let's called it "potato". If "potato" is equal to "ready", stop rendering it in 'green' and render it in "light brown". If, in the future, "potato" is equal to "dead", render it in "dark brown"...
+See a pattern here? We're giving orders to our UI based on the values of our variables. Also, we don't wanna know who's changing this value, who's the responsible for the potato's lifecycle. Our focus is to change the appearance of our UI's based on states. Only that!
+
+## Interacting with a UI
+
+This is the part where we want give orders to our UI on how it should `act`:
+
+"Hey, if some a user clicks on the button and the "potato" is equal to "newborn", change the value from "newborn" to "growing". If the value is equal to "growing" change the value from "growing" to "ready". See a pattern here? We're giving orders to our UI to change the values of our variables. We don't wanna know how the UI should look like. Neither on who other UI's that are related to "potato" look like. We only care on "potato". Only that!
+
+### Interact with a Parent UI
+
+TODO Explaing the usage of callbacks defined on parents and passed down to childrens. Children call those callbacks...
+
+### Moments of Interaction
+
+#### Interacting with events
+
+We change states inside an event handler
+
+#### Interacting with a external System
+
+API, Database, browser localstorage, etc...
+We change states inside an useEffect
+
+#### Interacting with a DOM Node
+
+We change the DOM node via useRef
+
+#### Interacting with a value that is related to the Component but not the View aka the visual appearance
+
+We change the DOM node via useRef
+
+## Moving data throuht the app
+
+### Passing Props down
+
+### Lifting State Up
+
+###
+
+This is the part where we want give orders to our UI on how it should `act`:
+
+"Hey, if some a user clicks on the button and the "potato" is equal to "newborn", change the value from "newborn" to "growing". If the value is equal to "growing" change the value from "growing" to "ready". See a pattern here? We're giving orders to our UI to change the values of our variables. We don't wanna know how the UI should look like. Neither on who other UI's that are related to "potato" look like. We only care on "potato". Only that!

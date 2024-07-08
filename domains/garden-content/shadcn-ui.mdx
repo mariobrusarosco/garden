@@ -20,6 +20,8 @@ last-watered-in: 2021-10-01
 
 ### DropdownMenu
 
+How was the effort to adapt `SHADCN UI` to a `Custom Mobile Menu`
+
 - We don't need to create the "toggle logic".
 - If we wanna to customize click behavior of a Dropdown item, we need to preventDefatul().
 
@@ -32,4 +34,24 @@ last-watered-in: 2021-10-01
 >
   Profile
 </DropdownMenuItem>
+```
+
+- If we wanna a high level of customization it's hard to AVOID using `forwardRef`.
+
+  <Callout>New version of React won't need `forwardRef`</Callout>
+
+- Also **import specific Types** as
+
+```ts
+interface someInterface extends ComponentPropsWithoutRef<"span"> {}
+
+export const CustomModal = forwardRef<HTMLSpanElement, CustomModalProps>(
+  ({ children, ...props }, ref) => {
+    return (
+      <span ref={ref} {...props}>
+        {children}
+      </span>
+    );
+  }
+);
 ```

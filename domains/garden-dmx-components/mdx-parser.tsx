@@ -33,6 +33,7 @@ const MAPPED_COMPONENTS: MDXRemoteProps["components"] = {
   CodeSnippet,
   code: InlineCode,
   Callout,
+  Quote,
 };
 
 // TODO Type 'props' correctly

@@ -12,7 +12,19 @@ last-watered-in: 2021-10-01
 reference-links:
   - link: "https://css-tricks.com/custom-scrollbars-in-webkit/"
     text: "Custom Scrollbar in webkit"
+  - link: "https://css-tricks.com/classy-and-cool-custom-css-scrollbars-a-showcase/"
+    text: "Classy and Cool Custom CSS Scrollbars: A Showcase"
 ---
+
+## Prevent Content Shift
+
+We can reserve container space to avoid a scrollbar from shifting the layout
+
+<Quote>
+  The scrollbar-gutter CSS property allows authors to reserve space for the
+  scrollbar, preventing unwanted layout changes as the content grows while also
+  avoiding unnecessary visuals when scrolling isn't needed.
+</Quote>
 
 ```css
 /* width */
@@ -20,18 +32,18 @@ reference-links:
   width: 10px;
 }
 
-/* Track */
+// _ Track _/
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 5px;
 }
 
-/* Handle */
+// /_ Handle _/
 ::-webkit-scrollbar-thumb {
   background: #888;
 }
 
-/* Handle on hover */
+///_ Handle on hover _/
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
@@ -40,4 +52,8 @@ reference-links:
   scrollbar-color: theme(colors.secondary-dark) theme(colors.primary-white);
   scrollbar-width: thin;
 }
+```
+
+```
+
 ```

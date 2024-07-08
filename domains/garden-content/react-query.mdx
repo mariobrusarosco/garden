@@ -30,21 +30,6 @@ One Word (main)
 
 *stale-while-revalidate* caching ????
 
-# Argumentation / Debates
-
-This section groups tips and explanations so I can argue about React Query with the most accurate knowledge possible.
-
-## FAQ
-
-### About too much Rendering/re-renders
-
-<Callout>
-💡 First of all: React Query does *not* invoke the `queryFn` on every re-render, even with the default `staleTime` of zero. Your app can re-render for various reasons at any time, so fetching every time would be insane.
-
-</Callout>
-
-https://mdxjs.com/
-
 # Anatomy
 
 Every `query` requires two things:
@@ -103,11 +88,73 @@ With the “order” approach we would have “duplicated” entries.
   sdasdsa
   asdsadsa
 
-  ### dasdsad
-
   ```tsx
   const usersQuery = useQuery({
     queryKey: ["users"],
     queryFn: fetchUsers,
   });
   ```
+
+# Argumentation / Debates
+
+This section groups tips and explanations so I can argue about React Query with the most accurate knowledge possible.
+
+## FAQ
+
+### About too much Rendering/re-renders
+
+<Callout>
+💡 First of all: React Query does *not* invoke the `queryFn` on every re-render, even with the default `staleTime` of zero. Your app can re-render for various reasons at any time, so fetching every time would be insane.
+
+</Callout>
+
+### Infinte loops
+
+### Scenario 1
+
+If we have more than one component that uses the same query, at least one of them should be responsible for fetching the data. This is the job of the `enable` property. Example:
+
+`screen.tsx`
+
+```tsx
+const Screen = () => {
+  return (
+    <div>
+      <ComponentOne />
+      <ComponentTwo />
+    </div>
+  );
+};
+
+const ComponentOne = () => {
+  const { data } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    enable: true,
+  });
+  return <div>{data}</div>;
+};
+
+const ComponentTwo = () => {
+  const { data } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    enable: false,
+  });
+  return <div>{data}</div>;
+};
+```
+
+<Callout>
+  `ComponentOne` will be responsible for fetching the data. `ComponentTwo` will
+  use the data fetched by `ComponentOne`. If both had enabled true, we'd face an
+  infinte loop!
+</Callout>
+
+### Scenario 2
+
+If we have a query that depends on a state that changes on the query function, we may end up with an infinite loop. This is because the query function will be called every time the state changes, and the state changes every time the query function is called.
+import { Component } from "react"
+
+import { Component } from "react"
+Component,

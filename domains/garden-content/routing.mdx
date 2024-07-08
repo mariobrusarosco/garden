@@ -1,0 +1,59 @@
+## Using Query Params
+
+### With Next JS
+
+```jsx
+export const experiences: IExperience[] = [
+  {
+    id: "enext",
+    queryParams: [{ id: "enext" }],
+    companyName: "Enext",
+    description: [
+      "Development of e-commerce stores for the Brazilian market",
+      "Development of landing pages",
+      "Development of Email Marketing templates",
+      "Stack: HTML, CSS, SASS, CSS, Grunt, Gulp, jQuery, Invision, Photoshop, RunRun It, Github",
+    ],
+    endDate: "2017-07-01",
+    position: "Frontend Developer",
+    startDate: "2016-07-01",
+    location: "São Paulo, SP, Brazil",
+  },
+  .
+...
+const handleSelectCompany = (experienceId: string) => {
+  const selectedExperience = experiences.find((experience) => {
+    return experience.id === experienceId;
+  });
+
+  const queryParamsString = updateParamsOnURL({
+    searchParams,
+    queryParams: selectedExperience?.queryParams,
+  });
+
+  router.push(`${window.location.pathname}?${queryParamsString}`);
+};
+```
+
+`url-manipulation.ts`
+
+```ts
+import { ReadonlyURLSearchParams } from "next/navigation";
+
+type Props = {
+  searchParams: ReadonlyURLSearchParams;
+  queryParams: Record<string, string | boolean>[] | undefined;
+};
+
+export const updateParamsOnURL = ({ searchParams, queryParams }: Props) => {
+  if (queryParams === undefined) return null;
+
+  const newQueryParams = new URLSearchParams(searchParams);
+  queryParams.forEach((param) => {
+    const [paramKey, paramValue] = Object.entries(param)[0];
+    newQueryParams.set(paramKey, String(paramValue));
+  });
+
+  return newQueryParams?.toString() ?? "";
+};
+```

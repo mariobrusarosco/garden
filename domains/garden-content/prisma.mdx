@@ -1,0 +1,27 @@
+---
+title: Example
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "prisma"
+  - "orm"
+planted-in: 2024-06-02
+last-watered-in: 2024-06-02
+---
+
+# Prisma
+
+## Reset Local Database
+
+```bash
+yarn prisma migrate reset
+```
+
+## Push schema changes to Production
+
+We need to start Prisma Baselining process to push schema changes to production.
+
+```bash
+yarn prisma migrate dev --name init
+```
