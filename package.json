@@ -1,6 +1,7 @@
 {
   "name": "digital-garden",
-  "version": "0.2.0",
+  "version": "0.2.1
+  ",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +12,8 @@
   },
   "dependencies": {
     "bright": "^0.8.5",
-    "clsx": "^2.1.1",
+    "clsx": "^2.1
+    .1",
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",

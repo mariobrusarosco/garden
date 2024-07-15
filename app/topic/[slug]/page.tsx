@@ -3,6 +3,7 @@ import { IconFlower } from "@/domains/garden-components/icons/flower";
 import { PageHeading } from "@/domains/garden-components/page-heading";
 import { MDXParser } from "@/domains/garden-dmx-components/mdx-parser";
 import { parseFrontMatterFromSlug } from "@/domains/helper-and-utils/markdown";
+import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
 
 type Props = {
   params: {
@@ -15,10 +16,11 @@ export default async function Topic({ params }: Props) {
 
   const hasRelatedTopics = !!metadata?.["related-topics"]?.length;
   const hasReferencesLink = !!metadata?.["reference-links"]?.length;
+  const normalizedTopic = removeHyphens(params.slug);
 
   return (
     <div data-ui="topic-screen" className="global-spacing">
-      <PageHeading title={params.slug} />
+      <PageHeading title={normalizedTopic} />
 
       <div className="flex justify-between gap-4 items-start text-wenge  h-fit pb-15">
         <div className="flex gap-x-2">

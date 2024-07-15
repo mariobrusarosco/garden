@@ -6,7 +6,7 @@ export const Header = () => {
     <header
       className="sticky top-0 shadow-lg backdrop-filter 
   backdrop-blur-md 
-  bg-opacity-10 global-x-spacing flex justify-between py-4 lg:py-6 "
+  bg-opacity-10 global-x-spacing flex justify-between py-4 lg:py-6"
     >
       <h1 className="text-puce-100 text-2xl font-sans font-light flex items-center justify-between lg:text-4xl">
         <Link href="/">Digital Garden</Link>

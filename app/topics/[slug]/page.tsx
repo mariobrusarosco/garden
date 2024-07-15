@@ -3,6 +3,7 @@ import { IconLeaf } from "@/domains/garden-components/icons/leaf";
 import Link from "next/link";
 import { GoBack } from "@/domains/garden-components/go-back";
 import { PageHeading } from "@/domains/garden-components/page-heading";
+import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
 
 type Props = {
   params: {
@@ -14,15 +15,17 @@ const notesByTopic = metadata as { [key: string]: string[] };
 
 export default async function TopicsSlug({ params }: Props) {
   const topicNotes = notesByTopic[params.slug];
+  const normalizedTopic = removeHyphens(params.slug);
 
   return (
     <div data-ui="note-by-topic-page" className="global-spacing">
-      <PageHeading title={params.slug} />
+      <PageHeading title={normalizedTopic} />
 
       <div className="list-of-notes">
         <ul className="mt-10 grid gap-y-8 md:grid-cols-2">
           {topicNotes.map((filename: string) => {
             const noteSlug = filename.split(".mdx")[0];
+            const normalizedNote = removeHyphens(noteSlug);
 
             return (
               <li
@@ -34,7 +37,7 @@ export default async function TopicsSlug({ params }: Props) {
                   href={`/topic/${noteSlug}`}
                   className="text-wenge font-serif font-thin text-xl"
                 >
-                  {noteSlug}
+                  {normalizedNote}
                 </Link>
               </li>
             );
