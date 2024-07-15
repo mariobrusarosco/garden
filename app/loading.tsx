@@ -1,14 +1,13 @@
-import { IconLeaf } from "@/domains/garden-components/icons/leaf";
+import { IconFlower } from "@/domains/garden-components/icons/flower";
+import "@/app/animations.css";
 
 export default function LoadingScreen() {
   return (
-    <main className="container global-spacing">
-      <section className="heading text-wenge mt-4 mb-10">
-        <div className="flex font-light justify-start items-center gap-x-4">
-          <IconLeaf className="w-5" />
-          <h2 className="text-5xl font-serif">Loading!</h2>
-        </div>
-      </section>
-    </main>
+    <section
+      data-ui="topic-loading"
+      className="global-spacing h-full grid place-content-center"
+    >
+      <IconFlower className="w-40 loading-flower" />
+    </section>
   );
 }

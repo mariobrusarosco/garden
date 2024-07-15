@@ -12,7 +12,7 @@ export const Header = () => {
         <Link href="/">Digital Garden</Link>
       </h1>
 
-      <IconFlower className="w-8" />
+      <IconFlower className="h-8 w-8" />
     </header>
   );
 };

@@ -11,12 +11,12 @@ const IconArrow = ({ className }: { className: string }) => {
           height="247"
           rx="123.5"
           stroke="inherit"
-          stroke-width="4"
+          strokeWidth="10"
         />
         <path
           d="M175.562 102.791L129.588 148.211L75.4414 102.791"
           stroke="inherit"
-          stroke-width="6"
+          strokeWidth="10"
         />
       </svg>
     </div>

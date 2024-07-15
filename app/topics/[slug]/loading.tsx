@@ -1,5 +1,5 @@
 import { IconFlower } from "@/domains/garden-components/icons/flower";
-import "../animations.css";
+import "@/app/animations.css";
 
 export default function LoadingScreen() {
   return (

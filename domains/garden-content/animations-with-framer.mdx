@@ -40,10 +40,6 @@ await animate("path", { pathLength: 0.5 }, { duration: 1 });
 
 We need to add an initial value:
 
-```tsx
-<motion.path strokeDasharray="0 1" initial={{ pathLength: 1 }} />
-```
-
 ## Transform
 
 Framer Motion can animate transform props, but will clash with CSS transform rules applied to the element you're animating.
@@ -54,23 +50,9 @@ Let's say you're centralizing an element with `transform: translate(-50%, -50%)`
 
 Remove the styles you've applied via CSS and apply them via Framer Motion.
 
-```tsx
-<motion.div
-  initial={{ x: "-50%", y: "-50%" }} // Initial position
-  animate={{ x: 0, y: 0 }}
-  style={{ position: "absolute", top: "50%", left: "50%" }}
->
-  ...
-</motion.div>
-```
-
 ## Animating Calculated values
 
 We can use CSS `calc()` inside a string:
-
-```tsx
-<motion.div initial={{ x: "100%" }} animate={{ x: "calc(100vw - 50%)" }} />
-```
 
 ### Orchestration Bugs
 
@@ -96,48 +78,10 @@ We have an SVG that will be animated on `hover`. We'll change its `fill`. We nee
 1. The default fill as an SVG attribute
 2. The new fill that must be animated and appear on hover.
 
-```tsx
-   <motion.svg
-      viewBox="0 0 24 24"
-      fill={"green"} // #1
-      whileHover={{
-        fill: "red", // #2
-        scale: 1.2,
-        transition: {
-          type: "spring",
-          stiffness: 200,
-          damping: 10,
-          fill: {
-            duration: 0.1,
-          },
-        },
-      }}
-    >
-```
-
 This is how it would get confused:
 
 1. The default fill as an CSS class
 2. The new fill that must be animated and appear on hover.
-
-```tsx
-   <motion.svg
-      viewBox="0 0 24 24"
-      className="fill-green" // #1
-      whileHover={{
-        fill: "red", // #2
-        scale: 1.2,
-        transition: {
-          type: "spring",
-          stiffness: 200,
-          damping: 10,
-          fill: {
-            duration: 0.1,
-          },
-        },
-      }}
-    >
-```
 
 The result of this example is:
 
@@ -147,85 +91,9 @@ The result of this example is:
 
 ## Animate children elements when hovering over a parent element
 
-```tsx
-const stemAnimation: Variants = {
-  hover: {
-    y: -50,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      damping: 10,
-      stiffness: 150,
-    },
-
-    backgroundColor: "rgb(var(--light-green))",
-  },
-};
-
-const circleAnimation: Variants = {
-  hover: {
-    y: -50,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      damping: 10,
-      stiffness: 150,
-    },
-    backgroundColor: "rgb(var(--green))",
-  },
-};
-
-const labelAnimation: Variants = {
-  hover: {
-    visibility: "visible",
-    opacity: 1,
-    y: -80,
-    transition: {
-      type: "spring",
-      damping: 10,
-      stiffness: 150,
-    },
-  },
-};
-
-export const AnimatedLink = (props: Props) => {
-  const { path, label } = props;
-
-  return (
-    <motion.li whileHover="hover">
-      <Link
-        href={path}
-        className="flex flex-col text-primary-white font-light text-sm"
-      >
-        <div className="relative flex justify-center">
-          <motion.div
-            variants={desktopHeader.stem}
-            className="w-[1px] h-[43px] bg-light-gray desktop:opacity-0 desktop:absolute"
-          />
-          <motion.div
-            variants={desktopHeader.circle}
-            className="w-[10px] h-[10px] rounded-full bg-primary-base m-and-t:absolute m-and-t:top-[15px] desktop:w-[20px] desktop:h-[20px]"
-          />
-        </div>
-        <motion.span
-          transition={{
-            x: 20,
-          }}
-          variants={desktopHeader.label}
-          className="desktop:absolute desktop:text-lg desktop:translate-y-[10px]  desktop:invisible"
-        >
-          {label}
-        </motion.span>
-      </Link>
-    </motion.li>
-  );
-};
-```
-
 ## Animating a full screen component via query String
 
 ## Animating an element to avoid scroll overflow
 
 Commit
 https://github.com/mariobrusarosco/portfolio/pull/15/commits/4a27f6a52796450db9fbb9ecd29c18f8d60cefef#diff-acc19abade6e78ac892adea5efaf181ab9136b6f88aeb62033ed51aed9ad7b89
-import { Transform } from "stream"
