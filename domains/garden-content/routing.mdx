@@ -1,59 +1,82 @@
-## Using Query Params
+---
+title: Routing
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "react"
+  - "routing"
+  - "react-router"
+planted-in: 2024-10-01
+last-watered-in: 2024-10-01
+---
 
-### With Next JS
 
-```jsx
-export const experiences: IExperience[] = [
-  {
-    id: "enext",
-    queryParams: [{ id: "enext" }],
-    companyName: "Enext",
-    description: [
-      "Development of e-commerce stores for the Brazilian market",
-      "Development of landing pages",
-      "Development of Email Marketing templates",
-      "Stack: HTML, CSS, SASS, CSS, Grunt, Gulp, jQuery, Invision, Photoshop, RunRun It, Github",
-    ],
-    endDate: "2017-07-01",
-    position: "Frontend Developer",
-    startDate: "2016-07-01",
-    location: "São Paulo, SP, Brazil",
-  },
-  .
-...
-const handleSelectCompany = (experienceId: string) => {
-  const selectedExperience = experiences.find((experience) => {
-    return experience.id === experienceId;
-  });
+# React router
 
-  const queryParamsString = updateParamsOnURL({
-    searchParams,
-    queryParams: selectedExperience?.queryParams,
-  });
+## Render a specific page for the Root path ("/") 
 
-  router.push(`${window.location.pathname}?${queryParamsString}`);
-};
-```
+### Root path
+1. We set <RootLayout> as the Element. Its purpose is to work as a *Layout UI*, that will apply some stylying
+and, render child Components.
+2. `{ index: true, element: <Intro /> }` does the trick. It sees if the URL is just '/'. If it is, it renders:
+ `<RootLayout>
+    <Intro />
+  </RootLayout>` and it stops!.
 
-`url-manipulation.ts`
+If not, it renders the continuation of the URL: 1) "/table", 2)"/table/123" etc:
 
-```ts
-import { ReadonlyURLSearchParams } from "next/navigation";
+1)
+`<RootLayout>
+  <AuthenticatedLayout>
+    <TableLayout>
+      <NoSelectedTable />
+    </TableLayout>
+  </AuthenticatedLayout>
+</RootLayout>`
 
-type Props = {
-  searchParams: ReadonlyURLSearchParams;
-  queryParams: Record<string, string | boolean>[] | undefined;
-};
+2)
+`<RootLayout>
+  <AuthenticatedLayout>
+    <TableLayout>
+      <TableScreen />
+    </TableLayout>
+  </AuthenticatedLayout>
+</RootLayout>`
 
-export const updateParamsOnURL = ({ searchParams, queryParams }: Props) => {
-  if (queryParams === undefined) return null;
 
-  const newQueryParams = new URLSearchParams(searchParams);
-  queryParams.forEach((param) => {
-    const [paramKey, paramValue] = Object.entries(param)[0];
-    newQueryParams.set(paramKey, String(paramValue));
-  });
 
-  return newQueryParams?.toString() ?? "";
-};
+```tsx
+export const AppRouter = () => {
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <RootLayout />,
+      errorElement: <ErrorScreen />,
+      children: [
+        { index: true, element: <Intro /> },
+        {
+          element: <AuthenticatedLayout />,
+          children: [
+            {
+              path: "tables",
+              element: <TableLayout />,
+              children: [
+                { index: true, element: <NoSelectedTable /> },
+                { path: ":tableId", element: <TableScreen /> },
+                {
+                  path: ":tableId/channels/:channelId",
+                  element: <ChannelScreen />,
+                },
+                {
+                  path: ":tableId/game",
+                  element: <GameScreen />,
+                },
+              ],
+            },
+          ]
+        }
+      ]
+    }
+  ])
 ```
