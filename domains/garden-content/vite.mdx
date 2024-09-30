@@ -1,0 +1,41 @@
+---
+title: Vite
+author: mariobrusarosco.github.com
+reference-links:
+  - link: "https://vitejs.dev/guide/features.html#transpile-only"
+    text: "Transpile only"
+related-topics:
+  - "vite"
+  - "build-system"
+
+planted-in: 2024-10-01
+last-watered-in: 2024-10-01
+---
+
+
+# Dev Mode
+
+By default, Vite only transpile the code and, no type-checking is performed: `https://vitejs.dev/guide/features.html#transpile-only`.
+
+One way to set type-checking during `dev-mode` is using a plugin named:
+
+1. Install it.
+```bash
+yarn add vite-plugin-checker -D    
+```
+2. Plug it on _Vite's config_
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import checker from "vite-plugin-checker";
+
+export default defineConfig({
+	plugins: [
+		react(),
+		checker({
+			typescript: true,
+		}),
+        ...
+	],
+});
+```
