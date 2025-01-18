@@ -42,6 +42,7 @@
     "css.mdx",
     "indicate-a-element-was-scrolled-with-css.mdx",
     "material-ui.mdx",
+    "mui.mdx",
     "normalize-css.mdx",
     "shadcn-ui.mdx",
     "styling-a-scrollbar.mdx",
@@ -55,6 +56,15 @@
     "shadcn-ui.mdx",
     "styling-a-scrollbar.mdx",
     "tailwind-css.mdx"
+  ],
+  "environment": [
+    "env-vars.mdx"
+  ],
+  "vars": [
+    "env-vars.mdx"
+  ],
+  "env vars": [
+    "env-vars.mdx"
   ],
   "react-context": [
     "example.mdx",
@@ -83,7 +93,11 @@
     "javascript.mdx"
   ],
   "material-ui": [
-    "material-ui.mdx"
+    "material-ui.mdx",
+    "mui.mdx"
+  ],
+  "mui": [
+    "mui.mdx"
   ],
   "next": [
     "next-js.mdx"

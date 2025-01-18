@@ -7,19 +7,21 @@ import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
 
 type Props = {
   params: {
-    slug: string;
+    note: string;
   };
 };
 
-export default async function Topic({ params }: Props) {
-  const { mdxContent, metadata } = parseFrontMatterFromSlug(params.slug);
+export default async function SerieNoteScreen({ params }: Props) {
+  const { mdxContent, metadata } = parseFrontMatterFromSlug(
+    `series/${params.note}`
+  );
 
   const hasRelatedTopics = !!metadata?.["related-topics"]?.length;
   const hasReferencesLink = !!metadata?.["reference-links"]?.length;
-  const normalizedTopic = removeHyphens(params.slug);
+  const normalizedTopic = removeHyphens(params.note);
 
   return (
-    <div data-ui="topic-screen" className="global-spacing">
+    <div data-ui="screen-serie-note" className="global-spacing">
       <PageHeading title={normalizedTopic} />
 
       <div className="flex justify-between gap-4 items-start text-wenge  h-fit pb-15">
