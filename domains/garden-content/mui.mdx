@@ -1,0 +1,76 @@
+---
+title: MUI - Material UI
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "mui"
+  - "css"
+  - "material-ui"
+planted-in: 2024-10-01
+last-watered-in: 2024-10-01
+---
+
+# Mui - Material UI
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda officiis adipisci veniam earum nihil cumque fugiat reiciendis nam maiores doloremque, voluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+
+# Building Blocks
+
+## Box
+
+It starts as a <div /> with no styling. We can start customizing it by:
+
+- changing the html tag
+
+```tsx
+<Box component="section">This Box renders as an HTML section element.</Box>
+```
+
+- adding custom css
+
+```tsx
+<Box sx={{ p: 2, border: "1px dashed grey" }}>
+  This Box renders as an HTML section element.
+</Box>
+```
+
+## Container
+
+By default it gives us a centralized <div/> with:
+
+```css
+width: 100%;
+margin-left: auto;
+box-sizing: border-box;
+margin-right: auto;
+display: block;
+padding-left: 16px;
+padding-right: 16px;
+```
+
+_The padding values are the ones fromt `App's theme`_
+
+# Misc
+
+## Access theme data from a React Component / Hook
+
+```tsx
+import { useTheme } from "@mui/system";
+
+
+const Comp = () => {
+	const theme = useTheme();
+  ...
+}
+```
+
+# Customization
+
+## Button
+
+# Checklist
+
+[] Create a Themed Component (e.g. Styled Component)
+[] Simple, more CSS than logic
+[] Provides a way to target breakpoints

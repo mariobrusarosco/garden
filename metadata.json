@@ -10,6 +10,7 @@
     "react-form-elements.mdx",
     "react-query.mdx",
     "react.mdx",
+    "routing.mdx",
     "shadcn-ui.mdx",
     "tailwind-css.mdx",
     "ui-menu-for-applications.mdx",
@@ -126,6 +127,12 @@
   "framework": [
     "react.mdx"
   ],
+  "routing": [
+    "routing.mdx"
+  ],
+  "react-router": [
+    "routing.mdx"
+  ],
   "shadcn-ui": [
     "shadcn-ui.mdx"
   ],
@@ -151,5 +158,11 @@
   "hooks": [
     "use-id.mdx",
     "use-ref.mdx"
+  ],
+  "vite": [
+    "vite.mdx"
+  ],
+  "build-system": [
+    "vite.mdx"
   ]
 }
