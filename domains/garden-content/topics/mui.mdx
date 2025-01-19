@@ -69,6 +69,29 @@ const Comp = () => {
 
 ## Button
 
+## Targeting Breakpoints
+
+```tsx
+  <AppButton
+    sx={{
+      position: "fiex",
+      top: { all: 22, tablet: 100 },
+      right: { all: 15, tablet: 40 },
+      display: { all: "flex", tablet: "none" },
+      color: "teal.500",
+      placeItems: "center",
+      gap: 0.5,
+    }}
+    onClick={handleBack}
+  >
+    <AppIcon name="ChevronLeft" size="extra-small" />
+    <Typography variant="tag" color="neutral.100" textTransform="uppercase">
+      back
+    </Typography>
+  </AppButton>
+	);
+```
+
 # Checklist
 
 [] Create a Themed Component (e.g. Styled Component)

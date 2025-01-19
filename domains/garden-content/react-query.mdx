@@ -1,0 +1,152 @@
+---
+title: React Query
+author: mariobrusarosco.github.com
+related-topics:
+  - "react-query"
+  - "react"
+  - "query"
+reference-links:
+  - url: "https://www.notion.so/86f2148babd54eaf81ebd056524ec167?pvs=21"
+    text: "Notion Link #1"
+  - link: "https://www.notion.so"
+    url: "Notion Link"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
+
+# Recap
+
+_todo Add the most crucial summarized thing to let us recap this topic_
+
+# Playground
+
+….
+
+# Used in Projects
+
+One Word (main)
+
+# Getting Started
+
+*stale-while-revalidate* caching ????
+
+# Anatomy
+
+Every `query` requires two things:
+
+1. A query key - a unique identifier - formed by an array of strings.
+2. A query function. This function needs to be a `Promise.` I**t doesn’t have t**o _fetch data_ but it needs to be a `Promise`.
+
+# Query Keys
+
+<Callout>Start **_generic_** and then go **_specific_**</Callout>
+
+React query will keep track of all items for the given array. If any of them change, React Query will invalidate the `cache` , call the given `query function` again and, store the result in the cache again!
+
+So, we should defintely keep this in mind:
+
+> If some state is related to the query function, then it should be places inside the query key’s array!
+
+### The `Key Array` order matters!
+
+```tsx
+// Query One placed on one.tsx
+const { data: dataOne } = useQuery({
+  queryKey: ["array-keys", active, id],
+  queryFn: fetchDynamicUser(id, active),
+});
+
+// Query Two placed on two.tsx
+const user = useQuery({
+  queryKey: ["array-keys", id, active],
+  queryFn: () => fetchDynamicUser(id, active),
+});
+```
+
+When `active` is true, will have two entries on the cache with different key values that have the same data
+
+1.  ['array-keys', true, null] → // Query One
+2.  ['array-keys', null, true] → // Query Two
+
+Even though the result of `fetchDynamicUser` is the same, the cache will place this result in two different places: inside a key with value of `['array-keys', true, null]` inside a key with a value of `['array-keys', null, true]`
+
+In an App, we likely face a scenario where multiple pages or components will use the same data. But by changing the array order we may start creating lots of entries on React Query Cache. We don’t need that.
+
+**Real Example:**
+
+We’re watching three variations: 1) status and id are null. 2)status is active and id is null 3) status is active and id is ‘1’. We have on entry for each variation
+
+![Untitled](/react-context-01.png)
+
+With the “order” approach we would have “duplicated” entries.
+
+![Untitled](/react-context-01.png)
+
+### Using Prefixes
+  ```tsx
+  const usersQuery = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+  });
+  ```
+
+# Argumentation / Debates
+
+This section groups tips and explanations so I can argue about React Query with the most accurate knowledge possible.
+
+## FAQ
+
+### About too much Rendering/re-renders
+
+<Callout>
+💡 First of all: React Query does *not* invoke the `queryFn` on every re-render, even with the default `staleTime` of zero. Your app can re-render for various reasons at any time, so fetching every time would be insane.
+
+</Callout>
+
+### Infinte loops
+
+### Scenario 1
+
+If we have more than one component that uses the same query, at least one of them should be responsible for fetching the data. This is the job of the `enable` property. Example:
+
+`screen.tsx`
+
+```tsx
+const Screen = () => {
+  return (
+    <div>
+      <ComponentOne />
+      <ComponentTwo />
+    </div>
+  );
+};
+
+const ComponentOne = () => {
+  const { data } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    enable: true,
+  });
+  return <div>{data}</div>;
+};
+
+const ComponentTwo = () => {
+  const { data } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    enable: false,
+  });
+  return <div>{data}</div>;
+};
+```
+
+<Callout>
+  `ComponentOne` will be responsible for fetching the data. `ComponentTwo` will
+  use the data fetched by `ComponentOne`. If both had enabled true, we'd face an
+  infinte loop!
+</Callout>
+
+### Scenario 2
+
+If we have a query that depends on a state that changes on the query function, we may end up with an infinite loop. This is because the query function will be called every time the state changes, and the state changes every time the query function is called.
+...
