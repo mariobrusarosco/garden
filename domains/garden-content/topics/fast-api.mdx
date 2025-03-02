@@ -1,0 +1,233 @@
+    ---
+title: Fast API
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "python"
+  - "api"
+  - "rest"
+  - "fastapi"
+
+planted-in: 2021-02-24
+last-watered-in: 2021-02-24
+---
+
+# Fast API
+
+FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.8+ based on standard Python type hints.
+
+## Benefits
+
+* Fast: Very high performance, on par with NodeJS and Go.
+* Type-checked (catches errors before runtime)
+* Automatic API documentation
+
+
+## Anatomy of a FastAPI application
+
+```python
+@router.post("/", response_model=User)
+def create_user(
+    user_in: UserCreate,
+    db: Session = Depends(get_db)
+):
+
+This is a decorator that tells FastAPI this function handles POST requests
+```python
+@router.post("/")
+```
+
+```python
+response_model=User:
+```
+Defines what the API will return (automatic validation!)
+
+```python
+user_in: UserCreate
+``` 
+Input validation using Pydantic models
+
+```python
+Depends(get_db)
+```
+Dependency injection (we'll cover this later)
+
+
+### Return values
+
+* FastAPI automatically converts Python dictionaries to JSON
+* Content-Type header will be `application/json`    
+
+```python
+return {"message": "User created successfully"}
+```
+
+### Path parameters
+
+```python
+@router.get("/users/{user_id}")
+```
+
+
+## Synchronous vs Asynchronous in FastAPI
+
+FastAPI supports both synchronous and asynchronous endpoints. Understanding the difference is crucial for building efficient APIs.
+
+### Synchronous (Sync) Endpoints
+
+```python
+@app.get("/users")
+def get_users():
+    # Blocks here until database returns
+    result = db.query(User).all()  
+    return result
+```
+
+Characteristics:
+- Executes code line by line
+- Waits for each operation to complete
+- Blocks the thread while waiting
+- Simpler to understand and debug
+
+### Asynchronous (Async) Endpoints
+
+```python
+@app.get("/users")
+async def get_users():
+    # Releases thread while waiting for database
+    result = await db.query(User).all()  
+    return result
+```
+
+Characteristics:
+- Can handle multiple operations concurrently
+- Doesn't block while waiting for I/O
+- More efficient for I/O-bound operations
+- Uses `async/await` syntax
+
+### When to Use Each
+
+Use **Sync** when:
+- Doing CPU-intensive work
+- Using libraries that don't support async
+- Code is simple and doesn't involve waiting
+
+```python
+@app.get("/calculate")
+def calculate_something():
+    result = heavy_computation()  # CPU-intensive
+    return {"result": result}
+```
+
+Use **Async** when:
+- Making HTTP requests
+- Database operations (with async driver)
+- File I/O operations
+- Handling websockets
+
+```python
+@app.get("/fetch-external")
+async def fetch_external_api():
+    async with httpx.AsyncClient() as client:
+        response = await client.get("https://api.example.com")
+    return response.json()
+```
+
+### Common Pitfalls
+
+1. **Blocking I/O in Async Functions (Bad)**
+```python
+@app.get("/slow")
+async def slow_endpoint():
+    time.sleep(1)  # Blocks the thread!
+    return {"message": "Done"}
+```
+
+2. **Proper Async Usage (Good)**
+```python
+@app.get("/fast")
+async def fast_endpoint():
+    await asyncio.sleep(1)  # Releases thread while waiting
+    return {"message": "Done"}
+```
+
+## API Documentation
+
+FastAPI provides automatic interactive API documentation using:
+
+### Swagger UI
+- Available at `/docs`
+- Interactive documentation
+- Try out API endpoints directly
+- Shows request/response schemas
+
+### ReDoc
+- Available at `/redoc`
+- Alternative documentation view
+- Better for reading and sharing
+
+### How Documentation is Generated
+
+FastAPI uses your:
+1. Function names and docstrings
+2. Type hints
+3. Pydantic models
+4. Path operation decorators
+
+Example with full documentation:
+
+```python
+from typing import List
+from pydantic import BaseModel
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+
+@app.get("/items/", response_model=List[Item], tags=["items"])
+async def get_items(skip: int = 0, limit: int = 10):
+    """
+    Retrieve items with pagination.
+    
+    - **skip**: Number of items to skip
+    - **limit**: Maximum number of items to return
+    """
+    return items[skip : skip + limit]
+```
+
+This generates:
+- Endpoint description
+- Request parameters
+- Response model
+- Example values
+- Try it out functionality
+
+### Enhancing Documentation
+
+1. **Tags** - Group endpoints:
+```python
+@app.get("/users/", tags=["users"])
+```
+
+2. **Summary and Description**:
+```python
+@app.post("/users/", 
+    summary="Create a user",
+    description="Create a new user with the provided information")
+```
+
+3. **Response Description**:
+```python
+@app.get("/users/{user_id}",
+    response_description="The found user")
+```
+
+4. **Status Codes**:
+```python
+@app.post("/items/", status_code=201)
+```
+
+
+
