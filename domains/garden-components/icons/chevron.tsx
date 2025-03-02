@@ -11,12 +11,12 @@ const IconChevron = ({ className }: { className: string }) => {
           height="247"
           rx="123.5"
           stroke="inherit"
-          stroke-width="6"
+          strokeWidth="6"
         />
         <path
           d="M116.796 80L80 121.364M171 121.364H80M80 121.364L116.796 171"
           stroke="inherit"
-          stroke-width="8"
+          strokeWidth="8"
         />
       </svg>
     </div>
