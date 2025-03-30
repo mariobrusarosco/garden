@@ -144,7 +144,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("tailwindcss-sticky-sidebar"),
+  ],
 };
 
 export default config;

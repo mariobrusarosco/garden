@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bitter.variable} ${josefinSans.variable} bg-misty_rose-800 grid grid-rows-[70px_70px_1fr]`}
+        className={`${bitter.variable} ${josefinSans.variable} bg-misty_rose-900 grid grid-rows-[70px_70px_1fr]`}
       >
         <Header />
         <Navbar />

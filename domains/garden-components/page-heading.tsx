@@ -7,7 +7,7 @@ const PageHeading = ({
   title: string;
   subtitle?: string;
 }) => (
-  <div className="flex justify-between gap-y-4 my-6 text-wenge">
+  <div className="flex justify-between px-2 my-2 text-wenge bg-misty_rose-900 shadow-lg sticky top-[70px] w-screen py-4 global-spacing ">
     <div>
       <h1 className="text-3xl font-serif font-thin uppercase lg:text-7xl lg:mb-8">
         {title}

@@ -20,10 +20,11 @@ export default async function TopicNoteScreen({ params }: Props) {
   const normalizedTopic = removeHyphens(params.slug);
 
   return (
-    <div data-ui="screen-topic-note" className="global-spacing overflow-hidden w-screen">
+    <div data-ui="screen-topic-note" className="w-screen">
       <PageHeading title={normalizedTopic} />
 
-      <div className="flex flex-wrap gap-4 items-start text-wenge h-fit pb-15">
+      <div className="global-spacing overflow-hidden">
+      <div className="flex flex-wrap gap-4 items-start text-wenge h-fit pb-15 ">
         <div data-ui="topic-note-metadata" className="flex gap-x-2">
           <IconFlower className="min-w-6" />
           <div className="flex flex-col gap-y-2">
@@ -99,9 +100,10 @@ export default async function TopicNoteScreen({ params }: Props) {
             </div>
           ) : null}
         </div>
-      </div>
+        </div>
 
-      <MDXParser source={mdxContent} />
+        <MDXParser source={mdxContent} />
+      </div>
     </div>
   );
 }
