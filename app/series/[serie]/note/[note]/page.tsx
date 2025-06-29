@@ -102,7 +102,7 @@ export default async function SerieNoteScreen({ params }: Props) {
         </div>
       </div>
 
-      <MDXParser source={mdxContent} />
+      {await MDXParser({ source: mdxContent })}
     </div>
   );
 }
