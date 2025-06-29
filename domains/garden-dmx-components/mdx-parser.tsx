@@ -1,4 +1,4 @@
-import { MDXRemote, MDXRemoteProps } from "next-mdx-remote/rsc";
+import { MDXRemote, type MDXRemoteProps } from "next-mdx-remote";
 import Image from "next/image";
 import { Heading1 } from "./heading-1";
 import { CodeSnippet } from "./code-snippet";
@@ -37,13 +37,11 @@ const MAPPED_COMPONENTS: MDXRemoteProps["components"] = {
 };
 
 // TODO Type 'props' correctly
-export function MDXParser(props: any) {
-  return (
-    <MDXRemote
-      {...props}
-      components={{
-        ...MAPPED_COMPONENTS,
-      }}
-    />
-  );
+export async function MDXParser(props: any) {
+  return await MDXRemote({
+    ...props,
+    components: {
+      ...MAPPED_COMPONENTS,
+    },
+  });
 }
