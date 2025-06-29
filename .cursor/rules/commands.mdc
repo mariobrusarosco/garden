@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+* Don't use Powershell
+* Ignore Powershell Syntax
+
+* This is a windows machine with a version of Git Bash. Use Git Bash commands.

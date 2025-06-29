@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Components
+* use arrow functions
+* use named exports
+
+# Hook
+* use arrow functions
+* use named exports
+
+

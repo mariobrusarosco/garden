@@ -1,7 +1,13 @@
 {
+  "creating-a-mobile-app": [
+    "creating-a-mobile-app.mdx"
+  ],
   "start-up-fast-boilerplate": [
     "deploy.mdx",
     "example.mdx",
     "framework.mdx"
+  ],
+  "E2E Testing": [
+    "e2e-testing.mdx"
   ]
 }

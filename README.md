@@ -1,39 +1,55 @@
+# 🪴 My Digital Garden
+
+This is my personal digital garden, a space where I cultivate my thoughts, learnings, and explorations on various topics related to technology and software development. It's built with Next.js and MDX, allowing for a collection of interconnected and ever-evolving notes.
 
 ![image](https://github.com/mariobrusarosco/digital-garden/assets/12510938/8df86aea-2a1f-4963-9c0d-aa3226be26cb)
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## ✨ Features
 
-## Getting Started
+- **Content as Code**: Articles are written in MDX, blending Markdown with custom React components.
+- **Topic & Series Organization**: Notes are organized into both broad `topics` and structured `series`.
+- **Dynamic Metadata**: A custom script generates metadata from the content, making the site fast and efficient.
+- **Styled with Tailwind CSS**: A utility-first CSS framework for rapid UI development.
 
-First, run the development server:
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Content**: [MDX](https://mdxjs.com/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Syntax Highlighting**: [Bright](https://bright.codehike.org/)
+
+## 🚀 Getting Started
+
+First, install the dependencies:
 
 ```bash
-npm run dev
-# or
+yarn install
+```
+
+Then, run the development server:
+
+```bash
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+The project is organized with a clear separation of concerns:
 
-## Learn More
+- `app/`: Contains all the Next.js routes and pages.
+- `domains/`: Houses the core logic and content of the garden.
+  - `garden-content/`: All MDX files for topics and series.
+  - `garden-components/`: Reusable React components for the UI.
+  - `garden-dmx-components/`: Special components used within MDX files.
+  - `helper-and-utils/`: Shared utility functions.
+- `scripts/`: Contains the `create-metadata.js` script that processes MDX frontmatter before the build.
 
-To learn more about Next.js, take a look at the following resources:
+## 🌱 How to Add New Content
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+1.  Create a new `.mdx` file inside `domains/garden-content/topics` or `domains/garden-content/series`.
+2.  Add frontmatter to the top of the file (e.g., `title`, `summary`).
+3.  Write your content using Markdown and custom MDX components.
+4.  Run `yarn dev` to see your new note. The metadata will be updated automatically.
