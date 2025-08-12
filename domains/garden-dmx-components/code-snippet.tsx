@@ -1,4 +1,3 @@
-// "use client";
 import { Code } from "bright";
 
 Code.lineNumbers = true;

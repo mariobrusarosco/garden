@@ -5,16 +5,17 @@ import topics from "@/metadata-topics.json";
 import Link from "next/link";
 
 type Props = {
-  params: {
+  params: Promise<{
     topic: string;
-  };
+  }>;
 };
 
 const notesByTopic = topics as { [key: string]: string[] };
 
 export default async function TopicScreen({ params }: Props) {
-  const topicNotes = notesByTopic[params.topic];
-  const normalizedTopic = removeHyphens(params.topic);
+  const resolvedParams = await params;
+  const topicNotes = notesByTopic[resolvedParams.topic];
+  const normalizedTopic = removeHyphens(resolvedParams.topic);
 
   return (
     <div data-ui="screen-topic" >
@@ -33,7 +34,7 @@ export default async function TopicScreen({ params }: Props) {
               >
                 <IconLeaf className="w-4" />
                 <Link
-                  href={`./${params.topic}/note/${noteSlug}`}
+                  href={`./${resolvedParams.topic}/note/${noteSlug}`}
                   className="text-wenge font-serif font-thin text-xl"
                 >
                   {normalizedNote}

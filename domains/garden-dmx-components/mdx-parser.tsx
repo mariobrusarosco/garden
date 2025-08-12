@@ -1,18 +1,17 @@
-import { MDXRemote, type MDXRemoteProps } from "next-mdx-remote";
+import { compileMDX } from 'next-mdx-remote/rsc';
 import Image from "next/image";
 import { Heading1 } from "./heading-1";
 import { CodeSnippet } from "./code-snippet";
 import { Heading2 } from "./heading-2";
 import { Callout } from "./callout";
 import { Heading3 } from "./heading-3";
-
 import { Quote } from "./quote";
 import { InlineCode } from "./inline-code";
 import { OrderedList } from "./ordered-list";
 import { Paragraph } from "./paragraph";
 import { UnorderedList } from "./unordered-list";
 
-const MAPPED_COMPONENTS: MDXRemoteProps["components"] = {
+const MAPPED_COMPONENTS = {
   img: (props: any) => (
     <Image
       alt="lorem"
@@ -37,11 +36,11 @@ const MAPPED_COMPONENTS: MDXRemoteProps["components"] = {
 };
 
 // TODO Type 'props' correctly
-export async function MDXParser(props: any) {
-  return await MDXRemote({
-    ...props,
-    components: {
-      ...MAPPED_COMPONENTS,
-    },
+export const MDXParser = async (props: { source: string }) => {
+  const { content } = await compileMDX({
+    source: props.source,
+    components: MAPPED_COMPONENTS,
   });
-}
+  
+  return content;
+};

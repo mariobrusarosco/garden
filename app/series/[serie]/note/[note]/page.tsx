@@ -6,19 +6,20 @@ import { parseFrontMatterFromSlug } from "@/domains/helper-and-utils/markdown";
 import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
 
 type Props = {
-  params: {
+  params: Promise<{
     note: string;
-  };
+  }>;
 };
 
 export default async function SerieNoteScreen({ params }: Props) {
+  const resolvedParams = await params;
   const { mdxContent, metadata } = parseFrontMatterFromSlug(
-    `series/${params.note}`
+    `series/${resolvedParams.note}`
   );
 
   const hasRelatedTopics = !!metadata?.["related-topics"]?.length;
   const hasReferencesLink = !!metadata?.["reference-links"]?.length;
-  const normalizedTopic = removeHyphens(params.note);
+  const normalizedTopic = removeHyphens(resolvedParams.note);
 
   return (
     <div data-ui="screen-serie-note" className="global-spacing">

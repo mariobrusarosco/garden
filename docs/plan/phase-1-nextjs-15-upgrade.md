@@ -4,11 +4,11 @@ This document outlines the plan to upgrade the project from Next.js v14.2.3 to v
 
 ## ✅ Phase Checklist
 
-- [ ] **1. Preparation & Branching**
-- [ ] **2. Dependency Upgrades**
-- [ ] **3. Address Breaking Changes**
-- [ ] **4. Codebase Verification & Testing**
-- [ ] **5. Create ADR (Architectural Decision Record)**
+- [x] **1. Preparation & Branching**
+- [x] **2. Dependency Upgrades**
+- [x] **3. Address Breaking Changes**
+- [x] **4. Codebase Verification & Testing**
+- [x] **5. Create ADR (Architectural Decision Record)**
 
 ---
 

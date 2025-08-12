@@ -6,18 +6,19 @@ import { parseFrontMatterFromSlug } from "@/domains/helper-and-utils/markdown";
 import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
 
 type Props = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
 export default async function TopicNoteScreen({ params }: Props) {
+  const resolvedParams = await params;
   const { mdxContent, metadata } = parseFrontMatterFromSlug(
-    `topics/${params.slug}`
+    `topics/${resolvedParams.slug}`
   );
   const hasRelatedTopics = !!metadata?.["related-topics"]?.length;
   const hasReferencesLink = !!metadata?.["reference-links"]?.length;
-  const normalizedTopic = removeHyphens(params.slug);
+  const normalizedTopic = removeHyphens(resolvedParams.slug);
 
   return (
     <div data-ui="screen-topic-note" className="w-screen">

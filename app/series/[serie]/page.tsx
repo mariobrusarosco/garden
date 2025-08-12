@@ -5,16 +5,17 @@ import series from "@/metadata-series.json";
 import Link from "next/link";
 
 type Props = {
-  params: {
+  params: Promise<{
     serie: string;
-  };
+  }>;
 };
 
 const notesBySerie = series as { [key: string]: string[] };
 
-export default function SerieScreen({ params }: Props) {
-  const normalizedSerie = removeHyphens(params.serie);
-  const serieNotes = notesBySerie[params.serie];
+export default async function SerieScreen({ params }: Props) {
+  const resolvedParams = await params;
+  const normalizedSerie = removeHyphens(resolvedParams.serie);
+  const serieNotes = notesBySerie[resolvedParams.serie];
 
   return (
     <main data-ui="screen-serie" className="container global-spacing">
@@ -33,7 +34,7 @@ export default function SerieScreen({ params }: Props) {
               >
                 <IconLeaf className="w-4" />
                 <Link
-                  href={`./${params.serie}/note/${noteSlug}`}
+                  href={`./${resolvedParams.serie}/note/${noteSlug}`}
                   className="text-wenge font-serif font-thin text-xl"
                 >
                   {normalizedNote}
