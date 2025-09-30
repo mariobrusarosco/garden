@@ -65,8 +65,19 @@ The project uses a domain-based structure under the `domains/` directory:
 - Store phase-based planning in `docs/plan/`
 - Store fixing logs in `docs/fixing-log/` when receiving "LOG THE FIX" input
 
+## MDX Content Structure
+- **Topics**: Standalone notes in `domains/garden-content/topics/`
+- **Series**: Structured content collections in `domains/garden-content/series/`
+- **Frontmatter fields**:
+  - `title` - Required page title
+  - `author` - Author information with name and URL
+  - `related-topics` - Array of topic strings for cross-linking
+  - `serie` - Series name (for series content only)
+  - `planted-in` - Creation date
+  - `last-watered-in` - Last update date
+
 ## Tech Stack
-- Next.js 14 with App Router
+- Next.js 15 with App Router
 - TypeScript
 - MDX with custom components
 - Tailwind CSS
