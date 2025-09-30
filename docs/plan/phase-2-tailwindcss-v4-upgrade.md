@@ -4,11 +4,11 @@ This document outlines the plan to upgrade the project from Tailwind CSS v3.4.1 
 
 ## ✅ Phase Checklist
 
-- [ ] **1. Preparation & Assessment**
-- [ ] **2. Automated Migration**
-- [ ] **3. Manual Updates & Configuration**
+- [x] **1. Preparation & Assessment**
+- [x] **2. Automated Migration**
+- [x] **3. Manual Updates & Configuration**
 - [ ] **4. Testing & Validation**
-- [ ] **5. Create ADR (Architectural Decision Record)**
+- [x] **5. Create ADR (Architectural Decision Record)**
 
 ---
 
@@ -16,7 +16,7 @@ This document outlines the plan to upgrade the project from Tailwind CSS v3.4.1 
 
 ### 1. Preparation & Assessment
 
-- **Create a new feature branch:** Create a dedicated branch for the upgrade (e.g., `feat/upgrade-tailwind-v4`) to isolate the changes. (Manual step)
+- **Create a new feature branch:** Create a dedicated branch for the upgrade (e.g., `feat/tailwind-migration-from-v3-to-v4`) to isolate the changes. (Manual step)
 - **Audit current usage:** Review current Tailwind usage across all components and pages.
 - **Backup configuration:** Ensure current `tailwind.config.ts` and related files are committed.
 
@@ -52,20 +52,8 @@ Based on the current project setup, the following manual updates will be needed:
   - Ensure compatibility with v4's new utility system
   - Update any deprecated utility classes
 
-### 4. Testing & Validation
 
-- **Development Server:** Start the app with `yarn dev` to ensure it runs without errors.
-- **Visual Testing:** Navigate through all pages to check for visual regressions:
-  - Home page (`/`)
-  - Topics listing (`/topics`)
-  - Series listing (`/series`)
-  - Individual topic and series pages
-  - MDX component rendering
-- **Build Testing:** Run `yarn build` to ensure production build works correctly.
-- **Lint Check:** Run `yarn lint` to catch any new issues.
-- **Performance Validation:** Compare build times before and after upgrade.
-
-### 5. Create ADR (Architectural Decision Record)
+### 4. Create ADR (Architectural Decision Record)
 
 - **Document the decision:** Create an ADR file in `docs/decisions/` to formalize the decision to upgrade, outlining the reasons, benefits, and consequences.
 
