@@ -46,6 +46,7 @@
     "normalize-css.mdx",
     "shadcn-ui.mdx",
     "styling-a-scrollbar.mdx",
+    "tailwind-css-v4-migration.mdx",
     "tailwind-css.mdx"
   ],
   "styling": [
@@ -152,6 +153,7 @@
   ],
   "tailwind": [
     "shadcn-ui.mdx",
+    "tailwind-css-v4-migration.mdx",
     "tailwind-css.mdx"
   ],
   "css library": [
@@ -159,6 +161,9 @@
   ],
   "scrollbar": [
     "styling-a-scrollbar.mdx"
+  ],
+  "migration": [
+    "tailwind-css-v4-migration.mdx"
   ],
   "typescript": [
     "typescript.mdx"
