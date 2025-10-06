@@ -1,0 +1,136 @@
+---
+title: "Custom Colors in Tailwind CSS v4"
+author: 
+  name: "Mario Brusarosco"
+  url: "https://mariobrusarosco.dev"
+planted-in: "2025-10-01"
+last-watered-in: "2025-10-01"
+related-topics: ["tailwind-css"]
+---
+
+# Custom Colors in Tailwind CSS v4
+
+Tailwind CSS v4 introduces a completely new approach to custom colors using the `@theme` directive, moving away from the JavaScript configuration file approach used in v3.
+
+## The New @theme Approach
+
+In Tailwind v4, custom colors are defined using CSS variables with the `@theme` directive instead of `tailwind.config.js`.
+
+### Basic Custom Color Setup
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-midnight-blue: #181E31;
+  --color-sunset: #FF6B35;
+  --color-forest: #2D5016;
+}
+```
+
+This automatically generates utilities like:
+- `bg-midnight-blue`
+- `text-sunset`
+- `border-forest`
+- And all other color utilities for each custom color
+
+## Key Requirements
+
+1. **Use `--color-*` prefix**: Required for Tailwind to recognize color variables
+2. **Top-level only**: Cannot be nested under selectors or media queries
+3. **CSS-first**: No more JavaScript configuration files
+
+## Advanced Usage
+
+### Keeping Default Colors
+
+By default, custom colors are added alongside Tailwind's default color palette:
+
+```css
+@theme {
+  --color-brand: #3B82F6;  /* Adds to existing colors */
+}
+```
+
+### Replacing All Default Colors
+
+Use `--color-*: initial` to disable all defaults and create your own palette:
+
+```css
+@theme {
+  --color-*: initial;      /* Removes all defaults */
+  --color-white: #fff;
+  --color-black: #000;
+  --color-primary: #3B82F6;
+  --color-secondary: #64748B;
+}
+```
+
+### Dynamic Colors with @theme inline
+
+For colors that reference CSS custom properties, use `@theme inline`:
+
+```css
+:root {
+  --brand-primary: #3B82F6;
+}
+
+[data-theme="dark"] {
+  --brand-primary: #60A5FA;
+}
+
+@theme inline {
+  --color-brand: var(--brand-primary);
+}
+```
+
+## Color Naming Best Practices
+
+Choose descriptive names that reflect purpose or visual characteristics:
+
+```css
+@theme {
+  /* Purpose-based */
+  --color-primary: #3B82F6;
+  --color-secondary: #64748B;
+  --color-danger: #EF4444;
+  
+  /* Visual-based */
+  --color-midnight-blue: #181E31;
+  --color-sunset-orange: #FF6B35;
+  --color-forest-green: #2D5016;
+}
+```
+
+## Benefits of v4 Approach
+
+- **CSS-first**: More intuitive for developers familiar with CSS
+- **Better performance**: CSS variables are processed at runtime
+- **Simpler configuration**: No separate config file needed
+- **Dynamic theming**: Easier to implement theme switching
+- **Better IDE support**: CSS autocomplete and validation
+
+## Migration from v3
+
+Tailwind v3 approach:
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        'midnight-blue': '#181E31',
+      }
+    }
+  }
+}
+```
+
+Tailwind v4 approach:
+```css
+@theme {
+  --color-midnight-blue: #181E31;
+}
+```
+
+The v4 approach is cleaner, more maintainable, and eliminates the need for JavaScript configuration files.

@@ -8,14 +8,14 @@ const IconFlower = ({ className }: { className: string }) => {
           cx="146.5"
           cy="65.5"
           r="65.5"
-          fill="#CF6689"
+          fill="#9D3E51"
           className="petal"
         />
         <circle
           cx="219.5"
           cy="102.5"
           r="65.5"
-          fill="#CF6689"
+          fill="#9D3E51"
           className="petal"
         />
 
@@ -23,7 +23,7 @@ const IconFlower = ({ className }: { className: string }) => {
           cx="225.5"
           cy="187.5"
           r="65.5"
-          fill="#CF6689"
+          fill="#9D3E51"
           className="petal"
         />
 
@@ -31,17 +31,17 @@ const IconFlower = ({ className }: { className: string }) => {
           cx="137.5"
           cy="221.5"
           r="65.5"
-          fill="#CF6689"
+          fill="#9D3E51"
           className="petal"
         />
         <circle
           cx="65.5"
           cy="184.5"
           r="65.5"
-          fill="#CF6689"
+          fill="#9D3E51"
           className="petal"
         />
-        <circle cx="68.5" cy="98.5" r="65.5" fill="#CF6689" className="petal" />
+        <circle cx="68.5" cy="98.5" r="65.5" fill="#9D3E51" className="petal" />
 
         <circle
           className="core"

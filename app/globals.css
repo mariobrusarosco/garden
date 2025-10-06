@@ -1,5 +1,12 @@
 @import 'tailwindcss';
 
+
+@theme inline {
+
+  --font-serif: var(--font-bitter), serif;
+  --font-sans: var(--font-raleway), sans-serif;
+
+}
 @theme {
   --breakpoint-sm: 480px;
   --breakpoint-md: 768px;
@@ -7,9 +14,13 @@
   --breakpoint-xl: 1536px;
   --breakpoint-fh: 1920px;
 
-  --font-serif: var(--font-bitter), serif;
-  --font-sans: var(--font-josefin-sans), sans-serif;
 
+  /* Colors */
+  --color-dark-pink: #9D3E51;
+  --color-midnight-blue: #181E31;
+  --color-neutral-white: #F4F8F4;
+
+  /* Deprecated colors */
   --color-french_gray-100: #2f2225;
   --color-french_gray-200: #5f4549;
   --color-french_gray-300: #8e676e;

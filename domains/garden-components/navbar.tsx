@@ -1,25 +1,25 @@
+import Link from 'next/link';
+
+const navItems = [
+  { href: "/topics", label: "Topics" },
+  { href: "/series", label: "series" },
+  { href: "/use-cases", label: "use cases" },
+  { href: "/pocs", label: "POCs" },
+  { href: "/learning-history", label: "learning history" }
+];
+
 const Navbar = () => {
   return (
     <nav
       data-ui="navigation-area"
-      className="overflow-auto global-x-spacing py-3 lg:max-w-[420px] h-fit"
+      className="overflow-auto py-3 h-fit"
     >
-      <ul className="flex justify-between text-wenge-300">
-        <p className=" rounded-lg p-1 cursor-pointer lowercase font-serif font-thin text-lg hover:text-puce-300">
-          <a href="/topics">Topics</a>
-        </p>
-
-        <p className="rounded-lg p-1 cursor-pointer lowercase  font-serif font-thin text-lg hover:text-puce-300">
-          <a href="/series">series</a>
-        </p>
-
-        <p className="rounded-lg p-1 cursor-pointer lowercase  font-serif font-thin text-lg hover:text-puce-300">
-          <a href="/use-cases">use cases</a>
-        </p>
-
-        <p className="rounded-lg p-1 cursor-pointer lowercase  font-serif font-thin text-lg hover:text-puce-300">
-          <a href="/pocs">POCs</a>
-        </p>
+      <ul className="flex gap-6 font-serif font-thin justify-between text-midnight-blue lowercase text-xl [&>p]:rounded-lg [&>p]:p-1 [&>p]:cursor-pointer [&>p:hover]:text-dark-pink">
+        {navItems.map((item) => (
+          <p key={item.href}>
+            <Link href={item.href}>{item.label}</Link>
+          </p>
+        ))}
       </ul>
     </nav>
   );
