@@ -161,10 +161,24 @@
     "styling-a-scrollbar.mdx"
   ],
   "typescript": [
-    "typescript.mdx"
+    "typescript.mdx",
+    "typing-express-routes.mdx"
   ],
   "ts": [
-    "typescript.mdx"
+    "typescript.mdx",
+    "typing-express-routes.mdx"
+  ],
+  "express": [
+    "typing-express-routes.mdx"
+  ],
+  "node": [
+    "typing-express-routes.mdx"
+  ],
+  "backend": [
+    "typing-express-routes.mdx"
+  ],
+  "api": [
+    "typing-express-routes.mdx"
   ],
   "menu": [
     "ui-menu-for-applications.mdx"
