@@ -1,187 +1,501 @@
 {
-  "react": [
-    "animations-with-framer.mdx",
-    "example.mdx",
-    "handling-errors-in-react.mdx",
-    "icons-in-a-react-app.mdx",
-    "icons.mdx",
-    "next-js.mdx",
-    "react-context.mdx",
-    "react-form-elements.mdx",
-    "react-query.mdx",
-    "react.mdx",
-    "routing.mdx",
-    "shadcn-ui.mdx",
-    "tailwind-css.mdx",
-    "ui-menu-for-applications.mdx",
-    "use-id.mdx",
-    "use-ref.mdx"
-  ],
-  "animations": [
-    "animations-with-framer.mdx"
-  ],
-  "framer": [
-    "animations-with-framer.mdx"
-  ],
-  "aws": [
-    "aws-route-53-domain-name.mdx"
-  ],
-  "hosting": [
-    "aws-route-53-domain-name.mdx"
-  ],
-  "route-53": [
-    "aws-route-53-domain-name.mdx"
-  ],
-  "domains": [
-    "aws-route-53-domain-name.mdx"
-  ],
-  "bun": [
-    "bun.mdx"
-  ],
-  "css": [
-    "css.mdx",
-    "indicate-a-element-was-scrolled-with-css.mdx",
-    "material-ui.mdx",
-    "mui.mdx",
-    "normalize-css.mdx",
-    "shadcn-ui.mdx",
-    "styling-a-scrollbar.mdx",
-    "tailwind-css-v4-migration.mdx",
-    "tailwind-css.mdx"
-  ],
-  "styling": [
-    "css.mdx",
-    "indicate-a-element-was-scrolled-with-css.mdx",
-    "material-ui.mdx",
-    "normalize-css.mdx",
-    "shadcn-ui.mdx",
-    "styling-a-scrollbar.mdx",
-    "tailwind-css.mdx"
-  ],
-  "environment": [
-    "env-vars.mdx"
-  ],
-  "vars": [
-    "env-vars.mdx"
-  ],
-  "env vars": [
-    "env-vars.mdx"
-  ],
-  "react-context": [
-    "example.mdx",
-    "react-context.mdx"
-  ],
-  "state-management": [
-    "example.mdx",
-    "react-context.mdx"
-  ],
-  "error-handling": [
-    "handling-errors-in-react.mdx"
-  ],
-  "icons": [
-    "icons-in-a-react-app.mdx",
-    "icons.mdx"
-  ],
-  "ui": [
-    "icons.mdx",
-    "material-ui.mdx",
-    "ui-menu-for-applications.mdx"
-  ],
-  "scroll": [
-    "indicate-a-element-was-scrolled-with-css.mdx"
-  ],
-  "javascript": [
-    "javascript.mdx"
-  ],
-  "material-ui": [
-    "material-ui.mdx",
-    "mui.mdx"
-  ],
-  "mui": [
-    "mui.mdx"
-  ],
-  "next": [
-    "next-js.mdx"
-  ],
-  "next-js": [
-    "next-js.mdx"
-  ],
-  "ssr": [
-    "next-js.mdx"
-  ],
-  "server-side-rendering": [
-    "next-js.mdx"
-  ],
-  "normalize": [
-    "normalize-css.mdx"
-  ],
-  "reset": [
-    "normalize-css.mdx"
-  ],
-  "text-wrap": [
-    "normalize-css.mdx"
-  ],
-  "prisma": [
-    "prisma.mdx"
-  ],
-  "orm": [
-    "prisma.mdx"
-  ],
-  "forms": [
-    "react-form-elements.mdx"
-  ],
-  "inputs": [
-    "react-form-elements.mdx"
-  ],
-  "react-query": [
-    "react-query.mdx"
-  ],
-  "query": [
-    "react-query.mdx"
-  ],
-  "framework": [
-    "react.mdx"
-  ],
-  "routing": [
-    "routing.mdx"
-  ],
-  "react-router": [
-    "routing.mdx"
-  ],
-  "shadcn-ui": [
-    "shadcn-ui.mdx"
-  ],
-  "tailwind": [
-    "shadcn-ui.mdx",
-    "tailwind-css-v4-migration.mdx",
-    "tailwind-css.mdx"
-  ],
-  "css library": [
-    "shadcn-ui.mdx"
-  ],
-  "scrollbar": [
-    "styling-a-scrollbar.mdx"
-  ],
-  "migration": [
-    "tailwind-css-v4-migration.mdx"
-  ],
-  "typescript": [
-    "typescript.mdx"
-  ],
-  "ts": [
-    "typescript.mdx"
-  ],
-  "menu": [
-    "ui-menu-for-applications.mdx"
-  ],
-  "hooks": [
-    "use-id.mdx",
-    "use-ref.mdx"
-  ],
-  "vite": [
-    "vite.mdx"
-  ],
-  "build-system": [
-    "vite.mdx"
-  ]
+  "react": {
+    "files": [
+      "animations-with-framer.mdx",
+      "example.mdx",
+      "getting-click-positions.mdx",
+      "handling-errors-in-react.mdx",
+      "icons-in-a-react-app.mdx",
+      "icons.mdx",
+      "next-js.mdx",
+      "react-context.mdx",
+      "react-form-elements.mdx",
+      "react-query-mutations-working-alongside-useQuery.mdx",
+      "react-query.mdx",
+      "react.mdx",
+      "routing.mdx",
+      "shadcn-ui.mdx",
+      "tailwind-css.mdx",
+      "ui-menu-for-applications.mdx",
+      "use-id.mdx",
+      "use-ref.mdx"
+    ],
+    "summary": "",
+    "category": "frameworks"
+  },
+  "animations": {
+    "files": [
+      "animations-with-framer.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "framer": {
+    "files": [
+      "animations-with-framer.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "aws": {
+    "files": [
+      "aws-route-53-domain-name.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "hosting": {
+    "files": [
+      "aws-route-53-domain-name.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "route-53": {
+    "files": [
+      "aws-route-53-domain-name.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "domains": {
+    "files": [
+      "aws-route-53-domain-name.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "bun": {
+    "files": [
+      "bun.mdx"
+    ],
+    "summary": "",
+    "category": "tools"
+  },
+  "css": {
+    "files": [
+      "css.mdx",
+      "indicate-a-element-was-scrolled-with-css.mdx",
+      "material-ui.mdx",
+      "mui.mdx",
+      "normalize-css.mdx",
+      "shadcn-ui.mdx",
+      "styling-a-scrollbar.mdx",
+      "tailwind-css-v4-migration.mdx",
+      "tailwind-css.mdx"
+    ],
+    "summary": "",
+    "category": "languages"
+  },
+  "styling": {
+    "files": [
+      "css.mdx",
+      "indicate-a-element-was-scrolled-with-css.mdx",
+      "material-ui.mdx",
+      "normalize-css.mdx",
+      "shadcn-ui.mdx",
+      "styling-a-scrollbar.mdx",
+      "tailwind-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "tailwind-css": {
+    "files": [
+      "custom-colors-tailwind-v4.mdx",
+      "using-fonts-tailwind-v4-and-next-js.mdx"
+    ],
+    "summary": "",
+    "category": "tools"
+  },
+  "environment": {
+    "files": [
+      "env-vars.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "vars": {
+    "files": [
+      "env-vars.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "env vars": {
+    "files": [
+      "env-vars.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "react-context": {
+    "files": [
+      "example.mdx",
+      "react-context.mdx"
+    ],
+    "summary": "",
+    "category": "react"
+  },
+  "state-management": {
+    "files": [
+      "example.mdx",
+      "react-context.mdx",
+      "react-query-mutations-working-alongside-useQuery.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "python": {
+    "files": [
+      "fast-api.mdx",
+      "pydantic-objects-x-dicts.mdx",
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "api": {
+    "files": [
+      "fast-api.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "rest": {
+    "files": [
+      "fast-api.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "fastapi": {
+    "files": [
+      "fast-api.mdx",
+      "pydantic-objects-x-dicts.mdx",
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "javascript": {
+    "files": [
+      "getting-click-positions.mdx",
+      "javascript.mdx"
+    ],
+    "summary": "",
+    "category": "languages"
+  },
+  "events": {
+    "files": [
+      "getting-click-positions.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "error-handling": {
+    "files": [
+      "handling-errors-in-react.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "icons": {
+    "files": [
+      "icons-in-a-react-app.mdx",
+      "icons.mdx"
+    ],
+    "summary": "",
+    "category": "ui"
+  },
+  "ui": {
+    "files": [
+      "icons.mdx",
+      "material-ui.mdx",
+      "ui-menu-for-applications.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "scroll": {
+    "files": [
+      "indicate-a-element-was-scrolled-with-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "material-ui": {
+    "files": [
+      "material-ui.mdx",
+      "mui.mdx"
+    ],
+    "summary": "",
+    "category": "libraries"
+  },
+  "mui": {
+    "files": [
+      "mui.mdx"
+    ],
+    "summary": "",
+    "category": "libraries"
+  },
+  "next": {
+    "files": [
+      "next-js.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "next-js": {
+    "files": [
+      "next-js.mdx",
+      "using-fonts-tailwind-v4-and-next-js.mdx"
+    ],
+    "summary": "",
+    "category": "frameworks"
+  },
+  "ssr": {
+    "files": [
+      "next-js.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "server-side-rendering": {
+    "files": [
+      "next-js.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "normalize": {
+    "files": [
+      "normalize-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "reset": {
+    "files": [
+      "normalize-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "text-wrap": {
+    "files": [
+      "normalize-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "prisma": {
+    "files": [
+      "prisma.mdx"
+    ],
+    "summary": "",
+    "category": "databases"
+  },
+  "orm": {
+    "files": [
+      "prisma.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "typescript": {
+    "files": [
+      "project-typying.mdx",
+      "typescript.mdx"
+    ],
+    "summary": "",
+    "category": "languages"
+  },
+  "typing": {
+    "files": [
+      "project-typying.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "pydantic": {
+    "files": [
+      "pydantic-objects-x-dicts.mdx",
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "validation": {
+    "files": [
+      "pydantic-objects-x-dicts.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "type-safety": {
+    "files": [
+      "pydantic-objects-x-dicts.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "forms": {
+    "files": [
+      "react-form-elements.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "inputs": {
+    "files": [
+      "react-form-elements.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "react-query": {
+    "files": [
+      "react-query-mutations-working-alongside-useQuery.mdx",
+      "react-query.mdx"
+    ],
+    "summary": "",
+    "category": "libraries"
+  },
+  "cache": {
+    "files": [
+      "react-query-mutations-working-alongside-useQuery.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "mutations": {
+    "files": [
+      "react-query-mutations-working-alongside-useQuery.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "query": {
+    "files": [
+      "react-query.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "framework": {
+    "files": [
+      "react.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "routing": {
+    "files": [
+      "routing.mdx"
+    ],
+    "summary": "",
+    "category": "libraries"
+  },
+  "react-router": {
+    "files": [
+      "routing.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "shadcn-ui": {
+    "files": [
+      "shadcn-ui.mdx"
+    ],
+    "summary": "",
+    "category": "libraries"
+  },
+  "tailwind": {
+    "files": [
+      "shadcn-ui.mdx",
+      "tailwind-css-v4-migration.mdx",
+      "tailwind-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "css library": {
+    "files": [
+      "shadcn-ui.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "scrollbar": {
+    "files": [
+      "styling-a-scrollbar.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "migration": {
+    "files": [
+      "tailwind-css-v4-migration.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "architecture": {
+    "files": [
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "refactoring": {
+    "files": [
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "domain-driven-design": {
+    "files": [
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "ts": {
+    "files": [
+      "typescript.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "menu": {
+    "files": [
+      "ui-menu-for-applications.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "hooks": {
+    "files": [
+      "use-id.mdx",
+      "use-ref.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  },
+  "vite": {
+    "files": [
+      "vite.mdx"
+    ],
+    "summary": "",
+    "category": "tools"
+  },
+  "build-system": {
+    "files": [
+      "vite.mdx"
+    ],
+    "summary": "",
+    "category": "concepts"
+  }
 }
