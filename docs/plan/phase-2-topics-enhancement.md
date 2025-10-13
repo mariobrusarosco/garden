@@ -98,27 +98,27 @@ Enhance the topics display to include icons and summaries for each topic, requir
 
 ### ✅ Phase 2.2: Icon System
 
-- [ ] **Task 2.1**: Audit existing icons
+- [x] **Task 2.1**: Audit existing icons
 
   - Check `domains/garden-components/icons/`
   - List available icons
   - Identify which category icons we need
 
-- [ ] **Task 2.2**: Add category icons
+- [x] **Task 2.2**: Add category icons
 
   - Create/import icons for each category (frameworks, languages, tools, concepts, patterns)
   - Follow existing icon component pattern
   - Ensure consistent sizing
   - ~5-6 icons total
 
-- [ ] **Task 2.3**: Create category-to-icon mapping utility
+- [x] **Task 2.3**: Create category-to-icon mapping utility
   - Map category names to icon components
   - Handle fallback to default icon if category not found
   - Export typed icon getter function: `getCategoryIcon(category: string)`
 
 ### ✅ Phase 2.3: UI Components
 
-- [ ] **Task 3.1**: Create TopicCard component
+- [x] **Task 3.1**: Create TopicCard component
 
   - Display icon, title, summary
   - Handle click/navigation
