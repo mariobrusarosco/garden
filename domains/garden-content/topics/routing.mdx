@@ -1,5 +1,6 @@
 ---
 title: Routing
+category: "libraries"
 author:
   name: "Mario Brusarosco"
   url: "https://github.com/mariobrusarosco"
@@ -11,40 +12,37 @@ planted-in: 2024-10-01
 last-watered-in: 2024-10-01
 ---
 
-
 # React router
 
-## Render a specific page for the Root path ("/") 
+## Render a specific page for the Root path ("/")
 
 ### Root path
-1. We set <RootLayout> as the Element. Its purpose is to work as a *Layout UI*, that will apply some stylying
-and, render child Components.
+
+1. We set <RootLayout> as the Element. Its purpose is to work as a _Layout UI_, that will apply some stylying
+   and, render child Components.
 2. `{ index: true, element: <Intro /> }` does the trick. It sees if the URL is just '/'. If it is, it renders:
- `<RootLayout>
-    <Intro />
-  </RootLayout>` and it stops!.
+   `<RootLayout>
+      <Intro />
+ </RootLayout>` and it stops!.
 
 If not, it renders the continuation of the URL: 1) "/table", 2)"/table/123" etc:
 
-1)
-`<RootLayout>
-  <AuthenticatedLayout>
+1.  `<RootLayout>
+
+      <AuthenticatedLayout>
     <TableLayout>
       <NoSelectedTable />
     </TableLayout>
   </AuthenticatedLayout>
 </RootLayout>`
 
-2)
-`<RootLayout>
-  <AuthenticatedLayout>
+2.  `<RootLayout>
+      <AuthenticatedLayout>
     <TableLayout>
       <TableScreen />
     </TableLayout>
   </AuthenticatedLayout>
 </RootLayout>`
-
-
 
 ```tsx
 export const AppRouter = () => {

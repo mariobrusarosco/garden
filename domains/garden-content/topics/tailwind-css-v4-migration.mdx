@@ -1,5 +1,6 @@
 ---
 title: Tailwind CSS v4 Migration
+category: "css"
 author:
   name: "Mario Brusarosco"
   url: "https://github.com/mariobrusarosco"
@@ -20,7 +21,9 @@ Tailwind CSS v4 introduces a revolutionary architecture with significant perform
 ### Performance Gains
 
 <Callout>
-Tailwind CSS v4 delivers **5x faster full builds** and **100x faster incremental builds** compared to v3. Development builds are measured in microseconds rather than milliseconds.
+  Tailwind CSS v4 delivers **5x faster full builds** and **100x faster
+  incremental builds** compared to v3. Development builds are measured in
+  microseconds rather than milliseconds.
 </Callout>
 
 ### Key Improvements
@@ -41,7 +44,8 @@ npx @tailwindcss/upgrade@latest
 ```
 
 <Callout>
-Ensure you have Node.js 20+ and a clean git working directory before running the upgrade tool.
+  Ensure you have Node.js 20+ and a clean git working directory before running
+  the upgrade tool.
 </Callout>
 
 ### What the Tool Handles
@@ -58,6 +62,7 @@ The automated migration tool handles most of the heavy lifting:
 ### CSS Imports Migration
 
 **Before (v3):**
+
 ```css
 @tailwind base;
 @tailwind components;
@@ -65,29 +70,32 @@ The automated migration tool handles most of the heavy lifting:
 ```
 
 **After (v4):**
+
 ```css
-@import 'tailwindcss';
+@import "tailwindcss";
 ```
 
 ### Configuration Migration
 
 **Before (v3) - `tailwind.config.ts`:**
+
 ```ts
 const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#604d53"
+        primary: "#604d53",
       },
       screens: {
-        lg: "1336px"
-      }
-    }
-  }
-}
+        lg: "1336px",
+      },
+    },
+  },
+};
 ```
 
 **After (v4) - Inside CSS:**
+
 ```css
 @theme {
   --color-primary: #604d53;
@@ -98,6 +106,7 @@ const config: Config = {
 ### PostCSS Configuration
 
 **Before (v3):**
+
 ```js
 const config = {
   plugins: {
@@ -107,10 +116,11 @@ const config = {
 ```
 
 **After (v4):**
+
 ```js
 const config = {
   plugins: {
-    '@tailwindcss/postcss': {},
+    "@tailwindcss/postcss": {},
   },
 };
 ```
@@ -122,6 +132,7 @@ One of the most complex parts of migration involves custom themes. Here's how ex
 ### Color Palette Conversion
 
 **Before (v3):**
+
 ```ts
 colors: {
   wenge: {
@@ -134,6 +145,7 @@ colors: {
 ```
 
 **After (v4):**
+
 ```css
 @theme {
   --color-wenge: #604d53;
@@ -148,6 +160,7 @@ colors: {
 Custom breakpoints are automatically converted:
 
 **Before (v3):**
+
 ```ts
 screens: {
   sm: "480px",
@@ -156,6 +169,7 @@ screens: {
 ```
 
 **After (v4):**
+
 ```css
 @theme {
   --breakpoint-sm: 480px;
@@ -168,6 +182,7 @@ screens: {
 Utility classes using `@layer` need updating:
 
 **Before (v3):**
+
 ```css
 @layer utilities {
   .global-spacing {
@@ -177,6 +192,7 @@ Utility classes using `@layer` need updating:
 ```
 
 **After (v4):**
+
 ```css
 @utility global-spacing {
   @apply px-4 py-4;
@@ -186,10 +202,12 @@ Utility classes using `@layer` need updating:
 ## Browser Compatibility
 
 <Callout>
-Important: Tailwind CSS v4 targets modern browsers only. Check your browser support requirements before migrating.
+  Important: Tailwind CSS v4 targets modern browsers only. Check your browser
+  support requirements before migrating.
 </Callout>
 
 **Supported browsers:**
+
 - Safari 16.4+
 - Chrome 111+
 - Firefox 128+
@@ -215,7 +233,8 @@ v4 changes the default border color to `currentcolor`. The migration tool adds c
 ### CSS Preprocessor Compatibility
 
 <Callout>
-Tailwind CSS v4 is not designed to work with CSS preprocessors like Sass, Less, or Stylus. Migrate to vanilla CSS before upgrading.
+  Tailwind CSS v4 is not designed to work with CSS preprocessors like Sass,
+  Less, or Stylus. Migrate to vanilla CSS before upgrading.
 </Callout>
 
 ## Testing After Migration
@@ -223,7 +242,7 @@ Tailwind CSS v4 is not designed to work with CSS preprocessors like Sass, Less, 
 After migration, thoroughly test:
 
 1. **Development server**: Ensure `yarn dev` starts without errors
-2. **Build process**: Verify `yarn build` completes successfully  
+2. **Build process**: Verify `yarn build` completes successfully
 3. **Visual testing**: Check all pages for layout regressions
 4. **Custom utilities**: Verify all custom classes still work
 5. **Performance**: Measure build time improvements
