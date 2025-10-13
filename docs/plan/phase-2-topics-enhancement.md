@@ -55,13 +55,13 @@ Enhance the topics display to include icons and summaries for each topic, requir
 
 ### ✅ Phase 2.1: Data Structure Migration
 
-- [ ] **Task 1.1**: Create new metadata schema
+- [x] **Task 1.1**: Create new metadata schema
 
   - Define TypeScript interface for topic metadata
   - Include: summary, files, category (NO icon field - derived from category)
   - Document the schema
 
-- [ ] **Task 1.2**: Update metadata generation script
+- [x] **Task 1.2**: Update metadata generation script
 
   - Modify `scripts/create-metadata.js`
   - Read frontmatter from MDX files
@@ -79,14 +79,14 @@ Enhance the topics display to include icons and summaries for each topic, requir
   // Note: Icon is derived from category at runtime
   ```
 
-- [ ] **Task 1.3**: Update MDX frontmatter for primary topics
-  - Add `category`, `summary` fields to primary MDX files (NO icon field)
+- [x] **Task 1.3**: Update MDX frontmatter for primary topics
+  - Add `category` and `summary` fields to primary MDX files
   - Example updated frontmatter:
   ```yaml
   ---
   title: React
   category: "frameworks"
-  summary: "A JavaScript library for building user interfaces with components"
+  # summary is optional - auto-generated from first paragraph if not provided
   author: mariobrusarosco.github.com
   related-topics:
     - "react"
@@ -179,8 +179,9 @@ Enhance the topics display to include icons and summaries for each topic, requir
 **Option C**: AI-generated based on content
 **Decision**: **Hybrid Approach** ✅
 
-- Add `icon` and `category` to MDX frontmatter
-- Extract or add `summary` to frontmatter
+- Add `category` to MDX frontmatter
+- Auto-generate `summary` from first paragraph of content
+- Optional: Manual `summary` in frontmatter overrides auto-generated one
 - Script reads primary MDX file for each topic and merges with files array
 
 ### Category Assignment

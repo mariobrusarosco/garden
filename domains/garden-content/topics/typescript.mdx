@@ -1,5 +1,6 @@
 ---
 title: Typescript
+category: "languages"
 author: mariobrusarosco.github.com
 related-topics:
   - "typescript"
@@ -12,7 +13,6 @@ last-watered-in: 2024-05-06
 ---
 
 # Typescript
-
 
 ## Add a global declaration type to a project
 
@@ -31,7 +31,7 @@ This will allow you to import SVG files in your project without TypeScript compl
 
 To configure an App to work with `absolute paths`:
 
-1;  We need to set the `absolute prefix`. This prefix is responsible for locating our path, no matter its location.
+1; We need to set the `absolute prefix`. This prefix is responsible for locating our path, no matter its location.
 Not matter how deep it is in the work tree. To do this we need to add all prefixes we'd like:
 
 ```json
@@ -44,7 +44,9 @@ Not matter how deep it is in the work tree. To do this we need to add all prefix
     ...
   }
 ```
-2. As a good practice to set at least one path. The root path: 
+
+2. As a good practice to set at least one path. The root path:
+
 ```json
   ...
   "compilerOptions": {
@@ -56,81 +58,81 @@ Not matter how deep it is in the work tree. To do this we need to add all prefix
     ...
   }
 ```
-Let's think of a situation. Let's imagine we'll have a folder named `domains`. But, we're not sure if this folder will be placed at the root level, 
-inside a `src` folder, inside an `app` folder...  We do know that our main features will always be placed `domains`.
+
+Let's think of a situation. Let's imagine we'll have a folder named `domains`. But, we're not sure if this folder will be placed at the root level,
+inside a `src` folder, inside an `app` folder... We do know that our main features will always be placed `domains`.
 
 So we can import our code like this:
 
 `three/example/utils.ts`
 
 ```ts
-import { myMethod } from "@/domains/one"
-import { myOtherMethod } from "@/domains/two"
+import { myMethod } from "@/domains/one";
+import { myOtherMethod } from "@/domains/two";
 ```
 
 Given this file tree:
 
 src
 | app
-  | domains
-    | one
-    | two
-    | three 
-        example
-          utils.ts
-
+| domains
+| one
+| two
+| three
+example
+utils.ts
 
 TS will convert `@/domains/one` to `../../one`! It will go back as far as it needs until it finds the `one` folder.
 And if in case we go even deeper and we create more nested folders:
 
 src
 | app
-  | domains
-    | one
-    | two
-    | three 
-        | example
-            | inner
-                utils.ts
+| domains
+| one
+| two
+| three
+| example
+| inner
+utils.ts
 
 `three/example/inner/utils.ts`
 
 ```ts
-import { myMethod } from "@/domains/one"
-
+import { myMethod } from "@/domains/one";
 ```
 
 TS will convert `@/domains/one` to `../../../one`! We don't have to change the import statement inside the `utils.ts`!
 
-
 3. Typescript needs to read that `paths` array. We can install `tsconfig-paths` package.
 
 A) Add this to `tsconfig.json`
+
 ```json
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   }
 ```
 
-B) When we're working on 'watch mode', aka 'on our machines' we need a way to temporary transpile our code in TS to JS, 
+B) When we're working on 'watch mode', aka 'on our machines' we need a way to temporary transpile our code in TS to JS,
 right after we save our file. To do this, we can use `ts-node-dev`
 
 `package.json`
+
 ```json
   "scripts": {
     "dev": "ts-node-dev -r tsconfig-paths/register ./src/index.ts",
 ```
 
-C) When we're building our TS code to JS and, need deploy that JS to production, or JS file will end up 
+C) When we're building our TS code to JS and, need deploy that JS to production, or JS file will end up
 with invalid import statements:
 
 import { myMethod } from "@/domains/one" is not readable JS code. We need to convert it to `../../../one`.
-We need to replace alias paths with relative paths after typescript compilation.  
+We need to replace alias paths with relative paths after typescript compilation.
 
 To achieve this we need the `tsc-alias` and `tsconfig-paths` packages. And when build the app:
 
-
 `package.json`
+
 ```json
   "scripts": {
     "build": "tsc && tsc-alias",  // This command will look into the tsconfig.json and will know how to proceed
