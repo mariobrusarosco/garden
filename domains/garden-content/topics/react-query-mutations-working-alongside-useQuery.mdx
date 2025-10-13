@@ -1,0 +1,183 @@
+---
+title: React Query Cache - Mutations working alongside useQuery
+author: mariobrusarosco.github.com
+related-topics:
+  - "react-query"
+  - "react"
+  - "cache"
+  - "mutations"
+  - "state-management"
+reference-links:
+  - link: "React Query Documentation"
+    text: "https://tanstack.com/query/latest"
+  - link: "React Query DevTools"
+    text: "https://tanstack.com/query/latest/docs/react/devtools"
+planted-in: 2024-12-19
+last-watered-in: 2024-12-19
+---
+
+# React Query Cache - Mutations working alongside useQuery
+
+## The Problem
+
+We encountered an issue where a React Query cache update wasn't triggering re-renders in components that were observing the same query key. The symptoms were:
+
+- Component A (UploadProcess) could read data from cache after mutation
+- Component B (AccountStatementsUpload) with identical query configuration couldn't see the data
+- React Query DevTools showed the query had 0 observers after file selection
+
+## The Journey
+
+### Initial Assumptions (Wrong)
+
+1. **Query Configuration Mismatch**: Both components used identical `useQuery` configurations
+2. **React Query Reactivity**: Assumed `enabled: false` queries weren't reactive to cache updates
+3. **Component Lifecycle**: Thought components were unmounting during mutation
+
+### The Real Issue
+
+The problem was in the `handleFileChange` function in `use-parse-account-statement.ts`:
+
+<CodeSnippet language="typescript">
+// ❌ WRONG - This destroys the query and all observers
+queryClient.removeQueries({
+  queryKey: GET_UPLOADED_STATEMENT_QUERY_KEY(accountId),
+});
+</CodeSnippet>
+
+When a file was selected, `removeQueries()` completely destroyed the query structure, removing all observers. This caused the observer count to drop from 1 to 0.
+
+## The Solution
+
+### Fix the Cache Management
+
+<CodeSnippet language="typescript">
+  // ✅ CORRECT - This clears data but preserves query structure and observers
+  queryClient.setQueryData( GET_UPLOADED_STATEMENT_QUERY_KEY(accountId),
+  undefined );
+</CodeSnippet>
+
+### Key Differences
+
+| Method                         | Effect                       | Observers    |
+| ------------------------------ | ---------------------------- | ------------ |
+| `removeQueries()`              | Destroys entire query        | ❌ Removed   |
+| `setQueryData(key, undefined)` | Clears data, keeps structure | ✅ Preserved |
+
+## The Complete Pattern
+
+### 1. Mutation Updates Cache
+
+<CodeSnippet language="typescript">
+const mutation = useMutation({
+  mutationFn: async (formData: FormData) => {
+    return accountsApi.parseAccountStatement(formData, accountId);
+  },
+  onSuccess: (data: I_ParsedAccountStatement) => {
+    // Update cache with new data
+    queryClient.setQueryData(GET_UPLOADED_STATEMENT_QUERY_KEY(accountId), data);
+    // Invalidate to trigger re-renders for enabled: false queries
+    void queryClient.invalidateQueries({
+      queryKey: GET_UPLOADED_STATEMENT_QUERY_KEY(accountId),
+    });
+  },
+});
+</CodeSnippet>
+
+### 2. Components Observe Cache
+
+<CodeSnippet language="typescript">
+// Component A - Triggers mutation
+const { data: statement } = useQuery<I_ParsedAccountStatement>({
+  queryKey: GET_UPLOADED_STATEMENT_QUERY_KEY(accountId),
+  enabled: false, // Don't fetch, just read from cache
+});
+
+// Component B - Observes same cache
+const { data: statement } = useQuery<I_ParsedAccountStatement>({
+queryKey: GET_UPLOADED_STATEMENT_QUERY_KEY(accountId),
+enabled: false, // Don't fetch, just read from cache
+});
+
+</CodeSnippet>
+
+### 3. Clear Cache Safely
+
+<CodeSnippet language="typescript">
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setSelectedFile(file);
+    // Clear data but preserve query structure and observers
+    queryClient.setQueryData(
+      GET_UPLOADED_STATEMENT_QUERY_KEY(accountId),
+      undefined
+    );
+  }
+};
+</CodeSnippet>
+
+## Key Learnings
+
+### 1. Observer Management
+
+- **`enabled: false` queries ARE reactive** to cache updates when using `invalidateQueries()`
+- **`removeQueries()` destroys observers**, `setQueryData()` preserves them
+- **Observer count in DevTools** is crucial for debugging cache issues
+
+### 2. Cache Lifecycle
+
+- **Query Structure**: Must be preserved for observers to remain active
+- **Data Clearing**: Use `setQueryData(key, undefined)` instead of `removeQueries()`
+- **Cache Updates**: Combine `setQueryData()` + `invalidateQueries()` for full reactivity
+
+### 3. Debugging Strategy
+
+1. **Check Observer Count**: React Query DevTools shows active observers
+2. **Verify Query Keys**: Ensure identical keys across components
+3. **Trace Cache Operations**: Look for `removeQueries()` calls that might destroy structure
+4. **Component Lifecycle**: Use `useEffect` to track mounting/unmounting
+
+## Best Practices
+
+<Callout>
+### ✅ Do
+
+- Use `setQueryData()` to update cache data
+- Use `invalidateQueries()` to trigger re-renders
+- Use `setQueryData(key, undefined)` to clear data
+- Monitor observer count in DevTools
+  </Callout>
+
+<Callout>
+### ❌ Don't
+
+- Use `removeQueries()` unless you want to destroy the entire query
+- Assume `enabled: false` queries aren't reactive
+- Ignore observer count in debugging
+  </Callout>
+
+## The Fix in Action
+
+**Before the fix:**
+
+<CodeSnippet>
+  Query: ["accounts", "accountId", "uploaded-statement"] Observers: 1 → 0 (after
+  file selection) Result: Component B can't see data
+</CodeSnippet>
+
+**After the fix:**
+
+<CodeSnippet>
+  Query: ["accounts", "accountId", "uploaded-statement"] Observers: 1 → 1
+  (preserved) Result: Both components see data updates
+</CodeSnippet>
+
+## Conclusion
+
+The issue wasn't with React Query's reactivity or component lifecycle - it was with how we were managing the cache. Understanding the difference between `removeQueries()` and `setQueryData()` was crucial to solving this problem.
+
+<Callout>
+  **Key Takeaway**: Always preserve query structure when clearing data to
+  maintain observer subscriptions.
+</Callout>
