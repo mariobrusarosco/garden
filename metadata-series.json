@@ -1,16 +1,37 @@
 {
-  "ai": [
-    "ai.mdx"
-  ],
-  "creating-a-mobile-app": [
-    "creating-a-mobile-app.mdx"
-  ],
-  "start-up-fast-boilerplate": [
-    "deploy.mdx",
-    "example.mdx",
-    "framework.mdx"
-  ],
-  "E2E Testing": [
-    "e2e-testing.mdx"
-  ]
+  "ai": {
+    "files": [
+      "ai.mdx"
+    ],
+    "summary": "Building a startup MVP with AI-powered features, from setup to deployment",
+    "category": "concepts",
+    "icon": "sparkles"
+  },
+  "creating-a-mobile-app": {
+    "files": [
+      "creating-a-mobile-app.mdx"
+    ],
+    "summary": "Learn how to build cross-platform mobile applications using React Native and Expo",
+    "category": "frameworks",
+    "icon": "mobile"
+  },
+  "start-up-fast-boilerplate": {
+    "files": [
+      "deploy.mdx",
+      "example.mdx",
+      "framework.mdx",
+      "start-up-fast-boilerplate.mdx"
+    ],
+    "summary": "Quick-start boilerplate for building scalable startup applications with modern frameworks and deployment strategies",
+    "category": "frameworks",
+    "icon": "rocket"
+  },
+  "e2e-testing": {
+    "files": [
+      "e2e-testing.mdx"
+    ],
+    "summary": "Master end-to-end testing with Playwright for reliable application testing",
+    "category": "tools",
+    "icon": "test-tube"
+  }
 }

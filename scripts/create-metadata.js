@@ -25,7 +25,7 @@ const createTopicsMetadata = () => {
     if (frontmatter["related-topics"]) {
       frontmatter["related-topics"].forEach((topic) => {
         if (!topics[topic]) {
-          topics[topic] = { files: [file], summary: "", category: "concepts" };
+          topics[topic] = { files: [file], summary: "", category: "concepts", icon: "" };
         } else {
           topics[topic].files.push(file);
         }
@@ -49,6 +49,7 @@ const createTopicsMetadata = () => {
       // Extract metadata from frontmatter
       topics[topicSlug].category = frontmatter.category || "concepts";
       topics[topicSlug].summary = frontmatter.summary || "";
+      topics[topicSlug].icon = frontmatter.icon || ""; // Optional: defaults to empty string
     } else {
       console.log(`[WARNING] No primary file found for topic "${topicSlug}"`);
     }
@@ -62,6 +63,7 @@ const createSeriesMetadata = () => {
   const dirPath = path.join("domains", "garden-content", "series");
   const files = readFolderFiles(dirPath);
 
+  // Step 1: Build files array for each serie
   files.forEach((file) => {
     console.log("[READING SERIES FILE]: ", file);
     const content = fs.readFileSync(`${dirPath}/${file}`, "utf8");
@@ -73,9 +75,30 @@ const createSeriesMetadata = () => {
     }
 
     if (!series[serieName]) {
-      series[serieName] = [file];
+      series[serieName] = { files: [file], summary: "", category: "concepts", icon: "" };
     } else {
-      series[serieName].push(file);
+      series[serieName].files.push(file);
+    }
+  });
+
+  // Step 2: Find primary file for each serie and extract metadata
+  Object.keys(series).forEach((serieSlug) => {
+    // Try to find primary file (e.g., "ai.mdx" for serie "ai")
+    const primaryFileName = `${serieSlug}.mdx`;
+    const primaryFilePath = path.join(dirPath, primaryFileName);
+
+    if (fs.existsSync(primaryFilePath)) {
+      console.log(`[FOUND PRIMARY FILE FOR SERIE "${serieSlug}"]: ${primaryFileName}`);
+      const fileContent = fs.readFileSync(primaryFilePath, "utf8");
+      const parsed = matter(fileContent);
+      const frontmatter = parsed.data;
+
+      // Extract metadata from frontmatter
+      series[serieSlug].category = frontmatter.category || "concepts";
+      series[serieSlug].summary = frontmatter.summary || "";
+      series[serieSlug].icon = frontmatter.icon || ""; // Optional: defaults to empty string
+    } else {
+      console.log(`[WARNING] No primary file found for serie "${serieSlug}"`);
     }
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "digital-garden",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "A digital garden for my thoughts, ideas, POCs and experiments - Mario Brusarosco",
   "scripts": {

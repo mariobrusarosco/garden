@@ -8,6 +8,7 @@ export type TopicCategory =
 export interface TopicMetadata {
   summary: string;
   category: TopicCategory;
+  icon?: string; // Optional: icon name/slug (e.g., "react", "book", "gear")
   files: string[];
 }
 

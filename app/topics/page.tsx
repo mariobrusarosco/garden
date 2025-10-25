@@ -39,7 +39,7 @@ export default function TopicsScreen() {
   return (
     <main data-ui="screen-topics" className="global-spacing h-full">
       <section className="heading text-dark-pink mt-4 mb-10">
-        <div className="flex justify-between items-center gap-x-4">
+        <div className="flex justify-start items-center gap-x-4">
           <IconLeaf className="w-5" />
           <h2 className="text-7xl font-serif">Topics</h2>
           <ListSearch onInputChange={handleInputChange} term={term} />
@@ -67,6 +67,7 @@ export default function TopicsScreen() {
               slug={slug}
               category={metadata.category}
               summary={metadata.summary}
+              icon={metadata.icon}
             />
           ))}
         </div>
