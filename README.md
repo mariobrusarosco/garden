@@ -2,7 +2,8 @@
 
 This is my personal digital garden, a space where I cultivate my thoughts, learnings, and explorations on various topics related to technology and software development. It's built with Next.js and MDX, allowing for a collection of interconnected and ever-evolving notes.
 
-![image](https://github.com/mariobrusarosco/digital-garden/assets/12510938/8df86aea-2a1f-4963-9c0d-aa3226be26cb)
+<img width="3782" height="1775" alt="image" src="https://github.com/user-attachments/assets/ba545f64-cf12-4ca6-b9c3-78e8c9f7dd36" />
+
 
 ## ✨ Features
 
