@@ -1,5 +1,8 @@
 ---
-title: Example
+title: E2E Testing
+summary: "Master end-to-end testing with Playwright for reliable application testing"
+category: "tools"
+icon: "test-tube"
 author:
   name: "Mario Brusarosco"
   url: "https://github.com/mariobrusarosco"
@@ -7,59 +10,57 @@ related-topics:
   - "e2e"
   - "testing"
   - "playwright"
-serie: "E2E Testing"
+serie: "e2e-testing"
 planted-in: 2025-10-01
 last-watered-in: 2025-10-01
 ---
 
 # Getting Started with E2E Testing
 
-
-
 graph TD
-    A[New PR] --> B[PR Validation]
-    B --> C[Deploy to Test]
-    C --> D[Run E2E Tests]
-    D --> E{Tests Pass?}
-    E -->|Yes| F[Merge PR]
-    E -->|No| G[Block Merge]
-    F --> H[Deploy to Staging]
-    H --> I[Run Smoke Tests]
-    I --> J{Promote to Prod?}
-    J -->|Yes| K[Manual Approval]
-    K --> L[Deploy to Prod]
-    L --> M[Run Smoke Tests]
-    M --> N[Monitor Performance]
-    J -->|No| O[Stay in Staging]
-    M -->|Failure| P[Rollback Available]
-
-
+A[New PR] --> B[PR Validation]
+B --> C[Deploy to Test]
+C --> D[Run E2E Tests]
+D --> E{Tests Pass?}
+E -->|Yes| F[Merge PR]
+E -->|No| G[Block Merge]
+F --> H[Deploy to Staging]
+H --> I[Run Smoke Tests]
+I --> J{Promote to Prod?}
+J -->|Yes| K[Manual Approval]
+K --> L[Deploy to Prod]
+L --> M[Run Smoke Tests]
+M --> N[Monitor Performance]
+J -->|No| O[Stay in Staging]
+M -->|Failure| P[Rollback Available]
 
 ## CI/CD Pipeline
-
 
 ### Configuration
 
 > Add the following secrets to your GitHub repository:
-* AWS_ACCESS_KEY_ID
-* AWS_SECRET_ACCESS_KEY
-* TEST_AWS_BUCKET_ID
-* TEST_AWS_CLOUDFRONT_ID
-* STAGING_AWS_BUCKET_ID
-* STAGING_AWS_CLOUDFRONT_ID
-* PROD_AWS_BUCKET_ID
-* PROD_AWS_CLOUDFRONT_ID
-* TEST_APP_URL
-* STAGING_APP_URL
-* PROD_APP_URL
-* SLACK_WEBHOOK_URL
+
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- TEST_AWS_BUCKET_ID
+- TEST_AWS_CLOUDFRONT_ID
+- STAGING_AWS_BUCKET_ID
+- STAGING_AWS_CLOUDFRONT_ID
+- PROD_AWS_BUCKET_ID
+- PROD_AWS_CLOUDFRONT_ID
+- TEST_APP_URL
+- STAGING_APP_URL
+- PROD_APP_URL
+- SLACK_WEBHOOK_URL
 
 > Set up the environments in GitHub:
-* test
-* staging
-* production
+
+- test
+- staging
+- production
 
 > Configure branch protection rules:
-* Require PR reviews
-* Require status checks to pass
-Require deployment to test environmen
+
+- Require PR reviews
+- Require status checks to pass
+  Require deployment to test environmen

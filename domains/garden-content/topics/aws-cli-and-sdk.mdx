@@ -1,0 +1,55 @@
+---
+title: AWS CLI and SDK
+category: "cloud"
+author: mariobrusarosco.github.com
+related-topics:
+  - "aws"
+  - "cli"
+  - "sdk"
+  - "policy"
+  - "permissions"
+reference-links:
+  - link: ""
+    text: ""
+planted-in: 2025-10-25
+last-watered-in: 2025-10-25
+---
+
+# Context
+
+When using AWS Services we'll eventually interact with SDK, Libs or CLI where we'll need to identify ouserlves.
+So AWS can undertand which AWS User is consuming the services, if that user has the correct permissions, and so on.
+
+## CLI
+
+A common use for Front End App, ironically leaves the Front End domain: Continous Deployment.
+
+We need to build and deploy a Front End App.
+We might host assets (images, logs, etc) and serve them to users.
+
+In this scenario we can use AWS CLI.
+
+### For Deploys
+
+We need to create a _User_. Users exist inside IAM section: Identity and Access Management
+
+1. Give a name to the User
+   ![Give User a name](/aws-iam-choose-user-name.png)
+
+2. Time to add permissions. At this day, we're not familiar with granular level permissions - for our case we would only need
+   S3 access and permissions. We'll deep dive on in later on. For now, let's set attach one Policy: _Adminstractor Access_.
+   Then click Next.
+
+![Choosing Permissions](/aws-iam-choosing-permissions.png)
+
+3. Create the user
+   ![User created succeffulty](/aws-iam-user-created-succeffulty.png)
+
+4. Creating access keys
+
+- Click on Create access key
+- Choose:
+  Command Line Interface (CLI)
+  You plan to use this access key to enable the AWS CLI to access your AWS account.
+
+5. Write down the access key and access key id

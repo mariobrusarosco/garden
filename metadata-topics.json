@@ -1,196 +1,598 @@
 {
-  "react": [
-    "animations-with-framer.mdx",
-    "example.mdx",
-    "handling-errors-in-react.mdx",
-    "icons-in-a-react-app.mdx",
-    "icons.mdx",
-    "next-js.mdx",
-    "react-context.mdx",
-    "react-form-elements.mdx",
-    "react-query.mdx",
-    "react.mdx",
-    "routing.mdx",
-    "shadcn-ui.mdx",
-    "tailwind-css.mdx",
-    "ui-menu-for-applications.mdx",
-    "use-id.mdx",
-    "use-ref.mdx"
-  ],
-  "animations": [
-    "animations-with-framer.mdx"
-  ],
-  "framer": [
-    "animations-with-framer.mdx"
-  ],
-  "aws": [
-    "aws-route-53-domain-name.mdx"
-  ],
-  "hosting": [
-    "aws-route-53-domain-name.mdx"
-  ],
-  "route-53": [
-    "aws-route-53-domain-name.mdx"
-  ],
-  "domains": [
-    "aws-route-53-domain-name.mdx"
-  ],
-  "bun": [
-    "bun.mdx"
-  ],
-  "css": [
-    "css.mdx",
-    "indicate-a-element-was-scrolled-with-css.mdx",
-    "material-ui.mdx",
-    "mui.mdx",
-    "normalize-css.mdx",
-    "shadcn-ui.mdx",
-    "styling-a-scrollbar.mdx",
-    "tailwind-css.mdx"
-  ],
-  "styling": [
-    "css.mdx",
-    "indicate-a-element-was-scrolled-with-css.mdx",
-    "material-ui.mdx",
-    "normalize-css.mdx",
-    "shadcn-ui.mdx",
-    "styling-a-scrollbar.mdx",
-    "tailwind-css.mdx"
-  ],
-  "environment": [
-    "env-vars.mdx"
-  ],
-  "vars": [
-    "env-vars.mdx"
-  ],
-  "env vars": [
-    "env-vars.mdx"
-  ],
-  "react-context": [
-    "example.mdx",
-    "react-context.mdx"
-  ],
-  "state-management": [
-    "example.mdx",
-    "react-context.mdx"
-  ],
-  "error-handling": [
-    "handling-errors-in-react.mdx"
-  ],
-  "icons": [
-    "icons-in-a-react-app.mdx",
-    "icons.mdx"
-  ],
-  "ui": [
-    "icons.mdx",
-    "material-ui.mdx",
-    "ui-menu-for-applications.mdx"
-  ],
-  "scroll": [
-    "indicate-a-element-was-scrolled-with-css.mdx"
-  ],
-  "javascript": [
-    "javascript.mdx"
-  ],
-  "material-ui": [
-    "material-ui.mdx",
-    "mui.mdx"
-  ],
-  "mui": [
-    "mui.mdx"
-  ],
-  "next": [
-    "next-js.mdx"
-  ],
-  "next-js": [
-    "next-js.mdx"
-  ],
-  "ssr": [
-    "next-js.mdx"
-  ],
-  "server-side-rendering": [
-    "next-js.mdx"
-  ],
-  "normalize": [
-    "normalize-css.mdx"
-  ],
-  "reset": [
-    "normalize-css.mdx"
-  ],
-  "text-wrap": [
-    "normalize-css.mdx"
-  ],
-  "prisma": [
-    "prisma.mdx"
-  ],
-  "orm": [
-    "prisma.mdx"
-  ],
-  "forms": [
-    "react-form-elements.mdx"
-  ],
-  "inputs": [
-    "react-form-elements.mdx"
-  ],
-  "react-query": [
-    "react-query.mdx"
-  ],
-  "query": [
-    "react-query.mdx"
-  ],
-  "framework": [
-    "react.mdx"
-  ],
-  "routing": [
-    "routing.mdx"
-  ],
-  "react-router": [
-    "routing.mdx"
-  ],
-  "shadcn-ui": [
-    "shadcn-ui.mdx"
-  ],
-  "tailwind": [
-    "shadcn-ui.mdx",
-    "tailwind-css.mdx"
-  ],
-  "css library": [
-    "shadcn-ui.mdx"
-  ],
-  "scrollbar": [
-    "styling-a-scrollbar.mdx"
-  ],
-  "typescript": [
-    "typescript.mdx",
-    "typing-express-routes.mdx"
-  ],
-  "ts": [
-    "typescript.mdx",
-    "typing-express-routes.mdx"
-  ],
-  "express": [
-    "typing-express-routes.mdx"
-  ],
-  "node": [
-    "typing-express-routes.mdx"
-  ],
-  "backend": [
-    "typing-express-routes.mdx"
-  ],
-  "api": [
-    "typing-express-routes.mdx"
-  ],
-  "menu": [
-    "ui-menu-for-applications.mdx"
-  ],
-  "hooks": [
-    "use-id.mdx",
-    "use-ref.mdx"
-  ],
-  "vite": [
-    "vite.mdx"
-  ],
-  "build-system": [
-    "vite.mdx"
-  ]
+  "react": {
+    "files": [
+      "animations-with-framer.mdx",
+      "example.mdx",
+      "getting-click-positions.mdx",
+      "handling-errors-in-react.mdx",
+      "icons-in-a-react-app.mdx",
+      "icons.mdx",
+      "next-js.mdx",
+      "react-context.mdx",
+      "react-form-elements.mdx",
+      "react-query-mutations-working-alongside-useQuery.mdx",
+      "react-query.mdx",
+      "react.mdx",
+      "routing.mdx",
+      "shadcn-ui.mdx",
+      "tailwind-css.mdx",
+      "ui-menu-for-applications.mdx",
+      "use-id.mdx",
+      "use-ref.mdx"
+    ],
+    "summary": "A JavaScript library for building user interfaces with components",
+    "category": "frameworks",
+    "icon": "lightbulb"
+  },
+  "animations": {
+    "files": [
+      "animations-with-framer.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "framer": {
+    "files": [
+      "animations-with-framer.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "aws": {
+    "files": [
+      "aws-cli-and-sdk.mdx",
+      "aws-route-53-domain-name.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "cli": {
+    "files": [
+      "aws-cli-and-sdk.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "sdk": {
+    "files": [
+      "aws-cli-and-sdk.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "policy": {
+    "files": [
+      "aws-cli-and-sdk.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "permissions": {
+    "files": [
+      "aws-cli-and-sdk.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "hosting": {
+    "files": [
+      "aws-route-53-domain-name.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "route-53": {
+    "files": [
+      "aws-route-53-domain-name.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "domains": {
+    "files": [
+      "aws-route-53-domain-name.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "bun": {
+    "files": [
+      "bun.mdx"
+    ],
+    "summary": "Fast all-in-one JavaScript runtime with built-in bundler, test runner, and package manager",
+    "category": "tools",
+    "icon": "rocket"
+  },
+  "css": {
+    "files": [
+      "css.mdx",
+      "indicate-a-element-was-scrolled-with-css.mdx",
+      "material-ui.mdx",
+      "mui.mdx",
+      "normalize-css.mdx",
+      "shadcn-ui.mdx",
+      "styling-a-scrollbar.mdx",
+      "tailwind-css-v4-migration.mdx",
+      "tailwind-css.mdx"
+    ],
+    "summary": "Cascading Style Sheets for styling and layouting web pages",
+    "category": "languages",
+    "icon": "puzzle"
+  },
+  "styling": {
+    "files": [
+      "css.mdx",
+      "indicate-a-element-was-scrolled-with-css.mdx",
+      "material-ui.mdx",
+      "normalize-css.mdx",
+      "shadcn-ui.mdx",
+      "styling-a-scrollbar.mdx",
+      "tailwind-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "tailwind-css": {
+    "files": [
+      "custom-colors-tailwind-v4.mdx",
+      "using-fonts-tailwind-v4-and-next-js.mdx"
+    ],
+    "summary": "Utility-first CSS framework for rapidly building custom user interfaces",
+    "category": "tools",
+    "icon": "gear"
+  },
+  "environment": {
+    "files": [
+      "env-vars.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "vars": {
+    "files": [
+      "env-vars.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "env vars": {
+    "files": [
+      "env-vars.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "react-context": {
+    "files": [
+      "example.mdx",
+      "react-context.mdx"
+    ],
+    "summary": "Share data through the component tree without passing props manually at every level",
+    "category": "patterns",
+    "icon": "puzzle"
+  },
+  "state-management": {
+    "files": [
+      "example.mdx",
+      "react-context.mdx",
+      "react-query-mutations-working-alongside-useQuery.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "python": {
+    "files": [
+      "fast-api.mdx",
+      "pydantic-objects-x-dicts.mdx",
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "api": {
+    "files": [
+      "fast-api.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "rest": {
+    "files": [
+      "fast-api.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "fastapi": {
+    "files": [
+      "fast-api.mdx",
+      "pydantic-objects-x-dicts.mdx",
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "javascript": {
+    "files": [
+      "getting-click-positions.mdx",
+      "javascript.mdx"
+    ],
+    "summary": "High-level programming language for web development and beyond",
+    "category": "languages",
+    "icon": "lightbulb"
+  },
+  "events": {
+    "files": [
+      "getting-click-positions.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "error-handling": {
+    "files": [
+      "handling-errors-in-react.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "icons": {
+    "files": [
+      "icons-in-a-react-app.mdx",
+      "icons.mdx"
+    ],
+    "summary": "Icon libraries and resources for React applications",
+    "category": "tools",
+    "icon": "sparkles"
+  },
+  "ui": {
+    "files": [
+      "icons.mdx",
+      "material-ui.mdx",
+      "ui-menu-for-applications.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "scroll": {
+    "files": [
+      "indicate-a-element-was-scrolled-with-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "material-ui": {
+    "files": [
+      "material-ui.mdx",
+      "mui.mdx"
+    ],
+    "summary": "React component library implementing Google's Material Design",
+    "category": "frameworks",
+    "icon": "puzzle"
+  },
+  "mui": {
+    "files": [
+      "mui.mdx"
+    ],
+    "summary": "React component library implementing Google's Material Design",
+    "category": "frameworks",
+    "icon": "puzzle"
+  },
+  "next": {
+    "files": [
+      "next-js.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "next-js": {
+    "files": [
+      "next-js.mdx",
+      "using-fonts-tailwind-v4-and-next-js.mdx"
+    ],
+    "summary": "React framework for production with hybrid static and server rendering, TypeScript support, and more",
+    "category": "frameworks",
+    "icon": "rocket"
+  },
+  "ssr": {
+    "files": [
+      "next-js.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "server-side-rendering": {
+    "files": [
+      "next-js.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "normalize": {
+    "files": [
+      "normalize-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "reset": {
+    "files": [
+      "normalize-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "text-wrap": {
+    "files": [
+      "normalize-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "prisma": {
+    "files": [
+      "prisma.mdx"
+    ],
+    "summary": "Modern database ORM for Node.js and TypeScript with type-safe queries",
+    "category": "tools",
+    "icon": "gear"
+  },
+  "orm": {
+    "files": [
+      "prisma.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "typescript": {
+    "files": [
+      "project-typying.mdx",
+      "typescript.mdx"
+    ],
+    "summary": "JavaScript with syntax for types, providing type safety and better tooling",
+    "category": "languages",
+    "icon": "shield"
+  },
+  "typing": {
+    "files": [
+      "project-typying.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "pydantic": {
+    "files": [
+      "pydantic-objects-x-dicts.mdx",
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "validation": {
+    "files": [
+      "pydantic-objects-x-dicts.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "type-safety": {
+    "files": [
+      "pydantic-objects-x-dicts.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "forms": {
+    "files": [
+      "react-form-elements.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "inputs": {
+    "files": [
+      "react-form-elements.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "react-query": {
+    "files": [
+      "react-query-mutations-working-alongside-useQuery.mdx",
+      "react-query.mdx"
+    ],
+    "summary": "Powerful data synchronization for React with caching, background updates, and more",
+    "category": "tools",
+    "icon": "react-query"
+  },
+  "cache": {
+    "files": [
+      "react-query-mutations-working-alongside-useQuery.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "mutations": {
+    "files": [
+      "react-query-mutations-working-alongside-useQuery.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "query": {
+    "files": [
+      "react-query.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "framework": {
+    "files": [
+      "react.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "routing": {
+    "files": [
+      "routing.mdx"
+    ],
+    "summary": "Navigate between pages and manage application routing with React Router",
+    "category": "patterns",
+    "icon": "puzzle"
+  },
+  "react-router": {
+    "files": [
+      "routing.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "shadcn-ui": {
+    "files": [
+      "shadcn-ui.mdx"
+    ],
+    "summary": "Beautifully designed components built with Radix UI and Tailwind CSS",
+    "category": "frameworks",
+    "icon": "puzzle"
+  },
+  "tailwind": {
+    "files": [
+      "shadcn-ui.mdx",
+      "tailwind-css-v4-migration.mdx",
+      "tailwind-css.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "css library": {
+    "files": [
+      "shadcn-ui.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "scrollbar": {
+    "files": [
+      "styling-a-scrollbar.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "migration": {
+    "files": [
+      "tailwind-css-v4-migration.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "architecture": {
+    "files": [
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "refactoring": {
+    "files": [
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "domain-driven-design": {
+    "files": [
+      "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "ts": {
+    "files": [
+      "typescript.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "menu": {
+    "files": [
+      "ui-menu-for-applications.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "hooks": {
+    "files": [
+      "use-id.mdx",
+      "use-ref.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "vite": {
+    "files": [
+      "vite.mdx"
+    ],
+    "summary": "Next generation frontend tooling with lightning-fast HMR and optimized builds",
+    "category": "tools",
+    "icon": "rocket"
+  },
+  "build-system": {
+    "files": [
+      "vite.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  }
 }

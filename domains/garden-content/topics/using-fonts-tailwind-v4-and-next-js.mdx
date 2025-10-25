@@ -1,0 +1,89 @@
+---
+title: "Using Google Fonts with Next.js 15 and Tailwind CSS v4"
+category: "css"
+author:
+  name: "Mario Brusarosco"
+  url: "https://mariobrusarosco.dev"
+planted-in: "2025-10-01"
+last-watered-in: "2025-10-01"
+related-topics: ["next-js", "tailwind-css"]
+---
+
+# Using Google Fonts with Next.js 15 and Tailwind CSS v4
+
+Setting up Google Fonts with Next.js 15 and Tailwind CSS v4 requires understanding the new CSS-first configuration approach and how font variables work in the modern stack.
+
+## The Problem
+
+When integrating Google Fonts, you might encounter issues where fonts don't load properly, especially when CSS variables aren't resolving correctly. The root cause is often related to variable scope and Tailwind's new `@theme` directive behavior.
+
+## The Solution: @theme inline
+
+The key is using `@theme inline` instead of regular `@theme` for font definitions. This forces immediate CSS value resolution rather than creating CSS custom property references.
+
+### Step 1: Setup Google Fonts in layout.tsx
+
+```typescript
+import { Playfair_Display, Fira_Code } from "next/font/google";
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-playfair-display",
+});
+
+const firaCode = Fira_Code({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-fira-code",
+});
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body className={`${playfairDisplay.variable} ${firaCode.variable}`}>
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+### Step 2: Configure Tailwind Fonts with @theme inline
+
+```css
+@import "tailwindcss";
+
+@theme inline {
+  --font-serif: var(--font-playfair-display), serif;
+  --font-sans: var(--font-fira-code), sans-serif;
+}
+```
+
+## Why @theme inline Works
+
+- **Immediate Resolution**: Inlines actual font-family values instead of CSS variable references
+- **Eliminates Timing Issues**: No variable resolution cascade problems
+- **More Robust**: Works reliably across complex CSS inheritance scenarios
+
+## Common Pitfalls
+
+1. **Using regular @theme**: Creates CSS custom property references that may not resolve properly
+2. **Wrong variable scope**: Applying font variables to wrong elements
+3. **Turbopack issues**: Known font loading problems in Next.js 15 development mode
+
+## Usage in Components
+
+Once configured, use Tailwind's font utilities normally:
+
+```jsx
+<h1 className="font-serif">Elegant heading with Playfair Display</h1>
+<code className="font-sans">Monospace code with Fira Code</code>
+```
+
+## Key Benefits
+
+- **Automatic Optimization**: Next.js self-hosts fonts for better performance
+- **No FOUT/FOIT**: Font loading is optimized to prevent layout shifts
+- **SEO Friendly**: Improved Core Web Vitals scores
+- **Type Safety**: Full TypeScript support for font configurations

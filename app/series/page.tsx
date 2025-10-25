@@ -1,32 +1,34 @@
 import { IconLeaf } from "@/domains/garden-components/icons/leaf";
-
-import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
+import { SerieCard } from "@/domains/garden-components/components/serie-card";
 import series from "@/metadata-series.json";
-import Link from "next/link";
+import type { SeriesMetadata } from "@/types/serie-metadata";
+
+const typedSeries = series as SeriesMetadata;
 
 export default function SeriesScreen() {
+  const serieEntries = Object.entries(typedSeries);
+
   return (
-    <main data-ui="screen-serie" className="container global-spacing">
-      <section className="heading text-wenge mt-4 mb-10">
-        <div className="flex font-light justify-start items-center gap-x-4">
+    <main data-ui="screen-series" className="global-spacing h-full">
+      <section className="heading text-dark-pink mt-4 mb-10">
+        <div className="flex justify-start items-center gap-x-4">
           <IconLeaf className="w-5" />
-          <h2 className="text-5xl font-serif">Serie</h2>
+          <h2 className="text-7xl font-serif">Series</h2>
         </div>
       </section>
 
-      <section data-ui="list-of-series">
-        <ul className="flex flex-wrap gap-x-3 gap-y-5 my-2 justify-center lg:gap-y-10">
-          {Object.keys(series).map((serie) => (
-            <li key={serie}>
-              <Link
-                className="rounded-lg border border-wenge p-2 text-wenge uppercase font-sans font-light text-sm cursor-pointer w-max"
-                href={`/series/${serie}`}
-              >
-                {removeHyphens(serie)}
-              </Link>
-            </li>
+      <section data-ui="list-of-series" className="my-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {serieEntries.map(([slug, metadata]) => (
+            <SerieCard
+              key={slug}
+              slug={slug}
+              category={metadata.category}
+              summary={metadata.summary}
+              icon={metadata.icon}
+            />
           ))}
-        </ul>
+        </div>
       </section>
     </main>
   );

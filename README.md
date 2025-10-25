@@ -19,6 +19,10 @@ This is my personal digital garden, a space where I cultivate my thoughts, learn
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Syntax Highlighting**: [Bright](https://bright.codehike.org/)
 
+## Roadmap
+
+[Board](https://sharing.clickup.com/3141881/b/h/2zw7t-2737/d8c757687fdbf85)
+
 ## 🚀 Getting Started
 
 First, install the dependencies:

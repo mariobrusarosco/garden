@@ -3,6 +3,7 @@ import { PageHeading } from "@/domains/garden-components/page-heading";
 import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
 import topics from "@/metadata-topics.json";
 import Link from "next/link";
+import type { TopicsMetadata } from "@/types/topic-metadata";
 
 type Props = {
   params: Promise<{
@@ -10,11 +11,12 @@ type Props = {
   }>;
 };
 
-const notesByTopic = topics as { [key: string]: string[] };
+const typedTopics = topics as TopicsMetadata;
 
 export default async function TopicScreen({ params }: Props) {
   const resolvedParams = await params;
-  const topicNotes = notesByTopic[resolvedParams.topic];
+  const topicData = typedTopics[resolvedParams.topic];
+  const topicNotes = topicData?.files || [];
   const normalizedTopic = removeHyphens(resolvedParams.topic);
 
   return (

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bitter, Josefin_Sans } from "next/font/google";
+import { Bitter, Raleway } from "next/font/google";
 import "./globals.css";
 
 import { Header } from "@/domains/garden-components/header";
@@ -13,11 +13,12 @@ const bitter = Bitter({
   variable: "--font-bitter",
 });
 
-const josefinSans = Josefin_Sans({
+const raleway = Raleway({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-josefin-sans",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-raleway",
 });
+
 
 export const metadata: Metadata = {
   title: "Digital Garden - Mario Brusarosco",
@@ -32,11 +33,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bitter.variable} ${josefinSans.variable} bg-misty_rose-900 grid grid-rows-[70px_70px_1fr]`}
+        className={`${bitter.variable} ${raleway.variable} bg-neutral-white grid grid-rows-[70px_70px_1fr]`}
       >
         <Header />
-        <Navbar />
-        <main className="main-container">
+
+        <main data-ui="main-container">
           <Suspense fallback={<LoadingScreen />}>{children}</Suspense>
         </main>
       </body>

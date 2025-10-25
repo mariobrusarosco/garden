@@ -1,0 +1,216 @@
+---
+title: Pydantic Objects vs Dictionaries
+category: "python"
+author: mariobrusarosco.github.com
+related-topics:
+  - "pydantic"
+  - "python"
+  - "fastapi"
+  - "validation"
+  - "type-safety"
+planted-in: 2024-01-15
+last-watered-in: 2024-01-15
+---
+
+# Pydantic Objects vs Dictionaries
+
+Understanding the core issue when working with Pydantic objects and dictionaries in FastAPI applications.
+
+## The Core Issue
+
+When working with Pydantic models across different layers of your application, you'll encounter scenarios where you need to pass data between different Pydantic models. The key issue is that Pydantic is strict about type validation - even if two models have identical fields, they're considered different types.
+
+<Callout>
+  **Key Point**: Pydantic treats models with identical fields but different
+  class names as completely different types, even if they have the same
+  structure!
+</Callout>
+
+## Common Scenarios
+
+### Scenario 1: Direct Assignment (✅ Works)
+
+This works - creating a Pydantic model from a dictionary:
+
+```python
+data = {"months": 10, "total": "R$ 960,60"}
+option = CreditCardInstallmentOption(**data)  # ✅ Success
+```
+
+### Scenario 2: Nested Pydantic Objects (❌ Fails)
+
+This fails - trying to assign a Pydantic object where dict is expected:
+
+```python
+ai_response = InstallmentOption(months=10, total="R$ 960,60")  # Pydantic object
+
+invoice_data = {
+    "installment_options": [ai_response]  # ❌ Pydantic validation error!
+}
+
+invoice = InvoiceIn(**invoice_data)  # FAILS with model_type error
+```
+
+### Scenario 3: Converting Objects to Dicts (✅ Works)
+
+This works - converting Pydantic objects to dictionaries first:
+
+```python
+ai_response = InstallmentOption(months=10, total="R$ 960,60")
+
+invoice_data = {
+    "installment_options": [ai_response.model_dump()]  # ✅ Convert to dict
+}
+
+invoice = InvoiceIn(**invoice_data)  # ✅ Success
+```
+
+## Why This Happens
+
+### Pydantic Type Validation
+
+When Pydantic validates a field like `installment_options: List[CreditCardInstallmentOption]`, it expects:
+
+1. **Dictionary** → Converts to `CreditCardInstallmentOption` automatically
+2. **Already a CreditCardInstallmentOption** → Accepts directly
+3. **Different Pydantic model** (like `InstallmentOption`) → REJECTS even if fields match!
+
+### The Error Message Decoded
+
+```
+Input should be a valid dictionary or instance of CreditCardInstallmentOption
+[type=model_type, input_value=InstallmentOption(months=10, total='R$ 960,60'),
+input_type=InstallmentOption]
+```
+
+<Callout>
+  **Translation:** - **Expected:** dict or CreditCardInstallmentOption -
+  **Received:** InstallmentOption (different class!) - **Problem:** Same fields,
+  different class names
+</Callout>
+
+## Our Specific Case
+
+### What Was Happening
+
+**AI Response (from core/ai/models/responses.py):**
+
+```python
+financial_data.installment_options = [
+    InstallmentOption(months=10, total="R$ 960,60"),  # ❌ Wrong class
+    InstallmentOption(months=4, total="R$ 766,12"),  # ❌ Wrong class
+]
+```
+
+**Invoice Schema (from domains/invoices/schemas.py):**
+
+```python
+class CreditCardRawInvoice(BaseModel):
+    installment_options: List[CreditCardInstallmentOption]  # ✅ Expected class
+```
+
+### The Fix
+
+Convert Pydantic objects to dictionaries:
+
+```python
+"installment_options": [
+    opt.model_dump() for opt in financial_data.installment_options
+],  # ✅ Now it's [{"months": 10, "total": "R$ 960,60"}]
+```
+
+## Common Pydantic Patterns
+
+### 1. Dictionary → Pydantic (✅ Always Works)
+
+```python
+data = {"name": "John", "age": 30}
+user = User(**data)  # ✅ Pydantic creates object from dict
+```
+
+### 2. Pydantic → Dictionary
+
+```python
+user = User(name="John", age=30)
+data = user.model_dump()  # ✅ {"name": "John", "age": 30}
+```
+
+### 3. Same-Class Assignment (✅ Works)
+
+```python
+user1 = User(name="John", age=30)
+user2 = User.model_validate(user1)  # ✅ Same class, works
+```
+
+### 4. Different-Class Assignment (❌ Fails)
+
+```python
+person = Person(name="John", age=30)  # Different class
+user = User.model_validate(person)  # ❌ Fails even if same fields
+```
+
+## Best Practices
+
+### 1. Use .model_dump() for Cross-Domain Data
+
+When passing data between different domains:
+
+```python
+ai_data = ai_response.model_dump()
+domain_object = DomainModel(**ai_data)
+```
+
+<Callout>
+  **Best Practice**: Always use `.model_dump()` when crossing domain boundaries
+  to avoid type mismatches.
+</Callout>
+
+### 2. Keep Schema Consistency
+
+Better: Use the same schema across domains:
+
+```python
+from app.domains.transactions.schemas import TransactionData
+
+# AI responses use TransactionData
+# Invoice schemas use TransactionData
+# No conversion needed!
+```
+
+<Callout>
+  **Ideal Solution**: Share schemas across domains to eliminate conversion
+  overhead and potential bugs.
+</Callout>
+
+### 3. Validate Early
+
+Validate at boundaries:
+
+```python
+try:
+    invoice = InvoiceIn(**data)
+except ValidationError as e:
+    logger.error(f"Validation failed: {e}")  # Handle gracefully
+```
+
+## Why We Had This Issue
+
+<Callout>
+  **Root Causes:** 1. **Schema Duplication:** AI layer used `InstallmentOption`,
+  Invoice layer used `CreditCardInstallmentOption` 2. **Direct Assignment:** We
+  tried to pass objects directly instead of converting 3. **Type Mismatch:**
+  Pydantic saw different classes and rejected them
+</Callout>
+
+## Our Solution Strategy
+
+<Callout>
+  **Our Approach:** 1. **Unified schemas** where possible (`TransactionData`) 2.
+  **Convert objects to dicts** when crossing boundaries (`.model_dump()`) 3.
+  **Clear data flow** from AI → Dict → Domain Models
+</Callout>
+
+<Quote>
+  This pattern is super common in FastAPI applications where you have multiple
+  layers (API, AI, Domain) with their own Pydantic models! 🚀
+</Quote>

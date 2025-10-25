@@ -2,6 +2,7 @@ import { IconLeaf } from "@/domains/garden-components/icons/leaf";
 import { PageHeading } from "@/domains/garden-components/page-heading";
 import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
 import series from "@/metadata-series.json";
+import type { SeriesMetadata } from "@/types/serie-metadata";
 import Link from "next/link";
 
 type Props = {
@@ -10,12 +11,13 @@ type Props = {
   }>;
 };
 
-const notesBySerie = series as { [key: string]: string[] };
+const seriesData = series as SeriesMetadata;
 
 export default async function SerieScreen({ params }: Props) {
   const resolvedParams = await params;
   const normalizedSerie = removeHyphens(resolvedParams.serie);
-  const serieNotes = notesBySerie[resolvedParams.serie];
+  const serieData = seriesData[resolvedParams.serie];
+  const serieNotes = serieData?.files || [];
 
   return (
     <main data-ui="screen-serie" className="container global-spacing">

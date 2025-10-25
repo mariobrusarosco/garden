@@ -1,0 +1,259 @@
+---
+title: Tailwind CSS v4 Migration
+category: "css"
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "tailwind"
+  - "css"
+  - "migration"
+planted-in: 2025-09-30
+last-watered-in: 2025-09-30
+---
+
+# Migrating from Tailwind CSS v3 to v4
+
+Tailwind CSS v4 introduces a revolutionary architecture with significant performance improvements and a new CSS-first configuration approach. This guide documents the migration process from v3.4.1 to v4.0.
+
+## Why Migrate?
+
+### Performance Gains
+
+<Callout>
+  Tailwind CSS v4 delivers **5x faster full builds** and **100x faster
+  incremental builds** compared to v3. Development builds are measured in
+  microseconds rather than milliseconds.
+</Callout>
+
+### Key Improvements
+
+- **CSS-first configuration**: No more JavaScript config files
+- **Simplified imports**: Single `@import "tailwindcss"` replaces three directives
+- **Modern architecture**: Built for Safari 16.4+, Chrome 111+, Firefox 128+
+- **Better developer experience**: Faster feedback loop during development
+
+## Migration Process
+
+### Automated Migration Tool
+
+The easiest way to migrate is using the official upgrade tool:
+
+```bash
+npx @tailwindcss/upgrade@latest
+```
+
+<Callout>
+  Ensure you have Node.js 20+ and a clean git working directory before running
+  the upgrade tool.
+</Callout>
+
+### What the Tool Handles
+
+The automated migration tool handles most of the heavy lifting:
+
+1. **Dependencies**: Updates `package.json` with latest Tailwind v4
+2. **CSS imports**: Converts `@tailwind` directives to `@import`
+3. **Configuration**: Migrates JavaScript config to CSS variables
+4. **PostCSS**: Updates PostCSS configuration
+
+## Before and After
+
+### CSS Imports Migration
+
+**Before (v3):**
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+**After (v4):**
+
+```css
+@import "tailwindcss";
+```
+
+### Configuration Migration
+
+**Before (v3) - `tailwind.config.ts`:**
+
+```ts
+const config: Config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: "#604d53",
+      },
+      screens: {
+        lg: "1336px",
+      },
+    },
+  },
+};
+```
+
+**After (v4) - Inside CSS:**
+
+```css
+@theme {
+  --color-primary: #604d53;
+  --breakpoint-lg: 1336px;
+}
+```
+
+### PostCSS Configuration
+
+**Before (v3):**
+
+```js
+const config = {
+  plugins: {
+    tailwindcss: {},
+  },
+};
+```
+
+**After (v4):**
+
+```js
+const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+```
+
+## Custom Theme Migration
+
+One of the most complex parts of migration involves custom themes. Here's how extensive custom color palettes are handled:
+
+### Color Palette Conversion
+
+**Before (v3):**
+
+```ts
+colors: {
+  wenge: {
+    DEFAULT: "#604d53",
+    100: "#130f11",
+    200: "#261f21",
+    // ... more shades
+  }
+}
+```
+
+**After (v4):**
+
+```css
+@theme {
+  --color-wenge: #604d53;
+  --color-wenge-100: #130f11;
+  --color-wenge-200: #261f21;
+  /* ... more shades */
+}
+```
+
+### Breakpoint Migration
+
+Custom breakpoints are automatically converted:
+
+**Before (v3):**
+
+```ts
+screens: {
+  sm: "480px",
+  fh: "1920px", // Full HD
+}
+```
+
+**After (v4):**
+
+```css
+@theme {
+  --breakpoint-sm: 480px;
+  --breakpoint-fh: 1920px;
+}
+```
+
+## Custom Utilities
+
+Utility classes using `@layer` need updating:
+
+**Before (v3):**
+
+```css
+@layer utilities {
+  .global-spacing {
+    @apply px-4 py-4;
+  }
+}
+```
+
+**After (v4):**
+
+```css
+@utility global-spacing {
+  @apply px-4 py-4;
+}
+```
+
+## Browser Compatibility
+
+<Callout>
+  Important: Tailwind CSS v4 targets modern browsers only. Check your browser
+  support requirements before migrating.
+</Callout>
+
+**Supported browsers:**
+
+- Safari 16.4+
+- Chrome 111+
+- Firefox 128+
+
+If you need to support older browsers, stick with v3.4 until your requirements change.
+
+## Potential Issues
+
+### Border Color Changes
+
+v4 changes the default border color to `currentcolor`. The migration tool adds compatibility styles:
+
+```css
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+```
+
+### CSS Preprocessor Compatibility
+
+<Callout>
+  Tailwind CSS v4 is not designed to work with CSS preprocessors like Sass,
+  Less, or Stylus. Migrate to vanilla CSS before upgrading.
+</Callout>
+
+## Testing After Migration
+
+After migration, thoroughly test:
+
+1. **Development server**: Ensure `yarn dev` starts without errors
+2. **Build process**: Verify `yarn build` completes successfully
+3. **Visual testing**: Check all pages for layout regressions
+4. **Custom utilities**: Verify all custom classes still work
+5. **Performance**: Measure build time improvements
+
+## Results
+
+After successful migration, you should see:
+
+- **Dramatically faster builds**: Especially noticeable in development
+- **Cleaner configuration**: CSS-based theme configuration
+- **Simplified setup**: Single import statement
+- **Future-ready codebase**: Built on modern web standards
+
+The migration to Tailwind CSS v4 represents a significant architectural shift that delivers substantial performance benefits while maintaining the utility-first approach that makes Tailwind powerful.

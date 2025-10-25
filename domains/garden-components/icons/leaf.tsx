@@ -1,6 +1,6 @@
 import { cn } from "@/domains/helper-and-utils/classnames";
 
-const IconLeaf = ({ className }: { className: string }) => {
+const IconLeaf = ({ className }: { className?: string }) => {
   return (
     <div className={cn("icon-wrapper flex", className)}>
       <svg viewBox="0 0 141 268" fill="none">

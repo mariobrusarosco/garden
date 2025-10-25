@@ -1,49 +1,200 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+
+@theme inline {
+
+  --font-serif: var(--font-bitter), serif;
+  --font-sans: var(--font-raleway), sans-serif;
+
+}
+@theme {
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1336px;
+  --breakpoint-xl: 1536px;
+  --breakpoint-fh: 1920px;
+
+
+  /* Colors */
+  --color-dark-pink: #9D3E51;
+  --color-light-pink: #F58A98;
+  --color-midnight-blue: #181E31;
+  --color-neutral-white: #F4F8F4;
+  --color-forest-green: #286533;
+  --color-cloud-blue: #538293;
+
+  /* Deprecated colors */
+  --color-french_gray-100: #2f2225;
+  --color-french_gray-200: #5f4549;
+  --color-french_gray-300: #8e676e;
+  --color-french_gray-400: #b2959a;
+  --color-french_gray-500: #d5c5c8;
+  --color-french_gray-600: #ddd0d2;
+  --color-french_gray-700: #e5dcdd;
+  --color-french_gray-800: #eee7e9;
+  --color-french_gray-900: #f6f3f4;
+  --color-french_gray: #d5c5c8;
+
+  --color-cadet_gray-100: #1f2121;
+  --color-cadet_gray-200: #3e4243;
+  --color-cadet_gray-300: #5d6364;
+  --color-cadet_gray-400: #7b8486;
+  --color-cadet_gray-500: #9da3a4;
+  --color-cadet_gray-600: #b1b6b7;
+  --color-cadet_gray-700: #c4c8c9;
+  --color-cadet_gray-800: #d8dadb;
+  --color-cadet_gray-900: #ebeded;
+  --color-cadet_gray: #9da3a4;
+
+  --color-wenge-100: #130f11;
+  --color-wenge-200: #261f21;
+  --color-wenge-300: #3a2e32;
+  --color-wenge-400: #4d3e43;
+  --color-wenge-500: #604d53;
+  --color-wenge-600: #866b74;
+  --color-wenge-700: #a58f96;
+  --color-wenge-800: #c3b4b9;
+  --color-wenge-900: #e1dadc;
+  --color-wenge: #604d53;
+
+  --color-puce-100: #360f16;
+  --color-puce-200: #6c1f2b;
+  --color-puce-300: #a22e41;
+  --color-puce-400: #cc4a5f;
+  --color-puce-500: #db7f8e;
+  --color-puce-600: #e299a5;
+  --color-puce-700: #e9b3bc;
+  --color-puce-800: #f1ccd2;
+  --color-puce-900: #f8e6e9;
+  --color-puce: #db7f8e;
+
+  --color-misty_rose-100: #5f0300;
+  --color-misty_rose-200: #be0600;
+  --color-misty_rose-300: #ff251e;
+  --color-misty_rose-400: #ff817c;
+  --color-misty_rose-500: #ffdbda;
+  --color-misty_rose-600: #ffe3e2;
+  --color-misty_rose-700: #ffeaea;
+  --color-misty_rose-800: #fff1f1;
+  --color-misty_rose-900: #fff8f8;
+  --color-misty_rose: #ffdbda;
+
+  --color-azure-100: #1a4747;
+  --color-azure-200: #348d8d;
+  --color-azure-300: #5fc4c4;
+  --color-azure-400: #a6dede;
+  --color-azure-500: #ecf8f8;
+  --color-azure-600: #f0f9f9;
+  --color-azure-700: #f4fbfb;
+  --color-azure-800: #f8fcfc;
+  --color-azure-900: #fbfefe;
+  --color-azure: #ecf8f8;
+
+  --color-isabelline-100: #3b2721;
+  --color-isabelline-200: #774f43;
+  --color-isabelline-300: #ac7a6b;
+  --color-isabelline-400: #cdafa6;
+  --color-isabelline-500: #eee4e1;
+  --color-isabelline-600: #f2eae7;
+  --color-isabelline-700: #f5efed;
+  --color-isabelline-800: #f8f4f3;
+  --color-isabelline-900: #fcfaf9;
+  --color-isabelline: #eee4e1;
+
+  --color-almond-100: #3c2b1b;
+  --color-almond-200: #785736;
+  --color-almond-300: #b28253;
+  --color-almond-400: #ccad8e;
+  --color-almond-500: #e7d8c9;
+  --color-almond-600: #ece0d5;
+  --color-almond-700: #f1e8df;
+  --color-almond-800: #f6f0ea;
+  --color-almond-900: #faf7f4;
+  --color-almond: #e7d8c9;
+
+  --color-pale_dogwood-100: #3e1f13;
+  --color-pale_dogwood-200: #7b3e26;
+  --color-pale_dogwood-300: #b95d39;
+  --color-pale_dogwood-400: #d38c6f;
+  --color-pale_dogwood-500: #e6beae;
+  --color-pale_dogwood-600: #ebcabd;
+  --color-pale_dogwood-700: #f0d7ce;
+  --color-pale_dogwood-800: #f5e5de;
+  --color-pale_dogwood-900: #faf2ef;
+  --color-pale_dogwood: #e6beae;
+
+  --color-lion-100: #261e16;
+  --color-lion-200: #4c3b2d;
+  --color-lion-300: #725943;
+  --color-lion-400: #987659;
+  --color-lion-500: #b2967d;
+  --color-lion-600: #c1aa96;
+  --color-lion-700: #d1bfb0;
+  --color-lion-800: #e0d4ca;
+  --color-lion-900: #f0eae5;
+  --color-lion: #b2967d;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
   }
 }
 
-body {
-  min-height: 100dvh;
+@utility text-balance {
+  text-wrap: balance;
 }
 
-.main-container {
-  margin: 0 auto;
-  max-width: 100dvw;
-  height: 100%;
+@utility global-spacing {
+  @apply global-x-spacing global-y-spacing;
+}
+
+@utility global-y-spacing {
+  @apply py-4 lg:py-10 fh:py-20;
+}
+
+@utility global-x-spacing {
+  @apply px-4 lg:px-8 fh:px-20;
+}
+
+@utility heading-border {
+  @apply border-b-2 border-wenge-800 pb-1;
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  :root {
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 214, 219, 220;
+    --background-end-rgb: 255, 255, 255;
   }
 
-  .global-spacing {
-    @apply global-x-spacing global-y-spacing;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --foreground-rgb: 255, 255, 255;
+      --background-start-rgb: 0, 0, 0;
+      --background-end-rgb: 0, 0, 0;
+    }
   }
 
-  .global-y-spacing {
-    @apply py-4 lg:py-10 fh:py-20;
+  body {
+    min-height: 100dvh;
   }
 
-  .global-x-spacing {
-    @apply px-4 lg:px-8 fh:px-20;
-  }
-
-  .heading-border {
-    @apply border-b-2 border-wenge-800 pb-1;
+  .main-container {
+    margin: 0 auto;
+    max-width: 100dvw;
+    height: 100%;
   }
 }

@@ -1,0 +1,341 @@
+---
+title: Transaction Schema Unification Refactor
+category: "architecture"
+author: mariobrusarosco.github.com
+related-topics:
+  - "pydantic"
+  - "python"
+  - "fastapi"
+  - "architecture"
+  - "refactoring"
+  - "domain-driven-design"
+planted-in: 2024-12-20
+last-watered-in: 2024-12-20
+---
+
+# Transaction Schema Unification Refactor
+
+## Overview
+
+This document explains a critical refactoring that unified transaction schemas across domains, fixed a movement_type extraction bug, and improved the overall architecture of our financial document parsing system.
+
+## The Problem We Faced
+
+### Initial Issue
+
+Users were getting validation errors when uploading bank statements:
+
+```
+Field required [type=missing, input_value={'date': '2025-04-07', 'd...202,06', 'category': ''}, input_type=dict]
+raw_statement.transactions.0.movement_type
+```
+
+<Callout>
+  The error indicated that `movement_type` was missing from transactions, but
+  our AI prompts were clearly asking for this field.
+</Callout>
+
+### Root Cause Analysis
+
+Through systematic debugging, we discovered the issue wasn't with AI extraction (OpenAI was correctly extracting movement_type), but with our data flow architecture.
+
+## Architecture Problems
+
+### 1. Duplicate Transaction Schemas
+
+We had **two different transaction schemas** serving the same purpose:
+
+```python
+# AI Layer (app/core/ai/models/responses.py)
+class TransactionData(BaseModel):
+    date: str
+    description: str
+    amount: str
+    category: str = ""
+    # Missing: movement_type
+
+# Statements Domain (app/domains/statements/schemas.py)
+class StatementTransaction(BaseModel):
+    date: str
+    description: str
+    amount: str
+    movement_type: str  # Present here!
+    category: str = ""
+```
+
+<Callout>
+  **Problems:** - ❌ **Schema Drift**: Changes to one didn't reflect in the
+  other - ❌ **Inconsistent Fields**: movement_type existed in one but not the
+  other - ❌ **Maintenance Overhead**: Two places to update for transaction
+  changes - ❌ **Domain Boundary Violation**: AI layer defining business schemas
+</Callout>
+
+### 2. Data Loss During Conversion
+
+The statements service was manually converting between transaction formats:
+
+```python
+# Statements Service (BEFORE FIX)
+"transactions": [
+    {
+        "date": tx.date,
+        "description": tx.description,
+        "amount": tx.amount,
+        "category": tx.category
+        # Missing: movement_type! 🚨
+    }
+    for tx in financial_data.transactions
+]
+```
+
+**Result:** Even though OpenAI extracted movement_type correctly, it was dropped during conversion.
+
+### 3. Wrong Domain Ownership
+
+```
+❌ BEFORE: AI Layer defines TransactionData
+- AI concerns mixed with business logic
+- Transaction schema owned by infrastructure layer
+- Domains import from infrastructure
+
+✅ AFTER: Transactions Domain defines TransactionData
+- Business logic owns business schemas
+- AI layer imports from domain
+- Proper dependency direction
+```
+
+## The Solution: Domain-Driven Schema Unification
+
+### Step 1: Move Schema to Correct Domain
+
+Moved transaction schema to its rightful owner:
+
+```python
+# app/domains/transactions/schemas.py
+class TransactionData(BaseModel):
+    """
+    Simplified transaction data for AI parsing and document processing.
+
+    Used by:
+    - AI providers (OpenAI, Ollama) for structured output
+    - Statement and invoice processing
+    - Document parsing workflows
+    """
+    date: str = Field(description="Transaction date in ISO format")
+    description: str = Field(description="Complete transaction description")
+    amount: str = Field(description="Transaction amount (without sign, preserve precision)")
+    movement_type: str = Field(description="Movement type: 'income' | 'expense' | 'transfer' | 'investment' | 'other'")
+    category: str = Field(default="", description="Transaction category (empty if not explicit)")
+```
+
+### Step 2: Update Dependencies
+
+AI Layer now imports from transactions domain:
+
+```python
+# app/core/ai/models/responses.py
+from app.domains.transactions.schemas import TransactionData
+
+# app/core/ai/models/__init__.py
+from app.domains.transactions.schemas import TransactionData
+```
+
+Statements Domain uses same schema:
+
+```python
+# app/domains/statements/schemas.py
+from app.domains.transactions.schemas import TransactionData
+
+class RawBankStatement(BaseModel):
+    transactions: List[TransactionData]  # Same schema!
+```
+
+### Step 3: Eliminate Redundant Conversion
+
+**BEFORE (Manual Conversion):**
+
+```python
+"transactions": [
+    {
+        "date": tx.date,
+        "description": tx.description,
+        "amount": tx.amount,
+        "movement_type": tx.movement_type,  # Easy to forget!
+        "category": tx.category
+    }
+    for tx in financial_data.transactions
+]
+```
+
+**AFTER (Direct Usage):**
+
+```python
+"transactions": financial_data.transactions  # No conversion needed!
+```
+
+## Technical Implementation
+
+### Data Flow (Fixed)
+
+```
+1. PDF Upload → Extract Text
+2. Text → OpenAI API with TransactionData schema
+3. OpenAI extracts movement_type correctly ✅
+4. Returns List[TransactionData] with all fields ✅
+5. Direct assignment to RawBankStatement ✅
+6. Validation succeeds ✅
+```
+
+### Key Changes Made
+
+<Callout>
+  **Schema Unification** - Moved `TransactionData` to
+  `app/domains/transactions/schemas.py` - Removed `StatementTransaction`
+  duplicate - Updated all imports
+</Callout>
+
+<Callout>
+  **Fixed Data Loss** - Eliminated manual transaction conversion - Direct usage
+  of `TransactionData` objects - Preserved all fields automatically
+</Callout>
+
+<Callout>
+  **Improved Architecture** - Proper domain ownership - Correct dependency
+  direction - Single source of truth
+</Callout>
+
+## Educational Insights
+
+### Why This Refactor Was Necessary
+
+**Domain-Driven Design Principles:**
+
+- **Business concepts belong in business domains**
+- **Infrastructure should depend on domain, not vice versa**
+- **Avoid schema duplication across layers**
+
+**Schema Evolution Problems:**
+
+- **Manual conversion is error-prone** - easy to forget fields
+- **Schema drift happens** when definitions are duplicated
+- **Maintenance overhead increases** with multiple definitions
+
+### How We Debugged This
+
+**Systematic Approach:**
+
+1. **Traced data flow** from AI response to validation
+2. **Checked each transformation step** for data loss
+3. **Identified the exact line** where movement_type was dropped
+4. **Root cause analysis** revealed architectural issue
+
+<Quote>
+  The error was NOT in AI extraction (which worked perfectly), but in our data
+  transformation logic.
+</Quote>
+
+### Lessons Learned
+
+<Callout>
+  **Schema Management:** - ✅ **Single Source of Truth** - one schema definition
+  per concept - ✅ **Domain Ownership** - business schemas in business domains -
+  ✅ **Explicit Dependencies** - import from authoritative source - ✅ **Avoid
+  Manual Conversion** - use shared schemas directly
+</Callout>
+
+<Callout>
+  **Debugging Complex Systems:** - ✅ **Add logging at transformation points** -
+  ✅ **Verify assumptions** about what each layer receives/returns - ✅ **Trace
+  data flow systematically** - ✅ **Test each component independently**
+</Callout>
+
+## Benefits Achieved
+
+### Immediate Fixes
+
+- ✅ **movement_type extraction works** - no more validation errors
+- ✅ **Cleaner codebase** - eliminated redundant conversion logic
+- ✅ **Reduced complexity** - fewer lines of code, fewer bugs
+
+### Long-term Improvements
+
+- ✅ **Easier maintenance** - single place to update transaction schema
+- ✅ **Automatic compatibility** - changes flow through automatically
+- ✅ **Better architecture** - proper domain boundaries
+- ✅ **Future-proof** - easier to add new transaction fields
+
+### Performance Gains
+
+- ✅ **No unnecessary object creation** during conversion
+- ✅ **Direct object usage** reduces memory allocations
+- ✅ **Simpler code paths** improve readability and performance
+
+## Best Practices Established
+
+### Schema Design
+
+```python
+# ✅ Good: Single authoritative schema
+app/domains/transactions/schemas.py:
+  - TransactionData (for AI parsing)
+  - TransactionBase (for domain operations)
+
+# ❌ Avoid: Duplicate schemas in different layers
+app/core/ai/models/responses.py: TransactionData
+app/domains/statements/schemas.py: StatementTransaction
+```
+
+### Dependency Management
+
+```python
+# ✅ Good: Infrastructure depends on domain
+from app.domains.transactions.schemas import TransactionData
+
+# ❌ Avoid: Domain depends on infrastructure
+from app.core.ai.models.responses import TransactionData
+```
+
+### Data Transformation
+
+```python
+# ✅ Good: Direct usage of shared schemas
+"transactions": financial_data.transactions
+
+# ❌ Avoid: Manual conversion between identical structures
+"transactions": [{"field": tx.field} for tx in items]
+```
+
+## Future Considerations
+
+### Schema Evolution
+
+- **Add new fields** only to transactions domain
+- **Changes automatically propagate** to all consumers
+- **Version migration** can be handled in one place
+
+### Testing Strategy
+
+- **Test schema consistency** across domains
+- **Validate data flow** from AI to database
+- **Monitor for schema drift** in CI/CD
+
+### Monitoring
+
+- **Log schema field counts** to detect missing fields
+- **Track AI extraction success rates** for new fields
+- **Alert on validation failures** during parsing
+
+## Conclusion
+
+This refactor demonstrates the importance of proper domain-driven design and schema management. By moving transaction schemas to their rightful domain and eliminating redundant conversions, we:
+
+1. **Fixed immediate bugs** (movement_type extraction)
+2. **Improved system architecture** (proper domain boundaries)
+3. **Reduced future maintenance** (single source of truth)
+4. **Enhanced debuggability** (cleaner data flow)
+
+<Quote>
+  **The lesson**: Architecture problems often manifest as data transformation
+  bugs. When debugging, look beyond the immediate error to understand the
+  underlying structural issues.
+</Quote>

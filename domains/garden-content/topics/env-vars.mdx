@@ -1,5 +1,6 @@
 ---
 title: Env Vars
+category: "configuration"
 author: mariobrusarosco.github.com
 related-topics:
   - "environment"
@@ -14,7 +15,6 @@ last-watered-in: 2024-11-11
 
 # Env Vars
 
-
 ## Back End Project
 
 ### Auto Inject Env Vars
@@ -22,19 +22,17 @@ last-watered-in: 2024-11-11
 1. We should install `dotenvx`
 2. Then for the NPM script command we need to call `dotenvx` + a TS Command:
 
-
 #### Development Experience
 
-For a *development environment* we can use `ts-node-dev` (with alias path convertion: 'ts-config-paths')
-
+For a _development environment_ we can use `ts-node-dev` (with alias path convertion: 'ts-config-paths')
 
 ##### Default .env file
 
 By default, a `.env` will be automatically used.
 
-* "dotenvx run --"   (for The env injetcion)
-* "ts-node-dev" (for TS transpile)
-* "tsconfig-paths/register ./src/index.ts" (for Alias Path Conversion)
+- "dotenvx run --" (for The env injetcion)
+- "ts-node-dev" (for TS transpile)
+- "tsconfig-paths/register ./src/index.ts" (for Alias Path Conversion)
 
 ```json
   dev-demo": "dotenvx run -- ts-node-dev -r tsconfig-paths/register ./src/index.ts
@@ -42,14 +40,13 @@ By default, a `.env` will be automatically used.
 
 ##### Local .env files
 
-In some moments we want to temporary use a `local env var` 
+In some moments we want to temporary use a `local env var`
 
 ```json
   dev-demo": "dotenvx run --env-file=.env.demo.local -- ts-node-dev -r tsconfig-paths/register ./src/index.ts
 ```
 
 _ps. The .env is auto inject, we don't need to explict it `--env-file=.env`_
-
 
 ## Front End Project
 
@@ -59,11 +56,9 @@ _ps. The .env is auto inject, we don't need to explict it `--env-file=.env`_
 
 By default, a `.env` will be automatically used.
 
-
 ##### Local .env files
 
-We use the "mode" prop and create a .env.[mode].local to also load an extra *.env* file
-
+We use the "mode" prop and create a .env.[mode].local to also load an extra _.env_ file
 
 ```json
   dev-demo": "dotenvx run --env-file=.env.demo.local -- ts-node-dev -r tsconfig-paths/register ./src/index.ts
@@ -72,7 +67,6 @@ We use the "mode" prop and create a .env.[mode].local to also load an extra *.en
 `File Tree`
 
 | .env
-| .env.demo.local 
-
+| .env.demo.local
 
 If we set a `NAME="mario"` in `.env` and `NAME="luigi"` in `.env.demo.local`, the final value will be "luigi"
