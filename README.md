@@ -2,7 +2,8 @@
 
 This is my personal digital garden, a space where I cultivate my thoughts, learnings, and explorations on various topics related to technology and software development. It's built with Next.js and MDX, allowing for a collection of interconnected and ever-evolving notes.
 
-<img width="3782" height="1775" alt="image" src="https://github.com/user-attachments/assets/ba545f64-cf12-4ca6-b9c3-78e8c9f7dd36" />
+<img width="3798" height="1686" alt="image" src="https://github.com/user-attachments/assets/0ee04d94-a3f9-4fe0-b2dd-69cc546402d1" />
+
 
 
 ## ✨ Features
