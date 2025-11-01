@@ -207,7 +207,8 @@
   },
   "api": {
     "files": [
-      "fast-api.mdx"
+      "fast-api.mdx",
+      "typing-express-routes.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -302,6 +303,7 @@
   },
   "next": {
     "files": [
+      "next-analytics.mdx",
       "next-js.mdx"
     ],
     "summary": "",
@@ -310,12 +312,37 @@
   },
   "next-js": {
     "files": [
+      "next-analytics.mdx",
       "next-js.mdx",
       "using-fonts-tailwind-v4-and-next-js.mdx"
     ],
     "summary": "React framework for production with hybrid static and server rendering, TypeScript support, and more",
     "category": "frameworks",
     "icon": "rocket"
+  },
+  "analytics": {
+    "files": [
+      "next-analytics.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "performance": {
+    "files": [
+      "next-analytics.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "monitoring": {
+    "files": [
+      "next-analytics.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
   },
   "ssr": {
     "files": [
@@ -376,7 +403,8 @@
   "typescript": {
     "files": [
       "project-typying.mdx",
-      "typescript.mdx"
+      "typescript.mdx",
+      "typing-express-routes.mdx"
     ],
     "summary": "JavaScript with syntax for types, providing type safety and better tooling",
     "category": "languages",
@@ -474,7 +502,8 @@
   },
   "routing": {
     "files": [
-      "routing.mdx"
+      "routing.mdx",
+      "typing-express-routes.mdx"
     ],
     "summary": "Navigate between pages and manage application routing with React Router",
     "category": "patterns",
@@ -483,6 +512,22 @@
   "react-router": {
     "files": [
       "routing.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "error-monitoring": {
+    "files": [
+      "sentry-multi-environment-setup.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "sentry": {
+    "files": [
+      "sentry-multi-environment-setup.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -512,6 +557,30 @@
     ],
     "summary": "",
     "category": "concepts",
+    "icon": ""
+  },
+  "sql": {
+    "files": [
+      "sqlalchemy.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "database": {
+    "files": [
+      "sqlalchemy.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "sqlalchemy": {
+    "files": [
+      "sqlalchemy.mdx"
+    ],
+    "summary": "",
+    "category": "database",
     "icon": ""
   },
   "scrollbar": {
@@ -557,6 +626,30 @@
   "ts": {
     "files": [
       "typescript.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "express": {
+    "files": [
+      "typing-express-routes.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "node": {
+    "files": [
+      "typing-express-routes.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "backend": {
+    "files": [
+      "typing-express-routes.mdx"
     ],
     "summary": "",
     "category": "concepts",

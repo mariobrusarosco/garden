@@ -1,0 +1,350 @@
+---
+title: Next.js Analytics
+summary: "Official analytics and performance monitoring tools from Vercel for Next.js applications"
+category: "tools"
+icon: "chart"
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "next"
+  - "next-js"
+  - "analytics"
+  - "performance"
+  - "monitoring"
+planted-in: 2025-11-01
+last-watered-in: 2025-11-01
+---
+
+# Next.js Analytics
+
+## Overview
+
+Next.js provides two official packages for monitoring your application's performance and user behavior:
+
+1. **@vercel/analytics** - User behavior tracking and custom events
+2. **@vercel/speed-insights** - Real User Monitoring (RUM) for Core Web Vitals
+
+Both tools work seamlessly on Vercel deployments with zero configuration, but can also be used with custom deployments.
+
+## Installation
+
+### Installing Both Packages
+
+```bash
+yarn add @vercel/analytics @vercel/speed-insights
+```
+
+### Installing Individually
+
+```bash
+# For analytics only
+yarn add @vercel/analytics
+
+# For speed insights only
+yarn add @vercel/speed-insights
+```
+
+## Setup
+
+### App Router Setup (Next.js 13+)
+
+Add both components to your root layout file:
+
+`app/layout.tsx`
+
+```tsx
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <Analytics />
+        <SpeedInsights />
+      </body>
+    </html>
+  );
+}
+```
+
+<Callout>
+  Place the components at the end of the `<body>` tag to ensure they don't
+  block the rendering of your application.
+</Callout>
+
+### Pages Router Setup (Next.js 12 and below)
+
+Add both components to your `_app.tsx` file:
+
+`pages/_app.tsx`
+
+```tsx
+import type { AppProps } from "next/app";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
+export default function App({ Component, pageProps }: AppProps) {
+  return (
+    <>
+      <Component {...pageProps} />
+      <Analytics />
+      <SpeedInsights />
+    </>
+  );
+}
+```
+
+## Analytics Features
+
+### Automatic Page View Tracking
+
+The Analytics component automatically tracks:
+
+- Page views across all routes
+- User sessions
+- Geographic data
+- Device information
+- Referrer sources
+
+### Custom Event Tracking
+
+Track custom user interactions:
+
+```tsx
+import { track } from "@vercel/analytics";
+
+const MyComponent = () => {
+  const handleClick = () => {
+    track("button_clicked", {
+      location: "header",
+      label: "Sign Up",
+    });
+  };
+
+  return <button onClick={handleClick}>Sign Up</button>;
+};
+```
+
+### Event Properties
+
+You can attach custom properties to events:
+
+```tsx
+track("purchase", {
+  value: 99.99,
+  currency: "USD",
+  item: "Premium Plan",
+});
+```
+
+## Speed Insights Features
+
+### Core Web Vitals Monitoring
+
+Speed Insights automatically tracks:
+
+1. **LCP (Largest Contentful Paint)** - Loading performance
+2. **FID (First Input Delay)** - Interactivity
+3. **CLS (Cumulative Layout Shift)** - Visual stability
+4. **TTFB (Time to First Byte)** - Server response time
+
+### Real User Monitoring
+
+Unlike synthetic testing, Speed Insights collects data from real users:
+
+- Device-specific performance metrics
+- Geographic performance variations
+- Network condition impact
+- Browser-specific metrics
+
+## Configuration
+
+### Development Mode
+
+By default, analytics are disabled in development. To enable:
+
+```tsx
+<Analytics mode="development" />
+```
+
+### Custom Endpoint (Self-Hosting)
+
+For non-Vercel deployments, configure a custom endpoint:
+
+```tsx
+<Analytics
+  beforeSend={(event) => {
+    // Modify or filter events
+    return event;
+  }}
+/>
+```
+
+Add environment variable:
+
+```bash
+VERCEL_ANALYTICS_ID=your-analytics-id
+```
+
+### Debug Mode
+
+Enable debug logs during development:
+
+```tsx
+<Analytics debug={true} />
+<SpeedInsights debug={true} />
+```
+
+## Viewing Analytics Data
+
+### On Vercel Dashboard
+
+1. Navigate to your project on Vercel
+2. Click the **Analytics** tab for user behavior data
+3. Click the **Speed Insights** tab for performance metrics
+
+### Data Retention
+
+- **Analytics**: 30 days on Hobby plan, longer on Pro/Enterprise
+- **Speed Insights**: Real-time data with historical trends
+
+## Best Practices
+
+### 1. Privacy Considerations
+
+Analytics respects user privacy:
+
+- No cookies are used
+- No personal data is collected
+- GDPR compliant by default
+
+### 2. Performance Impact
+
+Both packages are designed to be lightweight:
+
+- Analytics: ~1kb gzipped
+- Speed Insights: ~2kb gzipped
+- Loaded asynchronously after page load
+
+### 3. Custom Events Strategy
+
+<Callout>
+  Track meaningful user interactions, not every click. Focus on conversion
+  funnels, feature adoption, and business-critical actions.
+</Callout>
+
+### 4. Combining with Other Tools
+
+Analytics and Speed Insights work alongside:
+
+- Google Analytics
+- Mixpanel
+- PostHog
+- Custom analytics solutions
+
+## Common Patterns
+
+### Conditional Loading
+
+Load analytics only in production:
+
+```tsx
+{
+  process.env.NODE_ENV === "production" && (
+    <>
+      <Analytics />
+      <SpeedInsights />
+    </>
+  );
+}
+```
+
+### Route-Specific Tracking
+
+Track specific route patterns:
+
+```tsx
+"use client";
+
+import { usePathname } from "next/navigation";
+import { track } from "@vercel/analytics";
+import { useEffect } from "react";
+
+export const RouteTracker = () => {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname.startsWith("/dashboard")) {
+      track("dashboard_view", { path: pathname });
+    }
+  }, [pathname]);
+
+  return null;
+};
+```
+
+## Troubleshooting
+
+### Analytics Not Showing Data
+
+1. Verify components are added to root layout
+2. Check environment variables for custom deployments
+3. Ensure project is deployed (doesn't work on localhost by default)
+4. Wait 5-10 minutes for data to appear
+
+### Speed Insights Missing Metrics
+
+1. Ensure modern browser support (Chrome 60+, Firefox 55+, Safari 12+)
+2. Check that HTTPS is enabled
+3. Verify SpeedInsights component is properly imported
+
+### Debug Mode Not Working
+
+```tsx
+// Enable debug to see console logs
+<Analytics debug={process.env.NODE_ENV === "development"} />
+```
+
+## Migration from Other Analytics
+
+### From Google Analytics
+
+You can run both simultaneously:
+
+```tsx
+// Keep existing GA
+<Script
+  src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+  strategy="afterInteractive"
+/>
+
+// Add Vercel Analytics
+<Analytics />
+```
+
+### From Custom Solutions
+
+Use the `beforeSend` hook to bridge data:
+
+```tsx
+<Analytics
+  beforeSend={(event) => {
+    // Send to your custom endpoint
+    yourCustomTracker.track(event);
+    return event;
+  }}
+/>
+```
+
+## Resources
+
+- [Vercel Analytics Docs](https://vercel.com/docs/analytics)
+- [Speed Insights Docs](https://vercel.com/docs/speed-insights)
+- [Web Vitals Explanation](https://web.dev/vitals/)

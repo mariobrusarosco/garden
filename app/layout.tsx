@@ -6,6 +6,8 @@ import { Header } from "@/domains/garden-components/header";
 import { Navbar } from "@/domains/garden-components/navbar";
 import { Suspense } from "react";
 import LoadingScreen from "./loading";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const bitter = Bitter({
   subsets: ["latin"],
@@ -40,6 +42,8 @@ export default function RootLayout({
         <main data-ui="main-container">
           <Suspense fallback={<LoadingScreen />}>{children}</Suspense>
         </main>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

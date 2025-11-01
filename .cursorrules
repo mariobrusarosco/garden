@@ -1,0 +1,110 @@
+# Garden Project - Cursor AI Rules
+
+## MDX Content Creation - MANDATORY PROCESS
+
+**BEFORE creating or editing ANY MDX file, you MUST:**
+
+1. **Read existing examples first** - Check 2-3 files in `domains/garden-content/topics/` to see actual patterns
+2. **Verify component usage** - Read component files in `domains/garden-dmx-components/`
+3. **Check MDX Parser** - Review `domains/garden-dmx-components/mdx-parser.tsx` for mappings
+
+## Code Blocks - CRITICAL SYNTAX
+
+**ALWAYS use triple backticks with language identifier:**
+
+✅ CORRECT:
+
+````
+```typescript
+const example = "code here";
+```
+````
+
+❌ WRONG (DO NOT USE explicit CodeSnippet tags):
+
+```
+<CodeSnippet language="typescript">
+const example = "code here";
+</CodeSnippet>
+```
+
+**Why?** Triple backticks automatically map to the `<CodeSnippet>` component via `pre: CodeSnippet` in mdx-parser.tsx.
+
+**Supported languages:** typescript, javascript, bash, yaml, json, python, text
+
+## Garden Components
+
+### `<Callout>` - Important Information
+Use for: warnings, security notes, important concepts, key insights
+
+```
+
+<Callout>
+  **Important**: Your message here with `inline code` and **bold** text.
+</Callout>
+```
+
+### `<Quote>` - External Quotes
+
+Use for: documentation quotes, definitions, emphasized concepts
+
+```
+<Quote>
+  External quote or important concept here.
+</Quote>
+```
+
+### Regular Markdown
+
+- Headings: `#`, `##`, `###` (auto-styled)
+- Lists: `-` and `1.` (auto-styled)
+- Inline code: `` `code` `` (auto-styled)
+- Bold: `**text**`
+- Paragraphs: regular text (auto-styled)
+
+## MDX Frontmatter - REQUIRED FIELDS
+
+Every MDX file MUST include:
+
+```yaml
+---
+title: Page Title
+summary: "One-sentence description for cards"
+category: "concepts|frameworks|languages|tools|patterns"
+icon: "icon-name"
+author: mariobrusarosco.github.com
+reference-links:
+  - link: "https://example.com"
+    text: "Link Text"
+related-topics:
+  - "topic-slug"
+planted-in: YYYY-MM-DD
+last-watered-in: YYYY-MM-DD
+---
+```
+
+## Content Style
+
+- **Reference format**, not tutorial style
+- Concise and scannable
+- Use callouts strategically (not excessively)
+- Focus on actionable information
+- Clear section hierarchy
+
+## Workflow Checklist
+
+Before submitting MDX content:
+
+- [ ] Read 2-3 existing topic files for patterns
+- [ ] All code blocks use triple backticks with language (```typescript)
+- [ ] Callouts used appropriately (2-4 per file)
+- [ ] Complete frontmatter with all required fields
+- [ ] Content is concise and scannable
+- [ ] Run `yarn create-metadata` after creating new topics
+
+## Learn Autonomously
+
+- Explore the codebase to understand patterns
+- Don't wait to be told - verify by reading actual code
+- Guidelines may be outdated - existing files are source of truth
+- When in doubt, check implementations in `domains/garden-dmx-components/`
