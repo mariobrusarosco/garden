@@ -202,18 +202,61 @@ Enable debug logs during development:
 <SpeedInsights debug={true} />
 ```
 
-## Viewing Analytics Data
+## Enabling Analytics on Vercel Dashboard
 
-### On Vercel Dashboard
+After deploying your application with the Analytics and SpeedInsights components, you need to enable these features on Vercel:
 
-1. Navigate to your project on Vercel
-2. Click the **Analytics** tab for user behavior data
-3. Click the **Speed Insights** tab for performance metrics
+### Step 1: Navigate to Analytics Tab
 
-### Data Retention
+1. Go to your project on the Vercel dashboard
+2. Click the **Analytics** tab in the navigation
 
-- **Analytics**: 30 days on Hobby plan, longer on Pro/Enterprise
-- **Speed Insights**: Real-time data with historical trends
+### Step 2: Enable Web Analytics
+
+You'll see an "Enable" button. Click it to open the configuration modal.
+
+![Enable Analytics Modal](/enable-next-analytics-and-speed-insights.png)
+
+### Step 3: Choose Your Plan
+
+**Web Analytics on Hobby** (Free):
+- 50,000 events/month included
+- 30 days viewable history
+- No Custom Events
+- Capped data ingestion
+
+**Web Analytics on Pro** ($20/month):
+- Higher limits for custom events and data retention
+
+<Callout>
+  For most personal projects and small applications, the Hobby plan is sufficient. You can always upgrade later if needed.
+</Callout>
+
+### Step 4: Enable Speed Insights
+
+After enabling Analytics, you'll see a similar prompt for **Speed Insights** in the bottom right corner. Click **Enable** to activate it as well.
+
+### Viewing Your Data
+
+Once enabled:
+
+1. **Analytics Tab** - View user behavior data:
+   - Page views
+   - Visitors
+   - Top pages
+   - Geographic distribution
+   - Device and browser data
+
+2. **Speed Insights Tab** - View performance metrics:
+   - Core Web Vitals (LCP, FID, CLS, TTFB)
+   - Real user monitoring data
+   - Performance trends over time
+
+### Data Collection Timeline
+
+- Initial data appears within **5-10 minutes** after enabling
+- Full metrics populate as real users visit your site
+- Historical trends build up over the 30-day retention period
 
 ## Best Practices
 
