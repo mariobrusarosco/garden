@@ -1,0 +1,234 @@
+---
+title: CloudFront SPA Routing 404 Fix
+summary: "Fixing the classic SPA routing issue where CloudFront returns 404 for client-side routes"
+category: "cloud"
+author: mariobrusarosco.github.com
+related-topics:
+  - "aws"
+  - "cloudfront"
+  - "s3"
+  - "spa"
+  - "routing"
+  - "deployment"
+reference-links:
+  - link: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/GeneratingCustomErrorResponses.html"
+    text: "AWS CloudFront Custom Error Responses"
+  - link: "https://tanstack.com/router/latest"
+    text: "TanStack Router Documentation"
+planted-in: 2025-11-02
+last-watered-in: 2025-11-02
+---
+
+# The Problem
+
+When deploying a Single Page Application (SPA) to AWS S3 + CloudFront, visiting the root route `/` or any direct route like `/dashboard` returns a 404 error, even though the app works perfectly on localhost.
+
+## Why This Happens
+
+This is a **classic SPA routing issue** with static hosting:
+
+1. User visits `https://example.com/dashboard`
+2. CloudFront/S3 tries to find a file at the exact path `/dashboard`
+3. Since there's no physical file at that path (only `index.html`), it returns 404
+4. The React application never loads, so client-side routing never executes
+5. User sees a 404 error instead of the app
+
+<Callout>
+  **Why it works locally:** Vite's dev server automatically serves `index.html` for all routes. This is standard SPA dev server behavior, but doesn't work in production without proper configuration.
+</Callout>
+
+# The Solution
+
+Configure CloudFront to serve `index.html` with a **200 status code** for all 404 and 403 errors. This allows:
+
+- Static assets (JS, CSS, images) to be served normally
+- Any non-existent path to load `index.html`
+- The React app to load and handle routing client-side
+- Authentication logic to execute properly
+
+# Implementation Steps
+
+## Step 1: Access CloudFront Console
+
+1. Go to [AWS CloudFront Console](https://console.aws.amazon.com/cloudfront)
+2. Sign in with your AWS credentials
+3. Locate your distribution (find the ID matching your `AWS_CLOUDFRONT_ID`)
+
+## Step 2: Configure Custom Error Responses
+
+1. Click on your CloudFront distribution ID
+2. Navigate to the **Error Pages** tab
+3. Click **Create Custom Error Response**
+
+## Step 3: Add 404 Error Response
+
+```
+HTTP Error Code:           404: Not Found
+Customize Error Response:  Yes
+Response Page Path:        /index.html
+HTTP Response Code:        200: OK
+```
+
+**Why 200 instead of 404?**
+- SEO: Search engines see valid pages, not errors
+- User Experience: No error messages during normal navigation
+- Analytics: Proper tracking of page views
+- Your React app still handles "true" 404s via TanStack Router
+
+## Step 4: Add 403 Error Response
+
+```
+HTTP Error Code:           403: Forbidden
+Customize Error Response:  Yes
+Response Page Path:        /index.html
+HTTP Response Code:        200: OK
+```
+
+<Callout>
+  **Why handle 403?** S3 sometimes returns 403 instead of 404 for non-existent paths. This ensures consistent behavior.
+</Callout>
+
+## Step 5: Wait for Deployment
+
+- CloudFront will show "In Progress" status
+- Deployment typically takes **5-15 minutes**
+- Wait until status shows "Deployed" before testing
+
+# Verification
+
+Test these scenarios after deployment:
+
+1. **Root Route:** Visit `/` → Should load app and redirect appropriately
+2. **Direct Route:** Visit `/dashboard` → Should load app and show route
+3. **Non-existent Route:** Visit `/fake-page` → Should show your custom 404 component (not CloudFront's 404)
+4. **Static Assets:** Check DevTools Network tab → JS/CSS should load with 200 status
+
+## Quick Test Commands
+
+```bash
+# Should return HTTP/2 200, not 404
+curl -I https://your-domain.com/
+
+# Should also return HTTP/2 200 and serve index.html
+curl -I https://your-domain.com/any-random-path
+```
+
+# Understanding SPA Routing
+
+## 🎓 Client-Side vs Server-Side Routing
+
+**Client-Side Routing (SPAs):**
+- Routes handled by JavaScript in the browser
+- Router intercepts link clicks and updates URL via History API
+- No server request when navigating between routes
+- All routes compiled into single `index.html` + JavaScript bundles
+
+**Server-Side Routing (Traditional):**
+- Each route = different file/endpoint on server
+- Clicking a link triggers full page reload
+- Server decides what HTML to send
+
+## The SPA Deployment Challenge
+
+When you build a SPA:
+1. All routes compile into `index.html` + JavaScript bundles
+2. Routing logic lives in JavaScript, not on the server
+3. Server only has static files: `index.html`, `assets/main-xyz.js`, etc.
+
+**The mismatch:**
+- User visits `/dashboard`
+- Server looks for physical file at `/dashboard`
+- File doesn't exist (it's a client-side route!)
+- Server returns 404 before JavaScript can load
+
+**The fix:**
+- Configure server to serve `index.html` for all non-file paths
+- JavaScript loads and reads the URL
+- Client-side router renders the correct component
+
+## How Different Platforms Handle This
+
+| Environment | Solution |
+|-------------|----------|
+| **Vite Dev Server** | Built-in middleware |
+| **Netlify** | Automatic via `_redirects` file |
+| **Vercel** | Automatic SPA detection |
+| **AWS CloudFront** | **Manual configuration** (what we just did!) |
+| **Nginx** | `try_files $uri $uri/ /index.html;` |
+| **Apache** | `.htaccess` with `FallbackResource` |
+
+# Apply to All Environments
+
+Remember to configure this for **each CloudFront distribution**:
+
+- Demo: `best-shot-demo.mariobrusarosco.com`
+- Staging: `best-shot-staging.mariobrusarosco.com`
+- Production: `best-shot.mariobrusarosco.com`
+
+Each environment likely uses a different distribution, so apply the same error response configuration to all.
+
+# Future Automation
+
+Consider using Infrastructure as Code to prevent this in future deployments:
+
+## AWS CloudFormation
+
+```yaml
+CustomErrorResponses:
+  - ErrorCode: 404
+    ResponseCode: 200
+    ResponsePagePath: /index.html
+  - ErrorCode: 403
+    ResponseCode: 200
+    ResponsePagePath: /index.html
+```
+
+## Terraform
+
+```hcl
+resource "aws_cloudfront_distribution" "main" {
+  custom_error_response {
+    error_code         = 404
+    response_code      = 200
+    response_page_path = "/index.html"
+  }
+  
+  custom_error_response {
+    error_code         = 403
+    response_code      = 200
+    response_page_path = "/index.html"
+  }
+}
+```
+
+# Troubleshooting
+
+## Changes Not Taking Effect
+
+- Wait 10-15 minutes for CloudFront deployment
+- Hard refresh browser: `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)
+- Create cache invalidation for `/*` in CloudFront console
+- Verify both 403 and 404 responses are configured
+
+## Static Assets Not Loading
+
+- Check `dist/` folder has all files
+- Verify S3 sync command completed successfully
+- Check asset paths in `index.html` match S3 files
+- Verify CloudFront origin configuration
+
+## Infinite Redirect Loop
+
+- Check authentication state loading
+- Look for circular redirects in route definitions
+- Check browser console for JavaScript errors
+- Verify environment variables and API endpoints
+
+# Summary
+
+**Problem:** CloudFront returns 404 for SPA routes (looking for physical files)  
+**Solution:** Custom Error Responses serve `index.html` for 404/403 errors  
+**Result:** All routes work, authentication flows properly, improved UX  
+**Effort:** ~15 minutes configuration + 5-15 minutes deployment  
+
+This is standard configuration for any SPA deployed to CloudFront/S3 and should be part of initial infrastructure setup.
