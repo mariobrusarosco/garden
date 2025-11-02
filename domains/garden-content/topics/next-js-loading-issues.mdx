@@ -1,0 +1,499 @@
+---
+title: Next.js Loading State Issues
+summary: "Deep dive into Next.js App Router's problematic loading.tsx behavior, caching conflicts, and design gaps"
+category: "concepts"
+icon: "alert"
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "next"
+  - "next-js"
+  - "react"
+  - "performance"
+  - "ux"
+reference-links:
+  - link: "https://github.com/vercel/next.js/issues/77322"
+    text: "GitHub Issue #77322 - loading.tsx doesn't work with ISR"
+  - link: "https://github.com/vercel/next.js/issues/43548"
+    text: "GitHub Issue #43548 - loading.tsx not instant for dynamic pages"
+  - link: "https://github.com/vercel/next.js/issues/9989"
+    text: "GitHub Issue #9989 - Blank page on browser back button"
+planted-in: 2025-11-01
+last-watered-in: 2025-11-01
+---
+
+# Next.js Loading State Issues
+
+## The Problem
+
+Next.js's App Router introduces a file-based convention for loading states (`loading.tsx`), but it suffers from fundamental design issues that create poor user experiences, especially when combined with static generation and caching strategies.
+
+## What We Experienced
+
+### The Scenario
+
+Building a digital garden with:
+- Local MDX content
+- Static metadata from JSON files
+- SSG (Static Site Generation) for topic pages
+- `generateStaticParams` for pre-rendering routes
+
+### Expected Behavior
+
+1. **First visit** to `/topics/analytics` - Page loads (maybe shows loader briefly)
+2. **Navigate away** to `/topics`
+3. **Return** to `/topics/analytics` - **Instant navigation** from cache, no loader
+
+### Actual Behavior
+
+Every navigation showed the loading component (animated flower), even for:
+- Previously visited pages
+- Statically generated pages
+- Pages with no actual data fetching
+
+## The Root Causes
+
+### Issue 1: loading.tsx Shows on Every Navigation
+
+Even though Next.js claims "loading states are cached and reused on navigation for instant navigation," the reality is different.
+
+When you have `loading.tsx` in a route segment, Next.js creates a Suspense boundary that triggers on every navigation transition, causing visual flashes even for cached content.
+
+### Issue 2: Conflicts with generateStaticParams
+
+**GitHub Issue #77322 (Open since 2025)**
+
+`loading.tsx` fundamentally breaks when combined with ISR features:
+
+```tsx
+// This combination doesn't work properly
+export async function generateStaticParams() {
+  return topics.map((topic) => ({ topic }))
+}
+
+export default async function Page({ params }) {
+  // Static page, should be instant
+  return <div>Content</div>
+}
+```
+
+With `app/topics/[topic]/loading.tsx` present:
+- ❌ Loading state may not appear at all
+- ❌ Or appears every time despite pages being pre-rendered
+- ❌ No official fix from Next.js team
+
+<Callout>
+Quote from GitHub Issue #77322: "This behavior works only when I remove any ISR related features."
+</Callout>
+
+### Issue 3: No Smart Loading States
+
+Next.js forces a binary choice:
+
+**Option A: Include loading.tsx**
+- ✅ Users get feedback if something is slow
+- ❌ Shows on every navigation, even cached pages
+- ❌ Creates annoying flashes for instant content
+
+**Option B: Remove loading.tsx**
+- ✅ No flashes on cached pages
+- ❌ No feedback if something goes wrong
+- ❌ Users see blank pages during actual delays
+
+<Callout>
+There's no way to say "show loading only if it takes longer than 200ms" or "show cached content while revalidating"
+</Callout>
+
+## How Other Tools Handle This
+
+### React Query
+
+```tsx
+const { data, isLoading, isFetching } = useQuery({
+  queryKey: ['topic', topic],
+  queryFn: fetchTopic,
+  staleTime: Infinity
+})
+
+if (isLoading) return <Loader />  // Only first load
+return <Content data={data} />    // Instant on cached visits
+```
+
+**Behavior:**
+- First visit: Shows loader
+- Cached visits: Instant, no loader
+- Background refetch: Shows stale data, optional refetch indicator
+- Zero configuration needed
+
+### SWR (Vercel's Own Library!)
+
+```tsx
+const { data, isLoading } = useSWR(`/api/topics/${topic}`)
+```
+
+Same smart behavior - only shows loading when actually loading, not on cached data.
+
+## The Irony
+
+Vercel created SWR specifically to solve smart caching and loading states, yet Next.js's built-in loading.tsx pattern doesn't have the same intelligence.
+
+## Evidence: GitHub Issues
+
+### Issue #77322 - loading.tsx with ISR (OPEN)
+**Status:** Unresolved since March 2025
+**Problem:** Using `generateStaticParams` breaks loading.tsx
+**Impact:** 7+ developers affected, no official fix
+
+**Quote:**
+> "loading.tsx contents don't appear when using ISR, and removing generateStaticParams makes the loading spinner work but removes cached route benefits"
+
+### Issue #43548 - Link Navigation Not Instant
+**Status:** Marked "Completed" but users still report issues
+**Problem:** Loading states appear with delay, not instantly
+**Impact:** "Navigation creates just horrible experience"
+
+**Vercel's Response:**
+> Technical explanation that this is "how it works" - closed without architectural fix
+
+### Issue #9989 - Blank Pages on Back Button
+**Status:** Closed (older issue)
+**Problem:** Dynamic SSR pages show blank content when using browser back
+**Impact:** Production deployments affected
+
+This proves the concern about blank pages without loading.tsx is real, not theoretical.
+
+### Issue #54514 - Request to Disable Router Cache
+**Problem:** Router cache revalidates after 30 seconds
+**User Request:** Need ability to disable or control cache behavior
+**Status:** Ongoing discussion
+
+## Why This Matters
+
+### For Digital Gardens / Content Sites
+
+Pages with:
+- Local content
+- No external API calls
+- Static generation
+
+**Should not need complex loading state management.** The content exists at build time and should load instantly.
+
+### For Data Fetching Apps
+
+Pages with:
+- API calls
+- Database queries
+- Real async operations
+
+**Need smart loading states** that:
+- Show only when actually waiting
+- Don't flash on cached data
+- Provide background refetch indicators
+
+Next.js's loading.tsx handles neither case well.
+
+## Current Workarounds
+
+### 1. Remove loading.tsx for SSG Routes
+
+For static pages that load instantly:
+
+```bash
+# Remove unnecessary loading files
+rm app/topics/loading.tsx
+rm app/topics/[topic]/loading.tsx
+```
+
+**Pros:**
+- No flashing on navigation
+- Pages swap instantly
+
+**Cons:**
+- No feedback if something goes wrong
+- Relies on SSG always working
+
+### 2. Use Client Components + React Query
+
+Convert to client-side data fetching:
+
+```tsx
+"use client"
+
+const { data, isLoading } = useQuery({
+  queryKey: ['topic', topic],
+  queryFn: () => fetch(`/api/topics/${topic}`)
+})
+```
+
+**Pros:**
+- Smart caching behavior
+- No loading flashes on cached data
+- Background refetch support
+
+**Cons:**
+- Loses SSR benefits
+- More client-side JavaScript
+
+### 3. Custom Loading Logic
+
+Implement time-based loading states:
+
+```tsx
+"use client"
+
+const [showLoading, setShowLoading] = useState(false)
+
+useEffect(() => {
+  const timer = setTimeout(() => setShowLoading(true), 200)
+  return () => clearTimeout(timer)
+}, [])
+
+if (showLoading) return <Loader />
+```
+
+**Pros:**
+- Only shows if actually slow
+
+**Cons:**
+- Requires client component
+- Extra code for every route
+
+### 4. Service Worker Workaround (Issue #77322)
+
+One developer created a service worker solution to detect navigation and show loading:
+
+**Pros:**
+- Works with ISR
+
+**Cons:**
+- Complex setup
+- Client-side workaround for framework issue
+- Maintenance burden
+
+## The Design Gap
+
+### What Next.js Assumes
+
+1. SSG/ISR works perfectly → pages load instantly
+2. Router Cache works perfectly → subsequent visits instant
+3. Network is reliable → no delays
+4. Therefore → loading.tsx as simple fallback is fine
+
+### What Reality Requires
+
+1. Network can be slow
+2. Cache can miss or expire
+3. Prefetch might not complete
+4. Users need smart feedback, not binary states
+
+### What's Missing
+
+- **Conditional loading:** Show only if actually slow
+- **Stale-while-revalidate:** Show cached content during refetch
+- **Runtime intelligence:** Adapt to actual performance
+- **Granular control:** Per-route caching strategies
+
+## Comparison: Next.js vs. Traditional SPA
+
+### Traditional SPA (React Router + React Query)
+
+```tsx
+// Route is instant after first load
+// React Query handles caching automatically
+// Loading states are smart, not file-based
+
+const { data, isLoading } = useQuery(queryKey, fetchFn)
+```
+
+**Navigation behavior:**
+- First load: Shows loader
+- Cached: Instant
+- No configuration needed
+
+### Next.js App Router
+
+```tsx
+// Need to decide: include loading.tsx or not?
+// If included: shows on every navigation
+// If excluded: no feedback on slow loads
+// Need generateStaticParams for static routes
+// Need to understand Router Cache behavior
+// Need to manage Suspense boundaries
+
+export default async function Page() {
+  // Is this fast enough to not need loading.tsx?
+  // Will users see flashes?
+  // Will ISR break loading states?
+}
+```
+
+**Navigation behavior:**
+- Depends on configuration
+- May flash on cached pages
+- May show blank on slow loads
+- Requires understanding of caching layers
+
+## When Next.js Works Well
+
+To be fair, Next.js excels at:
+
+### 1. Marketing Sites
+- Heavily SEO-dependent
+- Content changes infrequently
+- First load performance critical
+- Navigation UX less critical
+
+### 2. Server-Heavy Apps
+- Lots of database queries
+- Server-side authorization
+- Data that can't be cached client-side
+
+### 3. ISR-Free Static Sites
+- Pure SSG without dynamic params
+- Simple page hierarchies
+- No complex caching needs
+
+## When It Falls Short
+
+### 1. Interactive Apps
+- Client-side state management
+- Frequent navigation between pages
+- Real-time data updates
+- Chat, dashboards, admin panels
+
+### 2. Content Sites with Dynamic Routes
+- Digital gardens
+- Documentation sites
+- Blogs with category/tag filtering
+- Any site using `generateStaticParams`
+
+### 3. Apps Requiring Smart Caching
+- E-commerce (prices, inventory)
+- Social feeds
+- Activity streams
+- Any data needing stale-while-revalidate
+
+## Recommendations
+
+### For New Projects
+
+**If building:**
+- Digital garden
+- Documentation site
+- Blog
+- Content-heavy site with dynamic routes
+
+**Consider:**
+- Astro (built for content, zero config routing)
+- VitePress (Markdown-first, simple)
+- Docusaurus (content-focused)
+- Remix (better loading/cache story)
+
+**Or traditional SPA:**
+- Vite + React Router + React Query
+- Simple, predictable, smart caching
+
+### For Existing Next.js Projects
+
+**If experiencing loading issues:**
+
+1. **Audit your routes:**
+   - Which are truly dynamic (server-rendered)?
+   - Which are static (can use SSG)?
+
+2. **Remove loading.tsx from static routes:**
+   - Pages with `generateStaticParams`
+   - Pages reading local files
+   - Pages with no async operations
+
+3. **Keep loading.tsx only for:**
+   - Routes with real database queries
+   - External API calls
+   - Server actions with delays
+
+4. **Consider React Query for dynamic data:**
+   - Better caching control
+   - Smart loading states
+   - Background refetch
+
+### Testing Strategy
+
+**Always test:**
+1. First navigation to page
+2. Navigate away
+3. Return to same page (should be instant)
+4. Hard refresh and repeat
+
+**Watch for:**
+- Flashing loading states on cached pages
+- Blank pages during slow loads
+- Inconsistent behavior between navigations
+
+## The Bigger Picture
+
+### Framework Complexity
+
+Next.js markets itself as "batteries included," but the reality is:
+
+- Multiple caching layers (Server, Data, Router, Full Route)
+- File-based conventions that conflict with each other
+- Assumptions that don't hold in real-world conditions
+- "Solutions" that create new problems
+
+### The Trade-off
+
+**What you gain:**
+- SEO-friendly SSR
+- Co-located API routes
+- Vercel deployment integration
+- Edge runtime capabilities
+
+**What you pay:**
+- Complexity managing loading states
+- Debugging caching behavior
+- Working around framework limitations
+- Constant mental model of server/client boundaries
+
+### Is It Worth It?
+
+For many apps, especially those that don't need aggressive SEO or server-side rendering, **the complexity doesn't pay for itself.**
+
+Traditional SPAs with smart client-side caching often provide:
+- Better navigation UX
+- Simpler mental model
+- Fewer edge cases
+- More predictable behavior
+
+## Conclusion
+
+Next.js's loading.tsx pattern represents a **fundamental design gap**:
+
+1. **File-based conventions can't adapt to runtime conditions**
+2. **Conflicts with ISR/SSG remain unresolved** (Issue #77322)
+3. **No smart caching like React Query or SWR**
+4. **Forces binary choice:** flash on every navigation OR blank on slow loads
+
+The GitHub issues prove this isn't user error or misconfiguration - it's a known framework limitation that affects production applications.
+
+## What Next.js Should Learn From
+
+**React Query's Philosophy:**
+- Runtime intelligence over file conventions
+- Stale-while-revalidate by default
+- Smart loading states
+- Granular cache control
+
+**Until Next.js addresses these gaps:**
+- Be cautious with `loading.tsx`
+- Test navigation behavior thoroughly
+- Consider client-side data fetching for better UX
+- Don't assume "working as designed" means "good design"
+
+## Final Thought
+
+<Callout>
+Just because a framework is popular doesn't mean it's well-designed for every use case. Next.js's loading state story proves that "batteries included" can sometimes mean "sharp edges included."
+</Callout>
+
+The fact that Vercel created SWR - which solves these problems elegantly - shows they understand smart caching. The question is: when will Next.js learn from its own ecosystem?

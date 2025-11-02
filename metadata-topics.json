@@ -7,6 +7,7 @@
       "handling-errors-in-react.mdx",
       "icons-in-a-react-app.mdx",
       "icons.mdx",
+      "next-js-loading-issues.mdx",
       "next-js.mdx",
       "react-context.mdx",
       "react-form-elements.mdx",
@@ -304,6 +305,7 @@
   "next": {
     "files": [
       "next-analytics.mdx",
+      "next-js-loading-issues.mdx",
       "next-js.mdx"
     ],
     "summary": "",
@@ -313,6 +315,7 @@
   "next-js": {
     "files": [
       "next-analytics.mdx",
+      "next-js-loading-issues.mdx",
       "next-js.mdx",
       "using-fonts-tailwind-v4-and-next-js.mdx"
     ],
@@ -330,7 +333,8 @@
   },
   "performance": {
     "files": [
-      "next-analytics.mdx"
+      "next-analytics.mdx",
+      "next-js-loading-issues.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -339,6 +343,14 @@
   "monitoring": {
     "files": [
       "next-analytics.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "ux": {
+    "files": [
+      "next-js-loading-issues.mdx"
     ],
     "summary": "",
     "category": "concepts",

@@ -1,0 +1,599 @@
+---
+title: Example
+category: "database"
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "sql"
+  - "database"
+  - "sqlalchemy"
+planted-in: 2021-10-01
+last-watered-in: 2021-10-01
+---
+
+# SQLAlchemy
+
+## Base
+
+What is Base (Declarative Base)?
+
+The Simple Explanation:
+
+Base is like a "blueprint factory" that tells SQLAlchemy: "Hey, this Python class
+represents a database table!"
+
+When you write:
+class BalancePoint(Base):
+
+You're saying: "BalancePoint is a database table, please map it!"
+
+---
+
+Base concept:
+_(project Better Call Buffet: https://github.com/mariobrusarosco/better-call-buffet)_
+
+Breaking Down connection_and_session.py:
+
+### Line 1-3: Import SQLAlchemy tools
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+### Line 7: Create the database connection
+
+engine = create_engine(settings.DATABASE_URL) # Connects to PostgreSQL
+
+### Line 8: Create a session factory (for running queries)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+### Line 10: Create the Base class - THE MAGIC HAPPENS HERE! ✨
+
+Base = declarative_base()
+
+---
+
+What Does Base Do?
+
+1. It's a Parent Class
+
+When you inherit from Base, you get superpowers:
+class BalancePoint(Base): # Now BalancePoint has SQLAlchemy magic!
+**tablename** = "balance_points" # ... columns
+
+2. It Tracks All Your Models
+
+Base keeps a registry of all tables:
+
+- BalancePoint(Base) → registers "balance_points" table
+- Account(Base) → registers "accounts" table
+- Transaction(Base) → registers "transactions" table
+
+3. It Creates Database Tables
+
+When you run migrations, Base knows how to:
+
+- Create tables from your Python classes
+- Generate SQL CREATE TABLE statements
+- Set up relationships between tables
+
+---
+
+Real-World Analogy:
+
+Think of Base like a "Registration Office":
+
+1. You (developer): "Hey Base, this is BalancePoint class!"
+2. Base: "Got it! I'll remember this is a database table"
+3. Alembic (migrations): "Hey Base, give me all registered tables so I can create
+   them!"
+4. Base: "Here you go: BalancePoint, Account, Transaction..."
+
+---
+
+Why Every Model Inherits from Base:
+
+### ✅ CORRECT - Will become a database table
+
+class BalancePoint(Base):
+**tablename** = "balance_points"
+
+### ❌ WRONG - Just a regular Python class, NOT a database table
+
+class BalancePoint:
+**tablename** = "balance_points"
+
+---
+
+Key Takeaway:
+
+Base = declarative_base() creates a special class that:
+
+- ✅ Connects Python classes to database tables
+- ✅ Tracks all your models in one place
+- ✅ Enables migrations to work
+- ✅ Provides ORM magic (queries, relationships, etc.)
+
+## Models
+
+### Creating Models
+
+1. Define the model class
+```python
+class BalancePoint(Base):
+    ...
+```
+
+2. Define the table name
+```python
+    ...
+    __tablename__ = "balance_points"
+    ...
+```
+
+3. Define the field
+
+```python
+    ...
+    field_name = Column(...attributes)
+    ...
+```
+
+
+### Define table name
+
+
+### Primary Key
+
+```python
+    ...
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    ...
+```
+
+### Foreign Keys
+
+```python
+    ...
+    field_name = Column(..., ForeignKey("table_name.field_name"))
+    ...
+```
+
+### Relationships
+
+### Timestamps
+
+### Constraints & Indexes
+2. __table_args__ - Constraints & Indexes
+
+  This is where you define database-level rules and optimizations.
+
+  The Anatomy:
+
+  __table_args__ = (
+      # Add constraints and indexes here
+      Constraint1(...),
+      Constraint2(...),
+      Index1(...),
+      Index2(...),
+  )
+
+  Important: It's a tuple, so:
+  - Single item: (item,) ← Notice the comma!
+  - Multiple items: (item1, item2, item3)
+
+  ---
+  Part A: CONSTRAINTS - Data Rules
+
+  UniqueConstraint - Prevent Duplicates
+
+  Your Requirement:
+  "One balance point per account per day"
+
+  UniqueConstraint("account_id", "date", name="uix_balance_points_account_date")
+
+  What this does:
+  # ✅ ALLOWED
+  Account #123, date=2025-01-01  # First record
+  Account #456, date=2025-01-01  # Different account, same date - OK!
+
+  # ❌ REJECTED by database
+  Account #123, date=2025-01-01  # Already exists!
+  # ERROR: duplicate key violates unique constraint "uix_balance_points_account_date"
+
+  Why important?
+  - Prevents bugs (accidentally creating duplicate balance points)
+  - Enforces business rule at database level
+  - Database is faster at checking than Python code
+
+  ---
+  CheckConstraint - Value Rules
+
+  Example (not required for you now, but good to know):
+  CheckConstraint("balance >= 0", name="positive_balance")
+
+  Ensures balance is never negative.
+
+  ---
+  Part B: INDEXES - Speed Boosts
+
+  What's an Index?
+
+  Think of a book:
+  - Without index: Read every page to find "SQLAlchemy" (SLOW 🐌)
+  - With index: Check index, jump to page 247 (FAST ⚡)
+
+  Database indexes work the same way!
+
+  ---
+  Types of Queries You'll Run:
+
+  Query 1: Get timeline for account
+  SELECT * FROM balance_points
+  WHERE account_id = '123'
+    AND date >= '2025-01-01'
+    AND date <= '2025-12-31'
+  ORDER BY date
+
+  Query 2: Find all updating balances
+  SELECT * FROM balance_points
+  WHERE timeline_status = 'updating'
+
+  Query 3: Check account status
+  SELECT * FROM balance_points
+  WHERE account_id = '123'
+    AND timeline_status = 'updating'
+
+  ---
+  Indexes You Need:
+
+  Index 1: Primary timeline queries
+  Index("ix_balance_points_account_date", "account_id", "date")
+  - Speeds up: "Get balance timeline for account X from date A to B"
+  - Composite index (multiple columns together)
+
+  Index 2: Status filtering
+  Index("ix_balance_points_status", "timeline_status")
+  - Speeds up: "Find all balance points with status=updating"
+
+  Index 3: Account status checks
+  Index("ix_balance_points_account_status", "account_id", "timeline_status")
+  - Speeds up: "Does account X have any updating balances?"
+
+
+### Relationships
+
+### Nullable Values
+
+```python
+    ...
+    field_name = Column(...attributes, nullable=True)
+    ...
+```
+
+
+## Datatypes
+
+### Date and Time
+
+
+*DateTime - Full timestamp*
+
+```python
+datetime.utcnow()  # 2025-10-14 15:32:47.123456
+```
+- Stores: Date + Time + Microseconds
+- Use for: Audit trails (created_at, updated_at), event timestamps
+- Example: "Transaction created at 3:32:47 PM on Oct 14th"
+
+*Date - Just the day*
+
+```python
+date.today()  # 2025-10-14
+```
+- Stores: Only the date (year-month-day)
+- Use for: Daily records, birthdays, deadlines
+- Example: "Balance for October 14th"
+
+
+### Decimal
+
+```python
+    /*
+    DECIMAL(15, 2) means:
+    - 15 total digits
+    - 2 digits after the decimal point
+    */
+    ...
+    field_name = Column(DECIMAL(15, 2), nullable=False)
+    ...
+```
+
+### String
+
+
+## Cascade
+
+1. CASCADE - The Cleanup Rule
+
+The Problem Without CASCADE:
+
+Imagine this scenario:
+Account #123 has:
+├── Balance Point: Jan 1st
+├── Balance Point: Jan 2nd
+├── Balance Point: Jan 3rd
+└── ... 365 balance points
+
+User deletes Account #123
+
+What happens to those 365 balance points?
+
+Without CASCADE, you get orphaned records (balance points that reference a deleted
+account):
+-- ❌ Database error!
+ERROR: Cannot delete account because balance_points reference it
+-- OR worse: orphaned data taking up space
+
+---
+CASCADE to the Rescue!
+
+```python
+ForeignKey("accounts.id", ondelete="CASCADE")
+```
+
+What this means:
+"When the parent (account) is deleted, automatically delete all children (balance 
+points)"
+
+The Flow:
+1. User: "Delete Account #123"
+2. Database: "OK, let me check foreign keys with CASCADE..."
+3. Database: "Found 365 balance points → Deleting them first"
+4. Database: "Now deleting Account #123"
+5. Database: "✅ Done! Everything cleaned up!"
+
+---
+CASCADE Options:
+
+| Option    | Behavior                                       |
+|-----------|------------------------------------------------|
+| CASCADE   | Delete child records when parent is deleted    |
+| SET NULL  | Set foreign key to NULL when parent is deleted |
+| RESTRICT  | Prevent deletion if children exist (default)   |
+| NO ACTION | Same as RESTRICT                               |
+
+For balance_points: Use CASCADE because balance points without an account make no
+sense!
+
+
+
+
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda officiis adipisci veniam earum nihil cumque fugiat reiciendis nam maiores doloremque, voluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+
+**Blockquote**
+
+> Blockquote blockquote oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam. oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+
+**Callout**
+
+<Callout>
+  Callout oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+  oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+</Callout>
+
+**Code**
+
+```tsx
+import * as React from "react";
+
+const ParentComponent = () => {
+  return (
+    <themeContext.Provider value="dark">
+      <ChildComponent />
+    </themeContext.Provider>
+  );
+};
+
+const ChildComponent = () => {
+  const theme = React.useContext(themeContext);
+
+  return <div>Theme is {theme}</div>;
+};
+```
+
+**Unorderd List**
+
+- One
+- Two
+- Three
+
+**Ordered List**
+
+1. One
+2. Two
+3. Three
+
+
+## Alembic
+
+---
+  What is Alembic?
+
+  Simple answer: Alembic is a database version control system for SQLAlchemy.
+
+  Think of it like Git, but for your database schema:
+  - Git tracks code changes → commits
+  - Alembic tracks database changes → migrations
+
+  ---
+  The Problem Alembic Solves
+
+  Without Alembic (BAD):
+
+  Day 1: You create balance_points table manually
+  Day 2: Teammate adds a column manually
+  Day 3: Production database is different from dev
+  Day 4: 😱 Everything breaks!
+
+  Problems:
+  - No history of database changes
+  - Manual SQL commands (error-prone)
+  - Can't rollback mistakes
+  - Different environments have different schemas
+
+  ---
+  With Alembic (GOOD):
+
+  Day 1: Create migration "add_balance_points_table"
+  Day 2: Create migration "add_timeline_status_column"
+  Day 3: Run migrations on production → Same as dev!
+  Day 4: ✅ Everything works!
+
+  Benefits:
+  - ✅ Version controlled database changes
+  - ✅ Automatic SQL generation
+  - ✅ Rollback capability (undo changes)
+  - ✅ Same schema everywhere (dev/staging/prod)
+
+  ---
+  How Alembic Works - The Flow
+
+  Step 1: You Change Your Model
+
+  # models.py
+  class BalancePoint(Base):
+      date = Column(Date)  # ← You add this field
+
+  Step 2: Alembic Detects the Change
+
+  alembic revision --autogenerate -m "Add date field"
+
+  Alembic:
+  1. Reads your current model
+  2. Compares to database schema
+  3. Generates migration file with SQL
+
+  Step 3: Migration File is Created
+
+  # migrations/versions/abc123_add_date_field.py
+
+  def upgrade():
+      # SQL to apply the change
+      op.add_column('balance_points',
+          sa.Column('date', sa.Date(), nullable=False)
+      )
+
+  def downgrade():
+      # SQL to undo the change
+      op.drop_column('balance_points', 'date')
+
+  Step 4: Apply Migration to Database
+
+  alembic upgrade head
+
+  Alembic:
+  1. Runs the upgrade() function
+  2. Executes SQL against database
+  3. Marks migration as "applied" in alembic_version table
+
+  ---
+  Key Alembic Concepts
+
+  1. Migrations = Database Commits
+
+  git log                     | alembic history
+  ------------------------------|----------------------------
+  commit abc123               | revision abc123
+  "Add user login"            | "Add date field"
+                              |
+  commit def456               | revision def456
+  "Fix bug"                   | "Add index on date"
+
+  2. The alembic_version Table
+
+  Alembic creates a special table:
+  CREATE TABLE alembic_version (
+      version_num VARCHAR(32) PRIMARY KEY
+  );
+
+  This tracks which migration is currently applied:
+  Current: abc123
+           ↓
+  Available: def456, ghi789 (not applied yet)
+
+  3. Migration Chain
+
+  Migrations are linked like a blockchain:
+  Initial    →    Add table    →    Add column    →    Add index
+  (empty)         abc123            def456             ghi789
+                    ↑                  ↑                  ↑
+              depends on         depends on         depends on
+                 nothing            abc123             def456
+
+  ---
+  Common Alembic Commands
+
+  Generate Migration (autogenerate)
+
+  alembic revision --autogenerate -m "Description"
+  - Compares model to DB
+  - Creates migration file
+  - DON'T EDIT THE FILE (best practice)
+
+  Apply Migrations
+
+  alembic upgrade head        # Apply all pending migrations
+  alembic upgrade +1          # Apply next migration only
+  alembic upgrade abc123      # Apply up to specific revision
+
+  Rollback Migrations
+
+  alembic downgrade -1        # Undo last migration
+  alembic downgrade abc123    # Rollback to specific revision
+  alembic downgrade base      # Undo everything (dangerous!)
+
+  Check Status
+
+  alembic current            # What revision is applied?
+  alembic history            # Show all migrations
+  alembic show abc123        # Show specific migration details
+
+
+### Preview Migrations
+
+**Use --sql Flag (Best Option) ✅**
+
+This shows you the exact SQL that will run, without executing it:
+
+# Generate SQL for upgrading to head
+docker compose exec web alembic upgrade head --sql
+
+# Or for a specific revision
+docker compose exec web alembic upgrade abc123 --sql
+
+Output:
+-- Running upgrade aa504042a833 -> xyz123
+
+ALTER TABLE balance_points ADD COLUMN account_id UUID NOT NULL;
+ALTER TABLE balance_points ADD COLUMN date DATE NOT NULL;
+ALTER TABLE balance_points ADD COLUMN balance NUMERIC(15,2) NOT NULL;
+ALTER TABLE balance_points ADD COLUMN timeline_status VARCHAR NOT NULL DEFAULT
+'current';
+ALTER TABLE balance_points ADD COLUMN has_transactions BOOLEAN NOT NULL DEFAULT false;
+
+ALTER TABLE balance_points ADD CONSTRAINT fk_balance_points_account_id
+    FOREIGN KEY(account_id) REFERENCES accounts (id) ON DELETE CASCADE;
+
+CREATE UNIQUE INDEX uix_balance_points_account_date
+    ON balance_points (account_id, date);
+
+-- ... etc
+
+Perfect for:
+- ✅ Seeing exact SQL before running
+- ✅ Reviewing changes with your team
+- ✅ Understanding what will happen

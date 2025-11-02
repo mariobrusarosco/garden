@@ -4,8 +4,6 @@ import "./globals.css";
 
 import { Header } from "@/domains/garden-components/header";
 import { Navbar } from "@/domains/garden-components/navbar";
-import { Suspense } from "react";
-import LoadingScreen from "./loading";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -40,7 +38,7 @@ export default function RootLayout({
         <Header />
 
         <main data-ui="main-container">
-          <Suspense fallback={<LoadingScreen />}>{children}</Suspense>
+          {children}
         </main>
         <Analytics />
         <SpeedInsights />

@@ -23,8 +23,8 @@ export default async function TopicScreen({ params }: Props) {
     <div data-ui="screen-topic" >
       <PageHeading title={normalizedTopic} />
 
-      <div className="list-of-notes global-spacing">
-        <ul className="mt-10 grid gap-y-8 md:grid-cols-2">
+      <div data-ui="list-of-notes" className="global-spacing">
+        <ul data-ui="list-of-notes-list" className="mt-10 grid gap-y-8 md:grid-cols-2">
           {topicNotes.map((filename: string) => {
             const noteSlug = filename.split(".mdx")[0];
             const normalizedNote = removeHyphens(noteSlug);

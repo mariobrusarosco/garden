@@ -1,0 +1,239 @@
+---
+title: Sentry Multi-Environment Setup
+summary: "Monitor multiple environments (demo, staging, production) using a single Sentry project with environment tagging"
+category: "tools"
+icon: "shield"
+author: mariobrusarosco.github.com
+reference-links:
+  - link: "https://docs.sentry.io/platforms/node/configuration/environments/"
+    text: "Sentry Environments Documentation"
+  - link: "https://docs.sentry.io/platforms/node/configuration/filtering/"
+    text: "Sentry Filtering Documentation"
+  - link: "https://docs.sentry.io/product/best-practices/"
+    text: "Sentry Best Practices"
+related-topics:
+  - "error-monitoring"
+  - "sentry"
+planted-in: 2025-10-26
+last-watered-in: 2025-10-26
+---
+
+# Sentry Multi-Environment Setup
+
+Use one Sentry project to monitor multiple environments (demo, staging, production) through environment tagging. Unified monitoring with clear separation.
+
+## Benefits
+
+✅ **Unified Dashboard** - All errors in one place  
+✅ **Easy Comparison** - Compare error rates across environments  
+✅ **Cost Effective** - Save on Sentry quota  
+✅ **Simplified Management** - One project to configure  
+✅ **Environment Filtering** - Filter by environment in Sentry UI
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────┐
+│       Sentry Project: "api-best-shot"       │
+├─────────────────────────────────────────────┤
+│  ┌────────┐  ┌────────┐  ┌────────────┐    │
+│  │  demo  │  │staging │  │ production │    │
+│  └────────┘  └────────┘  └────────────┘    │
+│                                             │
+│  Same DSN, Different Environment Tags       │
+└─────────────────────────────────────────────┘
+```
+
+## Quick Setup
+
+### 1. Create Sentry Project
+
+1. Visit [Sentry.io](https://sentry.io)
+2. Create new project → Choose **Node.js**
+3. Name: `api-best-shot-non-production`
+4. Copy the **DSN**
+
+### 2. Configure Environment Variables
+
+<Callout>
+  **Key Insight**: Use the SAME DSN for all environments. Sentry differentiates
+  using the `environment` tag set via `NODE_ENV`.
+</Callout>
+
+#### `.env.demo`
+
+```bash
+NODE_ENV=demo
+SENTRY_DSN=https://your-key@o123456.ingest.sentry.io/789012
+```
+
+#### `.env.staging`
+
+```bash
+NODE_ENV=staging
+SENTRY_DSN=https://your-key@o123456.ingest.sentry.io/789012
+```
+
+### 3. Initialize Sentry
+
+```typescript
+// src/services/profiling/sentry-instrument.ts
+import * as Sentry from "@sentry/node";
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV, // 'demo', 'staging', or 'production'
+  tracesSampleRate: 1.0,
+});
+```
+
+## Filtering by Environment
+
+### In Sentry UI
+
+1. Navigate to **Issues** or **Performance**
+2. Use environment dropdown filter
+3. Select: `demo`, `staging`, or `production`
+4. Compare data across environments
+
+### Environment-Specific Alerts
+
+```yaml
+Alert Rule: High Error Rate in Staging
+Conditions:
+  - Environment: staging
+  - Error count > 10 in 5 minutes
+Actions:
+  - Send Slack notification
+```
+
+## Deployment Configuration
+
+### GitHub Actions
+
+```yaml
+# .github/workflows/deploy-demo.yml
+- name: Deploy to Demo
+  env:
+    NODE_ENV: demo
+    SENTRY_DSN: ${{ secrets.SENTRY_DSN_NON_PROD }}
+```
+
+### AWS Lambda
+
+```bash
+aws lambda update-function-configuration \
+  --function-name your-demo-function \
+  --environment Variables='{
+    "NODE_ENV":"demo",
+    "SENTRY_DSN":"https://your-key@o123456.ingest.sentry.io/789012"
+  }'
+```
+
+## Best Practices
+
+### Separate Production
+
+<Callout>
+  **Production Isolation**: Consider using a separate Sentry project for
+  production to prevent mixing production data with test data.
+</Callout>
+
+- **Non-Production Project**: demo + staging
+- **Production Project**: production only
+
+### Environment-Specific Sample Rates
+
+Adjust sample rates based on traffic volume:
+
+```typescript
+const tracesSampleRate =
+  ENV === "production"
+    ? 0.1 // 10% in production
+    : ENV === "staging"
+    ? 0.5 // 50% in staging
+    : 1.0; // 100% in demo
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: ENV,
+  tracesSampleRate,
+});
+```
+
+### Release Tracking
+
+Track deployed versions for better debugging:
+
+```typescript
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: ENV,
+  release: `api-best-shot@${process.env.VERSION}`,
+});
+```
+
+### Additional Context Tags
+
+```typescript
+Sentry.setTag("deployment_region", "us-east-1");
+Sentry.setTag("service_version", "1.2.3");
+```
+
+## Troubleshooting
+
+### Errors Not Appearing
+
+**Check:**
+
+1. ✅ `SENTRY_DSN` is set correctly
+2. ✅ `NODE_ENV` matches expected value
+3. ✅ Sentry initialization happens before app code
+4. ✅ Network connectivity to Sentry
+
+**Debug:**
+
+```typescript
+// Add to initialization
+console.log("Sentry Environment:", process.env.NODE_ENV);
+console.log("Sentry DSN:", process.env.SENTRY_DSN ? "Set" : "Missing");
+```
+
+### Wrong Environment Tag
+
+Verify environment variable is passed correctly:
+
+```bash
+# Test locally
+NODE_ENV=demo node your-app.js
+```
+
+### Too Many Events
+
+<Callout>
+  Use `beforeSend` to filter out specific errors and reduce noise in your Sentry
+  dashboard.
+</Callout>
+
+```typescript
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: ENV,
+  beforeSend(event) {
+    // Filter out connection errors
+    if (event.message?.includes("ECONNREFUSED")) {
+      return null; // Don't send to Sentry
+    }
+    return event;
+  },
+});
+```
+
+## Key Takeaways
+
+- Use **one DSN** for multiple environments
+- Set `environment` tag via `NODE_ENV`
+- Filter by environment in Sentry UI
+- Create environment-specific alerts
+- Consider separate project for production
+- Adjust sample rates per environment
