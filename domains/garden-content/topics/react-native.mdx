@@ -1,0 +1,106 @@
+---
+title: React Native
+category: "mobile"
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "react"
+  - "expo"
+  - "react-native"
+  - "mobile"
+  - "mobile-development"
+  - "mobile-app"
+planted-in: 2025-10-01
+last-watered-in: 2025-10-01
+---
+
+# React Native
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda officiis adipisci veniam earum nihil cumque fugiat reiciendis nam maiores doloremque, voluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+
+## Basic Components
+
+### Text
+
+### View
+
+Component to group, position multiple elements
+
+```tsx
+<View>
+  <Text>Hello</Text>
+  <Image source={{ uri: 'https://via.placeholder.com/150' }} />
+  <Button title="Click me" onPress={() => alert('Button pressed')} />
+</View>
+```
+
+### Image
+
+### Button
+
+### Stylesheet
+
+```tsx
+const styles = StyleSheet.create({
+  fontSize: 20,
+  color: 'white',
+  ...
+});
+```
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda officiis adipisci veniam earum nihil cumque fugiat reiciendis nam maiores doloremque, voluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+
+**Blockquote**
+
+> Blockquote blockquote oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam. oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+
+**Callout**
+
+<Callout>
+  Callout oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+  oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+</Callout>
+
+
+### Navigation
+
+#### Stack Navigator
+
+```tsx
+import { createStackNavigator } from '@react-navigation/stack';
+
+const Stack = createStackNavigator({
+  Home: {
+    Component: HomeScreen,
+    options: {
+      title: 'Home',
+    },
+  },
+  Details: {
+    Component: DetailsScreen,
+  },
+});
+
+```
+
+#### FlatList
+
+<Callout>
+TODO: Read more about FlatList and understand which optmizations are made and, why it's recommended to use it.
+</Callout>
+
+
+```tsx
+import { FlatList, Text } from 'react-native';
+
+const fruits = ['apple', 'banana', 'cherry', 'date', 'elderberry'];
+
+
+const FruitsList = ({ data, renderItem }: { data: any[], renderItem: (item: any) => React.ReactNode }) => {
+  return <FlatList data={fruits} renderItem={({ item }) => <Text>{item}</Text>} />;
+};
+
+export default FruitsList;
+```
+
