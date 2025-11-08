@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, type ChangeEvent } from "react";
 
-export const useListSearch = (list: any[], debounceMs: number = 300) => {
+export const useListSearcher = (list: any[], debounceMs: number = 300) => {
     const [term, setTerm] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
 

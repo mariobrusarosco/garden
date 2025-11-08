@@ -5,13 +5,12 @@ import { IconChevron } from "./icons/chevron";
 
 const GoBack = ({ label }: { label?: string }) => {
   const { back } = useRouter();
-  const handleGoBack = () => back();
 
   return (
     <div
-      onClick={handleGoBack}
+      onClick={back}
       role="button"
-      className="flex gap-x-2 items-center justify-center"
+      className="flex gap-x-2 items-center justify-center cursor-pointer ml-auto"
     >
       {label ? <span className="uppercase font-sans">{label}</span> : null}
       <IconChevron className="w-8 md:w-10 stroke-wenge" />

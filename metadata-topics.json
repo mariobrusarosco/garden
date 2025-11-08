@@ -11,15 +11,19 @@
       "next-js.mdx",
       "react-context.mdx",
       "react-form-elements.mdx",
+      "react-native.mdx",
+      "react-passing-props-strategies.mdx",
       "react-query-mutations-working-alongside-useQuery.mdx",
       "react-query.mdx",
       "react.mdx",
       "routing.mdx",
       "shadcn-ui.mdx",
       "tailwind-css.mdx",
+      "tanstack-router-root-route-404.mdx",
       "ui-menu-for-applications.mdx",
       "use-id.mdx",
-      "use-ref.mdx"
+      "use-ref.mdx",
+      "using-a-react-icon-library.mdx"
     ],
     "summary": "A JavaScript library for building user interfaces with components",
     "category": "frameworks",
@@ -44,7 +48,8 @@
   "aws": {
     "files": [
       "aws-cli-and-sdk.mdx",
-      "aws-route-53-domain-name.mdx"
+      "aws-route-53-domain-name.mdx",
+      "cloudfront-spa-routing-404-fix.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -113,6 +118,50 @@
     "summary": "Fast all-in-one JavaScript runtime with built-in bundler, test runner, and package manager",
     "category": "tools",
     "icon": "rocket"
+  },
+  "cloudfront": {
+    "files": [
+      "cloudfront-spa-routing-404-fix.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "s3": {
+    "files": [
+      "cloudfront-spa-routing-404-fix.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "spa": {
+    "files": [
+      "cloudfront-spa-routing-404-fix.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "routing": {
+    "files": [
+      "cloudfront-spa-routing-404-fix.mdx",
+      "routing.mdx",
+      "tanstack-router-root-route-404.mdx",
+      "typing-express-routes.mdx"
+    ],
+    "summary": "Navigate between pages and manage application routing with React Router",
+    "category": "patterns",
+    "icon": "puzzle"
+  },
+  "deployment": {
+    "files": [
+      "cloudfront-spa-routing-404-fix.mdx",
+      "tanstack-router-root-route-404.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
   },
   "css": {
     "files": [
@@ -190,6 +239,7 @@
     "files": [
       "example.mdx",
       "react-context.mdx",
+      "react-passing-props-strategies.mdx",
       "react-query-mutations-working-alongside-useQuery.mdx"
     ],
     "summary": "",
@@ -261,7 +311,8 @@
   "icons": {
     "files": [
       "icons-in-a-react-app.mdx",
-      "icons.mdx"
+      "icons.mdx",
+      "using-a-react-icon-library.mdx"
     ],
     "summary": "Icon libraries and resources for React applications",
     "category": "tools",
@@ -317,6 +368,7 @@
       "next-analytics.mdx",
       "next-js-loading-issues.mdx",
       "next-js.mdx",
+      "using-a-react-icon-library.mdx",
       "using-fonts-tailwind-v4-and-next-js.mdx"
     ],
     "summary": "React framework for production with hybrid static and server rendering, TypeScript support, and more",
@@ -471,6 +523,46 @@
     "category": "concepts",
     "icon": ""
   },
+  "expo": {
+    "files": [
+      "react-native.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "react-native": {
+    "files": [
+      "react-native.mdx"
+    ],
+    "summary": "",
+    "category": "mobile",
+    "icon": ""
+  },
+  "mobile": {
+    "files": [
+      "react-native.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "mobile-development": {
+    "files": [
+      "react-native.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "mobile-app": {
+    "files": [
+      "react-native.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
   "react-query": {
     "files": [
       "react-query-mutations-working-alongside-useQuery.mdx",
@@ -511,15 +603,6 @@
     "summary": "",
     "category": "concepts",
     "icon": ""
-  },
-  "routing": {
-    "files": [
-      "routing.mdx",
-      "typing-express-routes.mdx"
-    ],
-    "summary": "Navigate between pages and manage application routing with React Router",
-    "category": "patterns",
-    "icon": "puzzle"
   },
   "react-router": {
     "files": [
@@ -611,6 +694,31 @@
     "category": "concepts",
     "icon": ""
   },
+  "tanstack-router": {
+    "files": [
+      "tanstack-router-root-route-404.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "vite": {
+    "files": [
+      "tanstack-router-root-route-404.mdx",
+      "vite.mdx"
+    ],
+    "summary": "Next generation frontend tooling with lightning-fast HMR and optimized builds",
+    "category": "tools",
+    "icon": "rocket"
+  },
+  "file-based-routing": {
+    "files": [
+      "tanstack-router-root-route-404.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
   "architecture": {
     "files": [
       "transaction-schema-unification.mdx"
@@ -683,14 +791,6 @@
     "summary": "",
     "category": "concepts",
     "icon": ""
-  },
-  "vite": {
-    "files": [
-      "vite.mdx"
-    ],
-    "summary": "Next generation frontend tooling with lightning-fast HMR and optimized builds",
-    "category": "tools",
-    "icon": "rocket"
   },
   "build-system": {
     "files": [

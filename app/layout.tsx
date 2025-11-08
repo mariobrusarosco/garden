@@ -19,7 +19,6 @@ const raleway = Raleway({
   variable: "--font-raleway",
 });
 
-
 export const metadata: Metadata = {
   title: "Digital Garden - Mario Brusarosco",
   description: "Digital Garden - Mario Brusarosco",
@@ -33,13 +32,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bitter.variable} ${raleway.variable} bg-neutral-white grid grid-rows-[70px_70px_1fr]`}
+        className={`${bitter.variable} ${raleway.variable} bg-neutral-white grid grid-rows-[70px_1fr]`}
       >
         <Header />
 
-        <main data-ui="main-container">
-          {children}
-        </main>
+        <main data-ui="main-container">{children}</main>
         <Analytics />
         <SpeedInsights />
       </body>

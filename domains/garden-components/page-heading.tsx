@@ -1,21 +1,41 @@
-import { GoBack } from "./go-back";
+"use client";
+
+import { GoBack } from "@/domains/garden-components/go-back";
+import { IconLeaf } from "./icons/leaf";
+import { useListSearcher } from "@/domains/garden-components/hooks/use-list-search";
+import { ListSearcher } from "@/domains/garden-components/components/list-search";
+import topics from "@/metadata-topics.json";
+import type { TopicsMetadata } from "@/types/topic-metadata";
 
 const PageHeading = ({
   title,
   subtitle,
+  children,
 }: {
   title: string;
   subtitle?: string;
-}) => (
-  <div className="flex justify-between px-2 my-2 text-wenge bg-misty_rose-900 shadow-lg sticky top-[70px] w-screen py-4 global-spacing ">
-    <div>
-      <h1 className="text-3xl font-serif font-thin uppercase lg:text-7xl lg:mb-8">
-        {title}
-      </h1>
-      {subtitle && <p className="text-lg text-wenge">{subtitle}</p>}
-    </div>
-    <GoBack label="back" />
-  </div>
-);
+  children?: React.ReactNode;
+}) => {
+  return (
+    <section
+      data-ui="page-heading"
+      className="flex items-end gap-x-4 text-dark-pink mt-4 mb-10"
+    >
+      <div className="flex flex-col space-y-2">
+        <div className="flex gap-x-2">
+          <IconLeaf className="w-5" />
+
+          <h2 className="text-7xl font-serif">{title}</h2>
+        </div>
+        {subtitle && (
+          <p className="text-xl  text-midnight-blue font-light">{subtitle}</p>
+        )}
+      </div>
+      <div className="ml-8 flex-1">{children}</div>
+
+      <GoBack />
+    </section>
+  );
+};
 
 export { PageHeading };

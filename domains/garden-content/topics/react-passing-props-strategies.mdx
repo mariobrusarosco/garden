@@ -1,0 +1,117 @@
+---
+title: Example
+category: "examples"
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "react"
+  - "state-management"
+planted-in: 2025-11-08
+last-watered-in: 2025-11-08
+---
+
+# Passing Props Strategies
+
+
+## Basic Flow
+
+The basic flow is simple as attributing a variable references or primitive values
+
+```tsx
+const ChildComponent = ({ value, counter }: { value: string, counter: number }) => {
+  
+  return <div>
+    <h1>{value}</h1>
+    <p>{counter}</p>
+  </div>;
+};
+
+const ParentComponent = () => {
+  const text = "Hello"; // Variable reference
+
+  return (
+    <ChildComponent value={text} counter={1} /*Primitive value */  />
+  );
+};
+```
+
+
+## Children
+This is where we render everything between the opening and closing tags of the parent component.
+
+```tsx
+const ChildComponent = () => {
+  return <div>Child Component</div>;
+};
+
+const ParentComponent = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div>
+      {children}
+    </div>
+  );
+};
+```
+
+## Components
+
+```tsx
+import AppList from "@components/AppList";
+
+const ParentComponent = () => {
+  return <ChildComponent List={AppList} />;
+};
+```
+
+
+## Component Props
+
+```tsx
+const ParentComponent = () => {
+  return <ChildComponent value={value} counter={1} />;
+};
+```
+
+**Blockquote**
+
+> Blockquote blockquote oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam. oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+
+**Callout**
+
+<Callout>
+  Callout oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+  oluptatum quisquam eveniet vel itaque libero amet sit. Nihil, aperiam.
+</Callout>
+
+**Code**
+
+```tsx
+import * as React from "react";
+
+const ParentComponent = () => {
+  return (
+    <themeContext.Provider value="dark">
+      <ChildComponent />
+    </themeContext.Provider>
+  );
+};
+
+const ChildComponent = () => {
+  const theme = React.useContext(themeContext);
+
+  return <div>Theme is {theme}</div>;
+};
+```
+
+**Unorderd List**
+
+- One
+- Two
+- Three
+
+**Ordered List**
+
+1. One
+2. Two
+3. Three

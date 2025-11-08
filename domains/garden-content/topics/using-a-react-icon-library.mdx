@@ -1,0 +1,290 @@
+---
+title: Using a React Icon Library
+category: "tools"
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+related-topics:
+  - "react"
+  - "icons"
+  - "next-js"
+planted-in: 2025-11-08
+last-watered-in: 2025-11-08
+---
+
+# Using a React Icon Library
+
+Modern React applications benefit from using dedicated icon libraries that provide scalable, customizable, and tree-shakeable icon components. Below are four excellent options evaluated for Next.js 15, TypeScript, and Tailwind CSS v4 projects.
+
+---
+
+## Option 1: Lucide React
+
+### The Library
+
+Lucide React is a modern icon library that provides beautifully crafted icons as React components. It's a community-maintained fork of Feather Icons with expanded icon sets and ongoing active development.
+
+**Installation:**
+
+```bash
+yarn add lucide-react
+```
+
+### What I Researched About It
+
+**Key Features:**
+- **Outstanding Tree-Shaking:** Only imports the specific icons you use, resulting in minimal bundle size impact
+- **1,000+ Icons:** Comprehensive collection covering most use cases
+- **TypeScript Native:** Built with TypeScript, providing excellent type safety and IntelliSense
+- **Consistent Design:** All icons follow the same 24×24 grid with consistent stroke width
+- **Zero Dependencies:** Minimal overhead, pure React components
+- **SSR Compatible:** Works seamlessly with Next.js server components
+
+**Sources:**
+- Official Documentation: [lucide.dev](https://lucide.dev)
+- GitHub: 7,000+ stars, active maintenance
+- NPM: ~2M weekly downloads (2025)
+
+**Usage Example:**
+
+```tsx
+import { Home, Settings, User } from 'lucide-react';
+
+export const Navigation = () => {
+  return (
+    <nav>
+      <Home size={24} color="#000" strokeWidth={2} />
+      <Settings size={24} className="text-blue-500" />
+      <User size={24} />
+    </nav>
+  );
+};
+```
+
+### Why It's a Fit for This Project Stack
+
+<Callout>
+  **Perfect Match:** Lucide React is specifically optimized for modern React frameworks like Next.js 15. Its tree-shaking capabilities ensure only used icons are bundled, critical for performance.
+</Callout>
+
+- **Next.js 15 Ready:** Full App Router and Server Components support
+- **TypeScript Excellence:** Complete type definitions out of the box
+- **Tailwind CSS Integration:** Works seamlessly with Tailwind's className prop
+- **Performance First:** Minimal bundle impact (each icon ~1-2KB)
+- **Modern ESM:** Fully ESM-compatible, aligning with Next.js 15's module strategy
+- **Active Development:** Regular updates with new icons and improvements
+
+---
+
+## Option 2: React Icons
+
+### The Library
+
+React Icons aggregates 30+ popular icon sets (Font Awesome, Material Design, Heroicons, Bootstrap Icons, Feather, and more) into a single, unified package.
+
+**Installation:**
+
+```bash
+yarn add react-icons
+```
+
+### What I Researched About It
+
+**Key Features:**
+- **30+ Icon Families:** Access to thousands of icons from various design systems
+- **Unified API:** Consistent interface across all icon sets
+- **Tree-Shaking Support:** ES6 imports ensure only used icons are bundled
+- **15,000+ Icons:** Massive collection covering virtually any use case
+- **Flexible Styling:** Full control via React props or CSS
+
+**Sources:**
+- Official Site: [react-icons.github.io/react-icons](https://react-icons.github.io/react-icons)
+- NPM: ~10M weekly downloads (2025)
+- Community: Widely adopted, extensive Stack Overflow support
+
+**Usage Example:**
+
+```tsx
+import { FaHome } from 'react-icons/fa';      // Font Awesome
+import { MdSettings } from 'react-icons/md';  // Material Design
+import { HiUser } from 'react-icons/hi';      // Heroicons
+
+export const Navigation = () => {
+  return (
+    <nav>
+      <FaHome className="w-6 h-6 text-gray-700" />
+      <MdSettings className="w-6 h-6 text-blue-500" />
+      <HiUser className="w-6 h-6" />
+    </nav>
+  );
+};
+```
+
+### Why It's a Fit for This Project Stack
+
+- **Maximum Flexibility:** Switch between icon families without changing libraries
+- **TypeScript Support:** Includes TypeScript definitions
+- **Tailwind Compatible:** Icons accept className for easy Tailwind styling
+- **Next.js Compatible:** Works with App Router and Server Components
+- **One Dependency:** Consolidates multiple icon libraries into one package
+- **Consistent Imports:** Predictable naming convention across all icon sets
+
+<Callout>
+  **Trade-off:** While convenient, the package size is larger than single-purpose libraries. Ensure proper tree-shaking is configured in your build system.
+</Callout>
+
+---
+
+## Option 3: Heroicons
+
+### The Library
+
+Heroicons is an open-source icon set created by the Tailwind CSS team, offering over 300 icons in both outline and solid styles.
+
+**Installation:**
+
+```bash
+yarn add @heroicons/react
+```
+
+### What I Researched About It
+
+**Key Features:**
+- **Tailwind CSS Native:** Designed specifically for Tailwind projects
+- **Dual Styles:** Each icon available in outline and solid variants
+- **300+ Icons:** Curated collection focusing on common UI needs
+- **Optimized SVGs:** Hand-crafted, optimized paths for performance
+- **React 18+ Ready:** Built for modern React with hooks support
+
+**Sources:**
+- Official Site: [heroicons.com](https://heroicons.com)
+- GitHub: Created and maintained by Tailwind Labs
+- NPM: ~3M weekly downloads (2025)
+
+**Usage Example:**
+
+```tsx
+import { HomeIcon } from '@heroicons/react/24/outline';
+import { CogIcon } from '@heroicons/react/24/solid';
+
+export const Navigation = () => {
+  return (
+    <nav>
+      <HomeIcon className="w-6 h-6 text-gray-700 hover:text-blue-500" />
+      <CogIcon className="w-6 h-6 text-blue-500" />
+    </nav>
+  );
+};
+```
+
+### Why It's a Fit for This Project Stack
+
+<Callout>
+  **Tailwind CSS Perfect Match:** Since your project uses Tailwind CSS v4, Heroicons is designed explicitly for this workflow. The sizing and styling patterns align perfectly with Tailwind's utility classes.
+</Callout>
+
+- **First-Party Tailwind Support:** Built by the Tailwind CSS team
+- **Tailwind v4 Compatible:** Tested and optimized for latest Tailwind
+- **Next.js Optimized:** Fully compatible with Next.js 15 App Router
+- **TypeScript Built-in:** Complete type safety
+- **Two Variants:** Outline for general use, solid for emphasis
+- **Consistent Sizing:** 24×24 grid matches Tailwind's spacing scale
+- **Zero Config:** Works out of the box with Tailwind classes
+
+---
+
+## Option 4: Phosphor Icons
+
+### The Library
+
+Phosphor Icons is a flexible icon family for interfaces, diagrams, presentations, and more. It offers 6 different weights (thin, light, regular, bold, fill, duotone) for each icon.
+
+**Installation:**
+
+```bash
+yarn add @phosphor-icons/react
+```
+
+### What I Researched About It
+
+**Key Features:**
+- **6 Weight Variants:** Unprecedented flexibility with thin, light, regular, bold, fill, and duotone styles
+- **1,200+ Icons:** Growing collection with regular updates
+- **Tree-Shakeable:** Individual icon imports for optimal bundle size
+- **Contextual API:** Flexible props for size, color, weight, and more
+- **Consistent Design Language:** All icons share the same 48×48 grid
+
+**Sources:**
+- Official Site: [phosphoricons.com](https://phosphoricons.com)
+- GitHub: 6,000+ stars, active development
+- NPM: ~500K weekly downloads (2025)
+
+**Usage Example:**
+
+```tsx
+import { House, Gear, User } from '@phosphor-icons/react';
+
+export const Navigation = () => {
+  return (
+    <nav>
+      <House size={32} weight="regular" className="text-gray-700" />
+      <Gear size={32} weight="bold" className="text-blue-500" />
+      <User size={32} weight="duotone" className="text-purple-600" />
+    </nav>
+  );
+};
+```
+
+### Why It's a Fit for This Project Stack
+
+- **Design Flexibility:** Six weight variants provide unmatched design control
+- **TypeScript Native:** Excellent type definitions and IntelliSense
+- **Tailwind Compatible:** Works seamlessly with Tailwind utilities
+- **Next.js Ready:** Full SSR and App Router support
+- **Modern React:** Built for React 18+ with hooks support
+- **Unique Duotone Style:** Offers effects not available in other libraries
+- **Professional Grade:** Used by major companies and design systems
+
+<Callout>
+  **Unique Advantage:** If your design system requires different icon weights for hierarchy (e.g., bold for primary actions, light for secondary), Phosphor is the only library offering this level of control.
+</Callout>
+
+---
+
+## Recommendation Summary
+
+| Library | Best For | Bundle Impact | Icon Count | Unique Advantage |
+|---------|----------|---------------|------------|------------------|
+| **Lucide React** | General use, performance-critical apps | Minimal (1-2KB per icon) | 1,000+ | Best tree-shaking, modern |
+| **React Icons** | Projects needing multiple icon families | Medium (with tree-shaking) | 15,000+ | All-in-one solution |
+| **Heroicons** | Tailwind CSS projects | Minimal | 300+ | Native Tailwind integration |
+| **Phosphor Icons** | Design systems needing weight variants | Small-Medium | 1,200+ | 6 weight variants |
+
+## Implementation Pattern
+
+Regardless of which library you choose, follow this pattern for consistency:
+
+```tsx
+// Create an icon wrapper for centralized styling
+import { Home } from 'lucide-react'; // or your chosen library
+
+interface IconProps {
+  size?: number;
+  className?: string;
+}
+
+export const Icon = ({ Icon: IconComponent, size = 24, className }: IconProps & { Icon: any }) => {
+  return <IconComponent size={size} className={cn('transition-colors', className)} />;
+};
+
+// Usage
+<Icon Icon={Home} size={24} className="text-gray-700 hover:text-blue-500" />
+```
+
+This approach allows you to:
+- Centralize icon styling and behavior
+- Easily swap icon libraries if needed
+- Apply consistent transitions and effects
+- Maintain type safety with TypeScript
+
+

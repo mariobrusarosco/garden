@@ -1,51 +1,43 @@
-import { IconLeaf } from "@/domains/garden-components/icons/leaf";
+"use client";
 import { PageHeading } from "@/domains/garden-components/page-heading";
 import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
 import topics from "@/metadata-topics.json";
-import Link from "next/link";
 import type { TopicsMetadata } from "@/types/topic-metadata";
+import { TopicNotesList } from "@/domains/garden-components/components/topic-notes-list";
+import { ListSearcher } from "@/domains/garden-components/components/list-search";
+import { useListSearcher } from "@/domains/garden-components/hooks/use-list-search";
 
-type Props = {
-  params: Promise<{
-    topic: string;
-  }>;
-};
+interface Props {
+  params: { topic: string };
+}
 
 const typedTopics = topics as TopicsMetadata;
 
-export default async function TopicScreen({ params }: Props) {
-  const resolvedParams = await params;
+export default function TopicScreen({ params }: Props) {
+  const resolvedParams = params;
   const topicData = typedTopics[resolvedParams.topic];
-  const topicNotes = topicData?.files || [];
+  const notes = topicData?.files || [];
   const normalizedTopic = removeHyphens(resolvedParams.topic);
+  const { handleInputChange, filteredList, term } = useListSearcher(notes);
+
+  if (!topicData) {
+    return <div>Topic not found</div>;
+  }
 
   return (
-    <div data-ui="screen-topic" >
-      <PageHeading title={normalizedTopic} />
+    <section data-ui="screen-topic" className="global-spacing">
+      <PageHeading title={normalizedTopic} subtitle={topicData.summary}>
+        <ListSearcher onInputChange={handleInputChange} term={term} />
+      </PageHeading>
 
       <div data-ui="list-of-notes" className="global-spacing">
-        <ul data-ui="list-of-notes-list" className="mt-10 grid gap-y-8 md:grid-cols-2">
-          {topicNotes.map((filename: string) => {
-            const noteSlug = filename.split(".mdx")[0];
-            const normalizedNote = removeHyphens(noteSlug);
-
-            return (
-              <li
-                key={noteSlug}
-                className="flex items-center gap-x-6 cursor-pointer"
-              >
-                <IconLeaf className="w-4" />
-                <Link
-                  href={`./${resolvedParams.topic}/note/${noteSlug}`}
-                  className="text-wenge font-serif font-thin text-xl"
-                >
-                  {normalizedNote}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <TopicNotesList
+          notes={filteredList}
+          topicCategory={topicData.category}
+          topicSummary={topicData.summary}
+          topicIcon={topicData.icon}
+        />
       </div>
-    </div>
+    </section>
   );
 }
