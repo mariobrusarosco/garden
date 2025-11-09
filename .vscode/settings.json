@@ -1,0 +1,16 @@
+{
+	"files.associations": {
+		"*.mdx": "typescriptreact"
+	},
+	"[mdx]": {
+		"editor.quickSuggestions": {
+			"other": true,
+			"comments": false,
+			"strings": true
+		},
+		"editor.suggest.showWords": true,
+		"editor.wordBasedSuggestions": "allDocuments"
+	},
+	"cursor.cpp.disabledLanguages": []
+}
+

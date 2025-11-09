@@ -1,0 +1,286 @@
+---
+title: "Peek-a-boo React SDK: Phase 0 Setup & Environment Architecture"
+summary: "Setting up environment-aware feature flags with proper schema design, migrations, and SDK service endpoints for the React SDK"
+category: "architecture"
+icon: "react"
+author: mariobrusarosco.github.com
+related-topics:
+  - "prisma"
+  - "migrations"
+  - "environment-variables"
+  - "feature-flags"
+  - "react-sdk"
+reference-links:
+  - link: "/home/mario/coding/peek-a-boo/planning/react-sdk-master-plan.md"
+    text: "React SDK Master Plan"
+  - link: "/home/mario/coding/peek-a-boo/planning/peekaboo-react-sdk-pdr.md"
+    text: "Product Design Review"
+planted-in: 2025-11-08
+last-watered-in: 2025-11-08
+---
+
+# Recap
+
+Successfully completed Phase 0 prerequisites for the Peek-a-boo React SDK by implementing environment-aware feature flags with proper database schema, migrations, and SDK service endpoints. The critical blocker was **lack of environment support** in the database schema - feature flags were only scoped to organization/project without dev/staging/prod separation.
+
+**Key Achievement:** Created a production-ready foundation where flags can be managed per environment, with proper API endpoints for the React SDK to consume.
+
+# The Problem
+
+Initial assessment revealed the React SDK design assumed:
+```typescript
+GET /api/v1/flags?environment=production
+```
+
+But the database schema had NO environment concept:
+```prisma
+model FeatureFlag {
+  id             String
+  name           String
+  value          Json
+  projectId      String
+  organizationId String
+  // ❌ NO environment field
+}
+```
+
+Flags were only scoped to Organization + Project. This wouldn't support:
+- Different flag states in dev vs production
+- Safe testing before production rollout
+- Environment-specific feature releases
+
+# The Solution
+
+## 1. Schema Evolution
+
+Added environment support with proper constraints:
+
+```prisma
+model FeatureFlag {
+  id          String      @id @default(cuid())
+  key         String      // Unique identifier (e.g., "new-checkout")
+  name        String      // Display name
+  description String?     // Optional description
+  enabled     Boolean     @default(false)
+  value       Json        // For future variations
+  environment Environment @default(DEVELOPMENT)
+
+  projectId      String
+  organizationId String
+
+  // ONE flag key per project per environment
+  @@unique([key, projectId, environment])
+}
+
+enum Environment {
+  DEVELOPMENT
+  STAGING
+  PRODUCTION
+}
+```
+
+**Critical Design Decision:** The unique constraint `[key, projectId, environment]` allows the same flag key (e.g., "new-checkout") to exist with different states across environments.
+
+## 2. Migration Strategy
+
+**Lesson Learned:** NEVER use workarounds for migrations. Always create proper migration files.
+
+The correct flow:
+```bash
+cd packages/core
+npx prisma migrate dev --name add_environment_and_key_to_feature_flags
+```
+
+This creates:
+- Migration SQL file in `prisma/migrations/`
+- Updates Prisma client with new types
+- Applies changes to database
+- Maintains migration history for production deployments
+
+**Why this matters:**
+- ✅ Reproducible across environments
+- ✅ Can be committed to git
+- ✅ Can be rolled back
+- ✅ Safe for production with `prisma migrate deploy`
+
+## 3. SDK Service Runtime API
+
+Created a new domain module `sdk-runtime` (separate from admin `feature-flags` module):
+
+```typescript
+// apps/sdk-service/src/domains/sdk-runtime/
+
+GET /api/v1/flags?projectId={id}&environment={env}
+// Returns: { flags: [...], environment: "DEVELOPMENT" }
+
+GET /api/v1/flags/{key}?projectId={id}&environment={env}
+// Returns: { key, enabled, value, environment, ... }
+```
+
+**Design Pattern:** Runtime API is separate from admin API because:
+- Different authentication (SDK keys vs user auth)
+- Different data needs (runtime needs minimal, fast responses)
+- Different caching strategies
+- Different rate limiting requirements
+
+## 4. Environment Variable Architecture
+
+**Problem:** Hardcoded organization IDs scattered across Dashboard and seed file led to foreign key violations after database resets.
+
+**Solution:** Single source of truth via environment variables:
+
+```bash
+# packages/core/.env
+SEED_ORGANIZATION_ID="cmhqxjwpw000e2ikeps545uou"
+
+# apps/dashboard/.env.local
+ORGANIZATION_ID="cmhqxjwpw000e2ikeps545uou"
+```
+
+Seed file uses `upsert` to ensure consistent org ID:
+```typescript
+const SEED_ORG_ID = process.env.SEED_ORGANIZATION_ID || 'default-id';
+
+await prisma.organization.upsert({
+  where: { id: SEED_ORG_ID },
+  update: { name: organization.name },
+  create: { id: SEED_ORG_ID, name: organization.name },
+});
+```
+
+**Benefits:**
+- Seed always creates same org ID
+- Dashboard always uses same org ID
+- Easy to change in one place
+- No foreign key violations
+
+# Anatomy of a Complete System Fix
+
+## Phase 1: Schema Changes
+1. Update Prisma schema
+2. Run migration (interactive required)
+3. Verify Prisma client regenerated
+
+## Phase 2: Cascade Updates
+Think through the entire system:
+- **Seed file** - Must use new required fields
+- **Service DTOs** - Must include new fields
+- **Dashboard actions** - Must send new fields
+- **API endpoints** - Must handle new fields
+
+**Critical Thinking Required:** When changing schema, don't just fix one file. Trace through:
+1. Where is data created? (Dashboard form → action → API)
+2. Where is data read? (API endpoints → SDK)
+3. Where is data seeded? (Seed file)
+
+Each layer needs updating, not just the schema.
+
+## Phase 3: Validation
+Test the entire flow:
+```bash
+# 1. Seed database
+pnpm run prisma:seed
+
+# 2. Create flag via Dashboard
+# (Opens form, submits, checks for errors)
+
+# 3. Query via API
+curl "http://localhost:6001/api/v1/flags?projectId=xxx&environment=development"
+
+# 4. Verify different environments work
+curl "http://localhost:6001/api/v1/flags?projectId=xxx&environment=production"
+```
+
+# Used in Projects
+
+- **Peek-a-boo Feature Flag Platform** - Foundation for React SDK development
+- Pattern applicable to any feature flag system requiring environment separation
+
+# Key Lessons
+
+## 1. Schema Design First
+Don't build APIs before validating the database schema supports your use case. The React SDK design assumed environment support - checking the schema FIRST saved potential rework.
+
+## 2. Think Systemically
+Changing a Prisma schema isn't done until:
+- Migration created ✅
+- Seed updated ✅
+- DTOs updated ✅
+- API endpoints updated ✅
+- Dashboard updated ✅
+- All tested ✅
+
+Missing ANY step breaks the system.
+
+## 3. Environment Variables > Hardcoding
+A single hardcoded ID becomes technical debt the moment you need to reset the database. Use env vars from day 1.
+
+## 4. Separation of Concerns
+Runtime API (`/api/v1/flags`) separate from Admin API (`/feature-flags`) because they serve different purposes, different clients, different security models.
+
+## 5. Documentation Matters
+The `.env.example` files with comments explain WHY each variable exists and HOW they relate:
+```bash
+# Development organization ID (must match SEED_ORGANIZATION_ID in packages/core/.env)
+ORGANIZATION_ID=cmhqxjwpw000e2ikeps545uou
+```
+
+# Next Steps
+
+With Phase 0 complete, the React SDK can now proceed:
+
+**Phase 1: Core Client Implementation**
+- TypeScript types matching API response
+- HTTP client with retry logic
+- FeatureFlagClient (vanilla JS)
+
+The foundation is solid:
+- ✅ Schema supports environments
+- ✅ API endpoints ready
+- ✅ Data seeded and testable
+- ✅ Environment variables configured
+
+# Technical Debt Identified
+
+1. **Hardcoded Organization Concept** - Dashboard still requires organization context. Future: Multi-tenant support needed.
+
+2. **No API Key Authentication** - Runtime endpoints currently accept any projectId. Future: Implement SDK key validation.
+
+3. **No Rate Limiting** - Production deployment needs rate limiting on runtime endpoints.
+
+4. **Manual Param Awaiting** - Next.js 15 warnings about `params.id` needing await. Minor but should be addressed.
+
+# Commands Reference
+
+```bash
+# Database Migration
+cd packages/core
+npx prisma migrate dev --name your_migration_name
+
+# Seed Database
+pnpm run prisma:seed
+
+# Test Runtime API
+curl "http://localhost:6001/api/v1/flags?projectId=ID&environment=development"
+
+# Check Migration Status
+cd packages/core
+npx prisma migrate status
+```
+
+# Debugging Tips
+
+**Foreign Key Violations:**
+- Check organization/project IDs exist in database
+- Verify env vars match between seed and dashboard
+- Use `npx prisma studio` to inspect actual IDs
+
+**Migration Issues:**
+- Always run from `packages/core` directory
+- Ensure `.env` file exists in `packages/core`
+- Use `prisma migrate reset --force` to start fresh (dev only!)
+
+**Type Errors After Schema Changes:**
+- Ensure Prisma client regenerated: `npx prisma generate`
+- Restart TypeScript server in IDE
+- Check all imports use `Environment` enum type, not strings

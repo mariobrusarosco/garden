@@ -1,0 +1,602 @@
+---
+title: "API Design: Admin vs Runtime Endpoints"
+summary: "Why and how to separate administrative CRUD operations from runtime client endpoints in a feature flag system"
+category: "architecture"
+icon: "api"
+author: mariobrusarosco.github.com
+related-topics:
+  - "api-design"
+  - "separation-of-concerns"
+  - "feature-flags"
+  - "authentication"
+  - "nestjs"
+reference-links:
+  - link: "https://restfulapi.net/versioning/"
+    text: "REST API Versioning"
+  - link: "https://www.nginx.com/blog/api-gateway-authentication-authorization/"
+    text: "API Gateway Auth Patterns"
+planted-in: 2025-11-08
+last-watered-in: 2025-11-08
+---
+
+# Recap
+
+Admin endpoints and runtime endpoints serve fundamentally different purposes and should be separated. Admin APIs handle CRUD operations with user authentication, while runtime APIs deliver data to client applications with API key authentication. Mixing them creates security, performance, and maintenance problems.
+
+**Real Example:** Peek-a-boo feature flag platform separates `/feature-flags` (admin) from `/api/v1/flags` (runtime), demonstrating clear separation of concerns.
+
+# The Problem: Why Separate?
+
+## Anti-Pattern: Single API for Everything
+
+Imagine a single endpoint:
+```
+POST /flags          # Create flag (admin)
+GET  /flags          # List flags (admin? runtime?)
+GET  /flags/:id      # Get flag (admin? runtime?)
+PUT  /flags/:id      # Update flag (admin)
+DELETE /flags/:id    # Delete flag (admin)
+```
+
+**Problems:**
+1. **Security Confusion** - Does `GET /flags` require user auth or API key?
+2. **Data Exposure** - Runtime clients don't need internal IDs, audit fields, etc.
+3. **Performance Mismatch** - Admin needs pagination, runtime needs speed
+4. **Rate Limiting** - Can't set different limits for admin vs runtime
+5. **Versioning Nightmare** - Breaking changes affect both systems
+
+## The Solution: Separate APIs
+
+### Admin API (Dashboard/CLI)
+```
+POST   /feature-flags                    # Create
+GET    /feature-flags/:organizationId    # List all
+GET    /feature-flags/:id                # Get one
+PUT    /feature-flags/:id                # Update
+DELETE /feature-flags/:id                # Delete
+```
+
+### Runtime API (Client SDKs)
+```
+GET /api/v1/flags?projectId={id}&environment={env}      # Get all flags
+GET /api/v1/flags/{key}?projectId={id}&environment={env} # Get one flag
+```
+
+# Anatomy of the Separation
+
+## 1. Different Routes
+
+### Admin Routes
+```
+/feature-flags/*
+```
+- Internal implementation detail
+- Can change frequently
+- Not versioned (internal use)
+
+### Runtime Routes
+```
+/api/v1/flags/*
+```
+- Public contract
+- Must be stable
+- Versioned (`/v1/`, `/v2/`)
+- Will be consumed by thousands of SDK instances
+
+**Why This Matters:**
+- Admin route changes don't break client SDKs
+- Can refactor admin without coordinating releases
+- Runtime API promises stability
+
+## 2. Different Authentication
+
+### Admin: User-Based Auth
+```typescript
+@Controller('feature-flags')
+@UseGuards(AuthGuard)  // User session/JWT
+export class FeatureFlagsController {
+  @Post()
+  async createFeatureFlag(@Request() req) {
+    const userId = req.user.id;  // Who is creating this?
+    // ...
+  }
+}
+```
+
+**Characteristics:**
+- Session-based or JWT
+- Tied to specific user
+- Permissions/roles matter
+- Audit trail per user
+
+### Runtime: API Key Auth
+```typescript
+@Controller('api/v1')
+export class SdkRuntimeController {
+  @Get('flags')
+  async getFlags(
+    @Query('projectId') projectId: string,
+    // API key validated via middleware/guard
+  ) {
+    // No user context needed
+  }
+}
+```
+
+**Characteristics:**
+- API key/SDK key
+- Tied to project/environment
+- Read-only (usually)
+- Rate limited per key
+- No user identity
+
+## 3. Different Data Models
+
+### Admin Response
+```typescript
+// GET /feature-flags/:id
+{
+  "id": "cmhqy12m3000iwpst53klexfc",
+  "key": "dark-mode",
+  "name": "Dark Mode",
+  "description": "Enable dark mode theme",
+  "enabled": true,
+  "value": {},
+  "environment": "DEVELOPMENT",
+  "projectId": "cmhqy12ll0004wpst7j0rmdw1",
+  "organizationId": "cmhqxjwpw000e2ikeps545uou",
+  "createdAt": "2025-11-08T23:56:27.387Z",
+  "updatedAt": "2025-11-08T23:56:27.387Z",
+  "createdBy": "user-123",              // ← Admin needs this
+  "lastModifiedBy": "user-456",         // ← Admin needs this
+  "tags": ["ui", "theming"],            // ← Admin needs this
+  "rolloutPercentage": 50               // ← Admin needs this
+}
+```
+
+**Why So Much Data?**
+- Dashboard needs to display everything
+- Audit trail (who/when)
+- Rich filtering/sorting
+- Full editing capabilities
+
+### Runtime Response
+```typescript
+// GET /api/v1/flags?projectId=xxx&environment=development
+{
+  "flags": [
+    {
+      "key": "dark-mode",      // ← SDK only needs this
+      "enabled": true,         // ← And this
+      "value": {}              // ← And maybe this
+    }
+  ],
+  "environment": "DEVELOPMENT"
+}
+```
+
+**Why So Little?**
+- SDK only needs to know: is it on?
+- Smaller payload = faster response
+- Less data over network
+- Client doesn't care who created it
+
+## 4. Different Performance Needs
+
+### Admin API
+- **Latency Tolerance:** 200-500ms acceptable
+- **Caching:** Minimal (show latest data)
+- **Pagination:** Required (may have thousands of flags)
+- **Filtering/Sorting:** Complex queries needed
+- **Request Volume:** Low (few users)
+
+```typescript
+@Get(':organizationId')
+async getAllFeatureFlags(
+  @Param('organizationId') orgId: string,
+  @Query('page') page: number = 1,
+  @Query('limit') limit: number = 50,
+  @Query('search') search?: string,
+  @Query('environment') environment?: string,
+) {
+  // Complex query with filters, pagination, etc.
+  return this.service.findAll({ orgId, page, limit, search, environment });
+}
+```
+
+### Runtime API
+- **Latency Critical:** <50ms target
+- **Caching:** Aggressive (CDN, edge caching)
+- **Pagination:** Not needed (filter by project)
+- **Filtering:** Minimal (just environment)
+- **Request Volume:** High (every app instance)
+
+```typescript
+@Get('flags')
+async getFlags(
+  @Query('projectId') projectId: string,
+  @Query('environment') environment: string,
+) {
+  // Simple, fast query
+  // Aggressively cached at edge
+  return this.service.getFlagsByEnvironment(projectId, environment);
+}
+```
+
+## 5. Different Error Handling
+
+### Admin API: Detailed Errors
+```typescript
+@Post()
+async createFeatureFlag(@Body() dto: CreateFlagDto) {
+  try {
+    return await this.service.create(dto);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      throw new ConflictException({
+        message: 'A flag with this key already exists',
+        field: 'key',
+        existingValue: dto.key,
+        suggestion: 'Try a different key or update the existing flag'
+      });
+    }
+    throw error;
+  }
+}
+```
+
+**Why Detailed?**
+- User needs to understand what went wrong
+- UI can show helpful error messages
+- Developer tools can debug issues
+
+### Runtime API: Simple Errors
+```typescript
+@Get('flags')
+async getFlags(@Query('projectId') projectId: string) {
+  if (!projectId) {
+    throw new BadRequestException('projectId required');
+  }
+
+  try {
+    return await this.service.getFlags(projectId);
+  } catch (error) {
+    // Don't leak internals
+    throw new InternalServerErrorException('Failed to fetch flags');
+  }
+}
+```
+
+**Why Simple?**
+- Don't leak internal details to public
+- SDK handles errors gracefully (fallback values)
+- Security: hide implementation details
+
+# Real-World Implementation
+
+## Peek-a-boo Architecture
+
+```
+apps/sdk-service/src/domains/
+├── feature-flags/              # Admin Module
+│   ├── feature-flags.controller.ts
+│   │   @Controller('feature-flags')
+│   │   - POST   /feature-flags
+│   │   - GET    /feature-flags/:organizationId
+│   │   - GET    /feature-flags/:id
+│   │   - PUT    /feature-flags/:id
+│   │   - DELETE /feature-flags/:id
+│   │
+│   ├── feature-flags.service.ts
+│   │   - Full CRUD operations
+│   │   - Complex queries with filtering
+│   │   - Audit logging
+│   │
+│   └── feature-flags.module.ts
+│
+└── sdk-runtime/                # Runtime Module
+    ├── sdk-runtime.controller.ts
+    │   @Controller('api/v1')
+    │   - GET /api/v1/flags?projectId&environment
+    │   - GET /api/v1/flags/:key?projectId&environment
+    │
+    ├── sdk-runtime.service.ts
+    │   - Optimized read-only queries
+    │   - Minimal data selection
+    │   - Environment-aware filtering
+    │
+    └── sdk-runtime.module.ts
+```
+
+## Why This Works
+
+### 1. Clear Boundaries
+- **feature-flags/** = Admin team's domain
+- **sdk-runtime/** = SDK team's domain
+- Teams can iterate independently
+
+### 2. Different Evolution
+- Admin API: Add features frequently (tags, rollout %, etc.)
+- Runtime API: Changes very rarely (stability critical)
+
+### 3. Different Scaling
+- Admin API: Vertical scaling (few powerful servers)
+- Runtime API: Horizontal scaling (many edge servers, CDN)
+
+### 4. Different Security Posture
+- Admin API: Behind firewall, strict user auth
+- Runtime API: Public, API key validation, rate limiting
+
+# Best Practices
+
+## 1. Version Runtime APIs, Not Admin APIs
+
+```typescript
+// ✅ Good: Runtime API versioned
+@Controller('api/v1')
+export class SdkRuntimeController { }
+
+// ✅ Good: Admin API not versioned (internal)
+@Controller('feature-flags')
+export class FeatureFlagsController { }
+```
+
+**Why?**
+- Runtime APIs are public contracts
+- Admin APIs are internal, can change freely
+- Breaking runtime API = breaking all client apps
+
+## 2. Different Data Transfer Objects (DTOs)
+
+```typescript
+// Admin DTO: Everything
+export class FeatureFlagDto {
+  id: string;
+  key: string;
+  name: string;
+  description?: string;
+  enabled: boolean;
+  value: any;
+  environment: Environment;
+  projectId: string;
+  organizationId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  lastModifiedBy: string;
+  tags: string[];
+}
+
+// Runtime DTO: Minimal
+export class RuntimeFlagDto {
+  key: string;
+  enabled: boolean;
+  value?: any;
+}
+```
+
+## 3. Different Rate Limiting
+
+```typescript
+// Admin: Generous limits (internal users)
+@Throttle(100, 60)  // 100 requests per minute
+@Controller('feature-flags')
+export class FeatureFlagsController { }
+
+// Runtime: Strict limits (public API)
+@Throttle(10, 60)  // 10 requests per minute per key
+@Controller('api/v1')
+export class SdkRuntimeController { }
+```
+
+## 4. Different Caching Strategies
+
+```typescript
+// Admin: No caching (show fresh data)
+@Get(':id')
+async getFeatureFlag(@Param('id') id: string) {
+  return this.service.findById(id);  // Always hit DB
+}
+
+// Runtime: Aggressive caching
+@Get('flags')
+@CacheKey('flags')
+@CacheTTL(300)  // 5 minutes
+async getFlags(@Query('projectId') projectId: string) {
+  return this.service.getFlags(projectId);
+}
+```
+
+## 5. Document Differently
+
+### Admin API Documentation
+- Internal docs
+- Implementation details welcome
+- Change frequently
+
+### Runtime API Documentation
+- Public docs
+- Stability promises
+- Migration guides for breaking changes
+- SDK examples
+
+# Common Mistakes
+
+## Mistake 1: Reusing Admin Endpoints for Runtime
+
+```typescript
+// ❌ Bad: Runtime uses admin endpoint
+const response = await fetch('/feature-flags/project-123');
+
+// ✅ Good: Runtime has dedicated endpoint
+const response = await fetch('/api/v1/flags?projectId=project-123');
+```
+
+**Why Bad?**
+- Admin endpoint may require auth you don't want to expose
+- May return too much data
+- May have admin-specific rate limits
+- Admin changes break runtime clients
+
+## Mistake 2: No API Versioning
+
+```typescript
+// ❌ Bad: No version
+@Controller('api/flags')
+
+// ✅ Good: Version included
+@Controller('api/v1/flags')
+```
+
+**Why Bad?**
+- Can't make breaking changes
+- Stuck supporting old clients forever
+- No migration path
+
+## Mistake 3: Same Auth for Both
+
+```typescript
+// ❌ Bad: Runtime uses user sessions
+@UseGuards(AuthGuard)
+@Get('flags')
+async getFlags(@Request() req) {
+  const userId = req.user.id;  // SDKs don't have users!
+}
+
+// ✅ Good: Runtime uses API keys
+@UseGuards(ApiKeyGuard)
+@Get('flags')
+async getFlags(@Query('projectId') projectId: string) {
+  // API key validated in guard
+}
+```
+
+## Mistake 4: Exposing Internal IDs in Runtime
+
+```typescript
+// ❌ Bad: Runtime returns database IDs
+{
+  "id": "cmhqy12m3000iwpst53klexfc",  // Internal ID
+  "key": "dark-mode"
+}
+
+// ✅ Good: Runtime only returns logical keys
+{
+  "key": "dark-mode",
+  "enabled": true
+}
+```
+
+**Why Bad?**
+- Exposes implementation details
+- Clients may start depending on IDs
+- Harder to change database later
+
+# When to Combine (Exceptions)
+
+## Simple Internal Tools
+If your API is only used internally by one team:
+```typescript
+// OK for small internal tools
+@Controller('flags')
+export class FlagsController {
+  @Get()        // List (admin)
+  @Post()       // Create (admin)
+  @Get(':key')  // Read (runtime)
+}
+```
+
+**But even then, consider separation early** - easier to separate from the start than to split later.
+
+## Prototyping
+Start combined, split when:
+- You have actual users
+- Performance matters
+- Security matters
+- Multiple client types
+
+# Migration Strategy
+
+If you already have a combined API:
+
+### Step 1: Create Runtime Module
+```bash
+mkdir src/domains/sdk-runtime
+# Copy relevant endpoints
+```
+
+### Step 2: Dual-Run Period
+- Keep old endpoints working
+- Add new runtime endpoints
+- Migrate clients gradually
+
+### Step 3: Deprecation
+```typescript
+@Get('flags')
+@Deprecated('Use /api/v1/flags instead')
+async oldGetFlags() { }
+```
+
+### Step 4: Sunset Old Endpoints
+- Monitor usage
+- Contact remaining clients
+- Set sunset date
+- Remove old endpoints
+
+# Observability
+
+## Separate Metrics
+
+```typescript
+// Admin metrics
+admin_api_requests_total
+admin_api_latency_seconds
+admin_api_errors_total
+
+// Runtime metrics
+runtime_api_requests_total
+runtime_api_cache_hits_total
+runtime_api_latency_seconds
+runtime_api_errors_total
+```
+
+**Why?**
+- Different SLAs for each
+- Different alerting thresholds
+- Different on-call responsibilities
+
+## Separate Logs
+
+```typescript
+// Admin logs: Verbose
+logger.info('User user-123 created flag dark-mode in org org-456');
+
+// Runtime logs: Minimal
+logger.info('Flag fetch', { projectId, environment, cacheHit: true });
+```
+
+# Key Takeaways
+
+1. **Admin = CRUD for humans** - Rich features, detailed responses, user auth
+2. **Runtime = Fast reads for apps** - Minimal data, API keys, aggressive caching
+3. **Separation = Freedom** - Each API evolves at its own pace
+4. **Versioning = Stability** - Runtime APIs need versions, admin APIs don't
+5. **Security = Different models** - User sessions vs API keys
+6. **Performance = Different needs** - Admin can be slow, runtime must be fast
+
+## The Core Principle
+
+> If humans and machines consume the same endpoint, you're doing it wrong.
+
+Humans need context, machines need speed. Separate your APIs accordingly.
+
+# Real Impact: Peek-a-boo Numbers
+
+After separating admin and runtime:
+- **Runtime P95 latency:** <50ms (was >200ms)
+- **Bundle size:** Runtime DTO 3 fields (was 12 fields)
+- **Cache hit rate:** 95% (was 0%)
+- **Deploy independence:** Admin updates don't affect runtime clients
+- **Security:** API keys can't access admin operations
+
+Separation isn't overhead - it's enabling better architecture.

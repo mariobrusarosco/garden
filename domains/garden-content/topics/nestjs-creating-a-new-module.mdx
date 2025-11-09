@@ -1,0 +1,611 @@
+---
+title: "NestJS: Creating a New Module"
+summary: "Step-by-step guide to creating a complete NestJS module with controller, service, and proper dependency injection"
+category: "backend"
+icon: "nestjs"
+author: mariobrusarosco.github.com
+related-topics:
+  - "nestjs"
+  - "dependency-injection"
+  - "api-design"
+  - "typescript"
+reference-links:
+  - link: "https://docs.nestjs.com/modules"
+    text: "NestJS Modules Documentation"
+  - link: "https://docs.nestjs.com/controllers"
+    text: "NestJS Controllers"
+  - link: "https://docs.nestjs.com/providers"
+    text: "NestJS Providers"
+planted-in: 2025-11-08
+last-watered-in: 2025-11-08
+---
+
+# Recap
+
+A NestJS module encapsulates related functionality (controller + service + dependencies) into a reusable, isolated unit. Creating a new module involves 4 files: the module definition, controller, service, and registration in the app module.
+
+**Real Example:** Created `sdk-runtime` module for Peek-a-boo to separate runtime API endpoints from admin endpoints, demonstrating proper separation of concerns in NestJS.
+
+# Why Create a Module?
+
+Modules help organize code by domain/feature:
+- **Separation of Concerns** - Runtime API vs Admin API
+- **Dependency Management** - Each module declares its own dependencies
+- **Reusability** - Modules can be imported by other modules
+- **Testability** - Isolated modules are easier to test
+
+## When to Create a New Module?
+
+Create a new module when:
+1. **Different Domain** - User management vs feature flags vs payments
+2. **Different Auth Requirements** - Public API vs admin API
+3. **Different Responsibility** - CRUD operations vs analytics vs webhooks
+4. **Different Client** - Dashboard vs mobile app vs SDK
+
+**Example from Peek-a-boo:**
+- `feature-flags` module → Admin CRUD operations (dashboard)
+- `sdk-runtime` module → Runtime flag fetching (client SDKs)
+
+Same domain (feature flags), but different purposes warrant separate modules.
+
+# Anatomy of a NestJS Module
+
+## Directory Structure
+
+```
+src/domains/
+├── feature-flags/          # Existing admin module
+│   ├── feature-flags.controller.ts
+│   ├── feature-flags.service.ts
+│   └── feature-flags.module.ts
+└── sdk-runtime/            # New runtime module
+    ├── sdk-runtime.controller.ts
+    ├── sdk-runtime.service.ts
+    └── sdk-runtime.module.ts
+```
+
+## The Four Essential Files
+
+### 1. Service (Business Logic)
+
+```typescript
+// sdk-runtime.service.ts
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '@/prisma/prisma.service';
+import type { FeatureFlag, Environment } from '@peek-a-boo/core';
+
+@Injectable()
+export class SdkRuntimeService {
+  constructor(private prismaService: PrismaService) {}
+
+  async getFlagsByEnvironment(
+    projectId: string,
+    environment: Environment,
+  ): Promise<FeatureFlag[]> {
+    return this.prismaService.featureFlag.findMany({
+      where: {
+        projectId,
+        environment,
+      },
+    });
+  }
+
+  async getFlagByKey(
+    projectId: string,
+    key: string,
+    environment: Environment,
+  ): Promise<FeatureFlag | null> {
+    return this.prismaService.featureFlag.findFirst({
+      where: {
+        projectId,
+        key,
+        environment,
+      },
+    });
+  }
+}
+```
+
+**Key Points:**
+- `@Injectable()` decorator makes it available for dependency injection
+- Constructor injection for dependencies (PrismaService)
+- Pure business logic - no HTTP concerns
+- Typed return values for type safety
+
+### 2. Controller (HTTP Layer)
+
+```typescript
+// sdk-runtime.controller.ts
+import { Controller, Get, Query, Param, BadRequestException } from '@nestjs/common';
+import { SdkRuntimeService } from './sdk-runtime.service';
+import type { FeatureFlag, Environment } from '@peek-a-boo/core';
+
+@Controller('api/v1')
+export class SdkRuntimeController {
+  constructor(private readonly sdkRuntimeService: SdkRuntimeService) {}
+
+  @Get('flags')
+  async getFlags(
+    @Query('projectId') projectId: string,
+    @Query('environment') environment: string,
+  ): Promise<{ flags: FeatureFlag[]; environment: string }> {
+    // Validation
+    if (!projectId) {
+      throw new BadRequestException('projectId query parameter is required');
+    }
+
+    if (!environment) {
+      throw new BadRequestException('environment query parameter is required');
+    }
+
+    // Validate environment enum
+    const validEnvironments = ['DEVELOPMENT', 'STAGING', 'PRODUCTION'];
+    const env = environment.toUpperCase();
+    if (!validEnvironments.includes(env)) {
+      throw new BadRequestException(
+        `Invalid environment. Must be one of: ${validEnvironments.join(', ')}`,
+      );
+    }
+
+    const flags = await this.sdkRuntimeService.getFlagsByEnvironment(
+      projectId,
+      env as Environment,
+    );
+
+    return {
+      flags,
+      environment: env,
+    };
+  }
+
+  @Get('flags/:key')
+  async getFlag(
+    @Param('key') key: string,
+    @Query('projectId') projectId: string,
+    @Query('environment') environment: string,
+  ): Promise<FeatureFlag> {
+    if (!projectId) {
+      throw new BadRequestException('projectId query parameter is required');
+    }
+
+    if (!environment) {
+      throw new BadRequestException('environment query parameter is required');
+    }
+
+    const validEnvironments = ['DEVELOPMENT', 'STAGING', 'PRODUCTION'];
+    const env = environment.toUpperCase();
+    if (!validEnvironments.includes(env)) {
+      throw new BadRequestException(
+        `Invalid environment. Must be one of: ${validEnvironments.join(', ')}`,
+      );
+    }
+
+    const flag = await this.sdkRuntimeService.getFlagByKey(
+      projectId,
+      key,
+      env as Environment,
+    );
+
+    if (!flag) {
+      throw new BadRequestException(
+        `Flag with key "${key}" not found in ${env} environment`,
+      );
+    }
+
+    return flag;
+  }
+}
+```
+
+**Key Points:**
+- `@Controller('api/v1')` sets the base route
+- `@Get('flags')` creates route: `GET /api/v1/flags`
+- `@Query()` extracts query parameters
+- `@Param()` extracts route parameters
+- Validation happens here, not in service
+- Service is injected via constructor
+
+### 3. Module Definition
+
+```typescript
+// sdk-runtime.module.ts
+import { Module } from '@nestjs/common';
+import { SdkRuntimeController } from './sdk-runtime.controller';
+import { SdkRuntimeService } from './sdk-runtime.service';
+import { PrismaModule } from '@/prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],      // Modules this module depends on
+  controllers: [SdkRuntimeController],  // HTTP controllers
+  providers: [SdkRuntimeService],       // Services/providers
+  exports: [SdkRuntimeService],         // What other modules can import
+})
+export class SdkRuntimeModule {}
+```
+
+**Key Points:**
+- `imports` - Modules needed by this module
+- `controllers` - HTTP endpoints
+- `providers` - Services, repositories, etc.
+- `exports` - Make service available to other modules (optional)
+
+### 4. App Module Registration
+
+```typescript
+// app.module.ts
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './prisma/prisma.module';
+import { FeatureFlagsModule } from '@/domains/feature-flags/feature-flags.module';
+import { SdkRuntimeModule } from '@/domains/sdk-runtime/sdk-runtime.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    PrismaModule,
+    FeatureFlagsModule,
+    SdkRuntimeModule,  // ← Register new module here
+  ],
+})
+export class AppModule {}
+```
+
+# Step-by-Step Creation Process
+
+## Step 1: Create Directory
+```bash
+mkdir -p apps/sdk-service/src/domains/sdk-runtime
+```
+
+## Step 2: Create Service
+Create `sdk-runtime.service.ts` with:
+- `@Injectable()` decorator
+- Constructor dependencies
+- Business logic methods
+- Typed return values
+
+## Step 3: Create Controller
+Create `sdk-runtime.controller.ts` with:
+- `@Controller('route')` decorator
+- Route handlers with `@Get()`, `@Post()`, etc.
+- Service injection via constructor
+- Input validation
+- HTTP-specific error handling
+
+## Step 4: Create Module
+Create `sdk-runtime.module.ts` with:
+- `@Module()` decorator
+- Import dependencies
+- Declare controllers and providers
+- Export what's needed
+
+## Step 5: Register in App Module
+Add new module to `app.module.ts` imports array.
+
+## Step 6: Test
+```bash
+# Development server should auto-reload
+# Test endpoints:
+curl http://localhost:6001/api/v1/flags?projectId=xxx&environment=development
+```
+
+# Common Patterns
+
+## Pattern 1: Shared Dependencies
+
+If multiple modules need the same service:
+
+```typescript
+// shared.module.ts
+@Module({
+  providers: [SharedService],
+  exports: [SharedService],  // Make available to importers
+})
+export class SharedModule {}
+
+// feature.module.ts
+@Module({
+  imports: [SharedModule],  // Import to use SharedService
+  providers: [FeatureService],
+})
+export class FeatureModule {}
+```
+
+## Pattern 2: Global Modules
+
+For truly global services (config, logging):
+
+```typescript
+@Global()  // ← Makes module available everywhere
+@Module({
+  providers: [ConfigService],
+  exports: [ConfigService],
+})
+export class ConfigModule {}
+```
+
+## Pattern 3: Dynamic Modules
+
+For modules that need configuration:
+
+```typescript
+@Module({})
+export class DatabaseModule {
+  static forRoot(options: DatabaseOptions): DynamicModule {
+    return {
+      module: DatabaseModule,
+      providers: [
+        {
+          provide: 'DATABASE_OPTIONS',
+          useValue: options,
+        },
+        DatabaseService,
+      ],
+      exports: [DatabaseService],
+    };
+  }
+}
+
+// Usage
+@Module({
+  imports: [
+    DatabaseModule.forRoot({ host: 'localhost', port: 5432 })
+  ],
+})
+export class AppModule {}
+```
+
+# Dependency Injection Explained
+
+## How It Works
+
+```typescript
+// 1. Service declares it's injectable
+@Injectable()
+export class MyService {
+  someMethod() { }
+}
+
+// 2. Module registers it as provider
+@Module({
+  providers: [MyService],
+})
+export class MyModule {}
+
+// 3. Other classes can inject it
+@Injectable()
+export class OtherService {
+  constructor(private myService: MyService) {}
+  // ↑ NestJS automatically provides instance
+}
+```
+
+## The Magic
+
+NestJS:
+1. Scans all modules on startup
+2. Creates a dependency graph
+3. Instantiates services in correct order
+4. Injects dependencies via constructor
+5. Manages lifecycle (singleton by default)
+
+# Best Practices
+
+## 1. One Responsibility Per Module
+❌ Bad: `CommonModule` with unrelated stuff
+✅ Good: `AuthModule`, `UserModule`, `EmailModule`
+
+## 2. Controller Does HTTP, Service Does Logic
+❌ Bad:
+```typescript
+@Get()
+async getUsers() {
+  // Database queries in controller
+  return this.prismaService.user.findMany();
+}
+```
+
+✅ Good:
+```typescript
+@Get()
+async getUsers() {
+  return this.userService.findAll();  // Delegate to service
+}
+```
+
+## 3. Validate in Controller, Not Service
+❌ Bad:
+```typescript
+// In service
+async getFlag(key: string) {
+  if (!key) throw new Error('Key required');  // HTTP concern in service
+}
+```
+
+✅ Good:
+```typescript
+// In controller
+@Get(':key')
+async getFlag(@Param('key') key: string) {
+  if (!key) throw new BadRequestException('Key required');
+  return this.service.getFlag(key);
+}
+```
+
+## 4. Type Everything
+```typescript
+// Service method
+async getFlagsByEnvironment(
+  projectId: string,
+  environment: Environment,
+): Promise<FeatureFlag[]> {  // ← Typed return
+  // ...
+}
+```
+
+## 5. Export Only What's Needed
+```typescript
+@Module({
+  providers: [ServiceA, ServiceB],
+  exports: [ServiceA],  // Only ServiceA is public
+})
+```
+
+# Testing Your Module
+
+## Unit Test the Service
+
+```typescript
+import { Test, TestingModule } from '@nestjs/testing';
+import { SdkRuntimeService } from './sdk-runtime.service';
+import { PrismaService } from '@/prisma/prisma.service';
+
+describe('SdkRuntimeService', () => {
+  let service: SdkRuntimeService;
+  let prisma: PrismaService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        SdkRuntimeService,
+        {
+          provide: PrismaService,
+          useValue: {
+            featureFlag: {
+              findMany: jest.fn(),
+              findFirst: jest.fn(),
+            },
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<SdkRuntimeService>(SdkRuntimeService);
+    prisma = module.get<PrismaService>(PrismaService);
+  });
+
+  it('should fetch flags by environment', async () => {
+    const mockFlags = [{ key: 'test', enabled: true }];
+    jest.spyOn(prisma.featureFlag, 'findMany').mockResolvedValue(mockFlags);
+
+    const result = await service.getFlagsByEnvironment('project-1', 'DEVELOPMENT');
+    expect(result).toEqual(mockFlags);
+  });
+});
+```
+
+## Integration Test the Controller
+
+```typescript
+import { Test, TestingModule } from '@nestjs/testing';
+import { SdkRuntimeController } from './sdk-runtime.controller';
+import { SdkRuntimeService } from './sdk-runtime.service';
+
+describe('SdkRuntimeController', () => {
+  let controller: SdkRuntimeController;
+  let service: SdkRuntimeService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [SdkRuntimeController],
+      providers: [
+        {
+          provide: SdkRuntimeService,
+          useValue: {
+            getFlagsByEnvironment: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    controller = module.get<SdkRuntimeController>(SdkRuntimeController);
+    service = module.get<SdkRuntimeService>(SdkRuntimeService);
+  });
+
+  it('should return flags', async () => {
+    const mockFlags = [{ key: 'test', enabled: true }];
+    jest.spyOn(service, 'getFlagsByEnvironment').mockResolvedValue(mockFlags);
+
+    const result = await controller.getFlags('project-1', 'development');
+    expect(result.flags).toEqual(mockFlags);
+    expect(result.environment).toBe('DEVELOPMENT');
+  });
+});
+```
+
+# Troubleshooting
+
+## "Cannot resolve dependency"
+**Issue:** NestJS can't inject a dependency.
+
+**Solution:**
+1. Ensure service has `@Injectable()` decorator
+2. Ensure service is in module's `providers` array
+3. If importing from another module, ensure it's `exported` there and `imported` here
+
+## "Circular dependency detected"
+**Issue:** Module A imports Module B which imports Module A.
+
+**Solution:**
+1. Use `forwardRef()`:
+```typescript
+@Module({
+  imports: [forwardRef(() => OtherModule)],
+})
+```
+2. Or refactor to eliminate circular dependency
+
+## Routes Not Working
+**Issue:** Endpoints return 404.
+
+**Solution:**
+1. Ensure module is imported in `AppModule`
+2. Check `@Controller()` route matches your URL
+3. Verify method decorators (`@Get()`, `@Post()`, etc.)
+
+# Commands Reference
+
+```bash
+# Create module directory
+mkdir -p src/domains/module-name
+
+# Generate module with NestJS CLI (optional)
+nest generate module domains/module-name
+nest generate controller domains/module-name
+nest generate service domains/module-name
+
+# Test endpoints
+curl http://localhost:6001/your-route
+```
+
+# Real-World Example: SDK Runtime Module
+
+The `sdk-runtime` module demonstrates:
+- ✅ Separation from admin module
+- ✅ Different route prefix (`/api/v1` vs `/feature-flags`)
+- ✅ Proper dependency injection (PrismaService)
+- ✅ Input validation in controller
+- ✅ Business logic in service
+- ✅ Type safety throughout
+- ✅ Clean, testable architecture
+
+Files created:
+- `sdk-runtime.service.ts` - 45 lines
+- `sdk-runtime.controller.ts` - 75 lines
+- `sdk-runtime.module.ts` - 12 lines
+- Registration in `app.module.ts` - 1 line
+
+Total time to create: ~15 minutes for a production-ready module.
+
+# Key Takeaways
+
+1. **Modules = Organization** - Group related functionality
+2. **Controllers = HTTP** - Handle requests/responses
+3. **Services = Logic** - Business rules and data access
+4. **DI = Magic** - NestJS handles instantiation
+5. **Testing = Isolation** - Mock dependencies easily
+6. **Separation = Maintainability** - Runtime vs Admin APIs
+
+A well-structured module is self-contained, testable, and easy to understand.
