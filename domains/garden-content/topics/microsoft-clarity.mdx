@@ -1,0 +1,175 @@
+---
+title: Microsoft Clarity
+summary: "Free analytics tool for understanding user behavior through session recordings and heatmaps"
+category: "analytics"
+icon: "chart"
+author: mariobrusarosco.github.com
+related-topics:
+  - "analytics"
+  - "nextjs"
+  - "performance"
+  - "user-experience"
+reference-links:
+  - link: "https://clarity.microsoft.com/"
+    text: "Microsoft Clarity Official Site"
+  - link: "https://nextjs.org/docs/app/building-your-application/optimizing/scripts"
+    text: "Next.js Script Optimization"
+planted-in: 2025-11-09
+last-watered-in: 2025-11-09
+---
+
+# Microsoft Clarity
+
+Microsoft Clarity is a free analytics tool that helps you understand how users interact with your website through session recordings, heatmaps, and user insights.
+
+## Adding Clarity to Next.js Projects
+
+### The Recommended Way
+
+Use Next.js's `Script` component with the `afterInteractive` strategy in your root layout:
+
+```tsx
+import Script from "next/script";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <Script
+          id="microsoft-clarity"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "YOUR_PROJECT_ID");
+            `,
+          }}
+        />
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+## Do's and Don'ts
+
+### ✅ Do's
+
+**1. Use the Script Component**
+- Always use Next.js's `Script` component, never regular `<script>` tags
+- This ensures proper hydration and optimal loading
+
+**2. Use the `afterInteractive` Strategy**
+- Loads the script after the page becomes interactive
+- Prevents blocking the initial page render
+- Balances analytics accuracy with performance
+
+**3. Place in Root Layout**
+- Add Clarity to `app/layout.tsx` to track all pages
+- Ensures consistent tracking across your entire site
+
+**4. Use `dangerouslySetInnerHTML` for Inline Scripts**
+- Required for inline executable JavaScript
+- Safe when the script content is from a trusted source (Microsoft's official docs)
+- The name is intentionally scary, but it's the correct approach here
+
+**5. Add a Unique `id` Prop**
+- Always include `id="microsoft-clarity"` on the Script component
+- Prevents duplicate script injections during development
+
+### ❌ Don'ts
+
+**1. Don't Use npm Packages**
+```tsx
+// ❌ Wrong - Unnecessary dependency
+import Clarity from '@microsoft/clarity';
+Clarity.init("PROJECT_ID");
+```
+
+The inline script approach is simpler and doesn't add dependencies.
+
+**2. Don't Try to Initialize on the Server**
+```tsx
+// ❌ Wrong - Server-side code
+if (typeof window !== 'undefined') {
+  Clarity.init("PROJECT_ID");
+}
+```
+
+This won't work in Next.js server components. Always use the `Script` component.
+
+**3. Don't Use `beforeInteractive` Strategy**
+```tsx
+// ❌ Wrong - Blocks page rendering
+<Script strategy="beforeInteractive" ... />
+```
+
+Analytics should never block your page from loading.
+
+**4. Don't Put Scripts from User Input**
+```tsx
+// ❌ DANGEROUS - Never do this
+<Script dangerouslySetInnerHTML={{ __html: userProvidedScript }} />
+```
+
+Only use `dangerouslySetInnerHTML` with hardcoded, trusted scripts.
+
+**5. Don't Use Regular Script Tags**
+```tsx
+// ❌ Wrong - Breaks React hydration
+<script type="text/javascript">
+  {/* Clarity code */}
+</script>
+```
+
+Always use Next.js's `Script` component for third-party scripts.
+
+## Why `dangerouslySetInnerHTML`?
+
+The name is intentionally scary to make developers think twice, but it's **safe for analytics scripts** because:
+
+- ✅ You control the script content (from Microsoft's official docs)
+- ✅ It's hardcoded in your source code, not from user input
+- ✅ The script URL points to Microsoft's trusted CDN
+- ✅ React normally escapes all content to prevent XSS attacks, but analytics scripts need to execute as-is
+
+## Alternative: External Script
+
+If you prefer to avoid `dangerouslySetInnerHTML`, you can use the direct script URL:
+
+```tsx
+<Script
+  src="https://www.clarity.ms/tag/YOUR_PROJECT_ID"
+  strategy="afterInteractive"
+/>
+```
+
+However, Microsoft's recommended wrapper function (using `dangerouslySetInnerHTML`) ensures better async loading and is the preferred approach.
+
+## Getting Your Project ID
+
+1. Sign up at [clarity.microsoft.com](https://clarity.microsoft.com/)
+2. Create a new project
+3. Copy your project ID from the setup page
+4. Replace `YOUR_PROJECT_ID` in the script with your actual ID
+
+## What Clarity Tracks
+
+- **Session Recordings**: Watch real user sessions to see how they navigate your site
+- **Heatmaps**: See where users click, scroll, and focus their attention
+- **Insights**: Identify rage clicks, dead clicks, and excessive scrolling
+- **Performance**: No impact on page load times - completely free and unlimited
+
+## Privacy Considerations
+
+Clarity automatically masks sensitive information like:
+- Email addresses
+- Phone numbers
+- Credit card numbers
+- Passwords
+
+Always review your site's privacy policy and ensure compliance with GDPR/CCPA when using analytics tools.

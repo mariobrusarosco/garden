@@ -1,5 +1,6 @@
-
+import Clarity from '@microsoft/clarity';
 export default function HomeScreen() {
+
   return (
     <div data-ui="home-screen" className="container global-x-spacing">
       <section
