@@ -1,4 +1,3 @@
-import Clarity from '@microsoft/clarity';
 export default function HomeScreen() {
 
   return (
