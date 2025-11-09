@@ -3,7 +3,7 @@ import { useState } from "react";
 import topics from "@/metadata-topics.json";
 import { ListSearcher } from "@/domains/garden-components/components/list-search";
 import { useListSearcher } from "@/domains/garden-components/hooks/use-list-search";
-import { TopicCard } from "@/domains/garden-components/components/topic-card";
+import { Card } from "@/domains/garden-components/components/card";
 import type { TopicsMetadata, TopicCategory } from "@/types/topic-metadata";
 import { cn } from "@/domains/helper-and-utils/classnames";
 import { PageHeading } from "@/domains/garden-components/page-heading";
@@ -68,13 +68,15 @@ export default function TopicsScreen() {
         className="my-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
       >
         {filteredTopics.map(([slug, metadata]) => (
-          <TopicCard
-            key={slug}
-            slug={slug}
-            category={metadata.category}
-            summary={metadata.summary}
-            icon={metadata.icon}
-          />
+          <li key={slug}>
+            <Card
+              href={`/topics/${slug}`}
+              title={slug}
+              category={metadata.category}
+              summary={metadata.summary}
+              icon={metadata.icon}
+            />
+          </li>
         ))}
       </ul>
     </section>

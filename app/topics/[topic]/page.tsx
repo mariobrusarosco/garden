@@ -37,6 +37,7 @@ export default function TopicScreen({ params }: Props) {
           topicCategory={topicData.category}
           topicSummary={topicData.summary}
           topicIcon={topicData.icon}
+          topicSlug={resolvedParams.topic}
         />
       </div>
     </section>

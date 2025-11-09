@@ -11,10 +11,12 @@
       "next-js.mdx",
       "react-context.mdx",
       "react-form-elements.mdx",
+      "react-native-basic-elements.mdx",
       "react-native.mdx",
       "react-passing-props-strategies.mdx",
       "react-query-mutations-working-alongside-useQuery.mdx",
       "react-query.mdx",
+      "react-use-hook.mdx",
       "react.mdx",
       "routing.mdx",
       "shadcn-ui.mdx",
@@ -40,6 +42,49 @@
   "framer": {
     "files": [
       "animations-with-framer.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "api-design": {
+    "files": [
+      "api-design-admin-vs-runtime-endpoints.mdx",
+      "nestjs-creating-a-new-module.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "separation-of-concerns": {
+    "files": [
+      "api-design-admin-vs-runtime-endpoints.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "feature-flags": {
+    "files": [
+      "api-design-admin-vs-runtime-endpoints.mdx",
+      "peekaboo-react-sdk-phase0-setup.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "authentication": {
+    "files": [
+      "api-design-admin-vs-runtime-endpoints.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "nestjs": {
+    "files": [
+      "api-design-admin-vs-runtime-endpoints.mdx",
+      "nestjs-creating-a-new-module.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -345,6 +390,42 @@
     "category": "frameworks",
     "icon": "puzzle"
   },
+  "analytics": {
+    "files": [
+      "microsoft-clarity.mdx",
+      "next-analytics.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "nextjs": {
+    "files": [
+      "microsoft-clarity.mdx",
+      "react-use-hook.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "performance": {
+    "files": [
+      "microsoft-clarity.mdx",
+      "next-analytics.mdx",
+      "next-js-loading-issues.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "user-experience": {
+    "files": [
+      "microsoft-clarity.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
   "mui": {
     "files": [
       "mui.mdx"
@@ -352,6 +433,25 @@
     "summary": "React component library implementing Google's Material Design",
     "category": "frameworks",
     "icon": "puzzle"
+  },
+  "dependency-injection": {
+    "files": [
+      "nestjs-creating-a-new-module.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "typescript": {
+    "files": [
+      "nestjs-creating-a-new-module.mdx",
+      "project-typying.mdx",
+      "typescript.mdx",
+      "typing-express-routes.mdx"
+    ],
+    "summary": "JavaScript with syntax for types, providing type safety and better tooling",
+    "category": "languages",
+    "icon": "shield"
   },
   "next": {
     "files": [
@@ -374,23 +474,6 @@
     "summary": "React framework for production with hybrid static and server rendering, TypeScript support, and more",
     "category": "frameworks",
     "icon": "rocket"
-  },
-  "analytics": {
-    "files": [
-      "next-analytics.mdx"
-    ],
-    "summary": "",
-    "category": "concepts",
-    "icon": ""
-  },
-  "performance": {
-    "files": [
-      "next-analytics.mdx",
-      "next-js-loading-issues.mdx"
-    ],
-    "summary": "",
-    "category": "concepts",
-    "icon": ""
   },
   "monitoring": {
     "files": [
@@ -450,11 +533,36 @@
   },
   "prisma": {
     "files": [
+      "peekaboo-react-sdk-phase0-setup.mdx",
       "prisma.mdx"
     ],
     "summary": "Modern database ORM for Node.js and TypeScript with type-safe queries",
     "category": "tools",
     "icon": "gear"
+  },
+  "migrations": {
+    "files": [
+      "peekaboo-react-sdk-phase0-setup.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "environment-variables": {
+    "files": [
+      "peekaboo-react-sdk-phase0-setup.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "react-sdk": {
+    "files": [
+      "peekaboo-react-sdk-phase0-setup.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
   },
   "orm": {
     "files": [
@@ -463,16 +571,6 @@
     "summary": "",
     "category": "concepts",
     "icon": ""
-  },
-  "typescript": {
-    "files": [
-      "project-typying.mdx",
-      "typescript.mdx",
-      "typing-express-routes.mdx"
-    ],
-    "summary": "JavaScript with syntax for types, providing type safety and better tooling",
-    "category": "languages",
-    "icon": "shield"
   },
   "typing": {
     "files": [
@@ -525,6 +623,7 @@
   },
   "expo": {
     "files": [
+      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -533,6 +632,7 @@
   },
   "react-native": {
     "files": [
+      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -541,6 +641,7 @@
   },
   "mobile": {
     "files": [
+      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -549,6 +650,7 @@
   },
   "mobile-development": {
     "files": [
+      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -557,6 +659,7 @@
   },
   "mobile-app": {
     "files": [
+      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -591,6 +694,16 @@
   "query": {
     "files": [
       "react-query.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "hooks": {
+    "files": [
+      "react-use-hook.mdx",
+      "use-id.mdx",
+      "use-ref.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -778,15 +891,6 @@
   "menu": {
     "files": [
       "ui-menu-for-applications.mdx"
-    ],
-    "summary": "",
-    "category": "concepts",
-    "icon": ""
-  },
-  "hooks": {
-    "files": [
-      "use-id.mdx",
-      "use-ref.mdx"
     ],
     "summary": "",
     "category": "concepts",

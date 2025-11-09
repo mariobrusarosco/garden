@@ -1,9 +1,7 @@
 "use client";
 
 import { useListSearcher } from "@/domains/garden-components/hooks/use-list-search";
-import { TopicCard } from "@/domains/garden-components/components/topic-card";
-import { ListSearcher } from "@/domains/garden-components/components/list-search";
-import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
+import { Card } from "@/domains/garden-components/components/card";
 import type { TopicCategory } from "@/types/topic-metadata";
 
 interface Props {
@@ -11,6 +9,7 @@ interface Props {
   topicCategory: TopicCategory;
   topicSummary: string;
   topicIcon?: string;
+  topicSlug: string;
 }
 
 export const TopicNotesList = ({
@@ -18,6 +17,7 @@ export const TopicNotesList = ({
   topicCategory,
   topicSummary,
   topicIcon,
+  topicSlug,
 }: Props) => {
   const { handleInputChange, filteredList, term } = useListSearcher(notes);
 
@@ -30,13 +30,14 @@ export const TopicNotesList = ({
         const noteSlug = filename.split(".mdx")[0];
 
         return (
-          <TopicCard
-            key={noteSlug}
-            slug={noteSlug}
-            category={topicCategory}
-            summary={topicSummary}
-            icon={topicIcon}
-          />
+          <li key={noteSlug}>
+            <Card
+              href={`/topics/${topicSlug}/note/${noteSlug}`}
+              title={noteSlug}
+              category={topicCategory}
+              useLeafIcon
+            />
+          </li>
         );
       })}
     </ul>
