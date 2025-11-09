@@ -1,4 +1,5 @@
 "use client";
+import { use } from "react";
 import { PageHeading } from "@/domains/garden-components/page-heading";
 import { removeHyphens } from "@/domains/helper-and-utils/string-manipulation";
 import topics from "@/metadata-topics.json";
@@ -8,13 +9,13 @@ import { ListSearcher } from "@/domains/garden-components/components/list-search
 import { useListSearcher } from "@/domains/garden-components/hooks/use-list-search";
 
 interface Props {
-  params: { topic: string };
+  params: Promise<{ topic: string }>;
 }
 
 const typedTopics = topics as TopicsMetadata;
 
 export default function TopicScreen({ params }: Props) {
-  const resolvedParams = params;
+  const resolvedParams = use(params);
   const topicData = typedTopics[resolvedParams.topic];
   const notes = topicData?.files || [];
   const normalizedTopic = removeHyphens(resolvedParams.topic);

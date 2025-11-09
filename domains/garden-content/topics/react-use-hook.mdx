@@ -1,0 +1,251 @@
+---
+title: React use() Hook
+summary: "React hook for unwrapping Promises and Context values in client components, essential for Next.js 15+ async params"
+category: "react"
+icon: "react"
+author: mariobrusarosco.github.com
+related-topics:
+  - "react"
+  - "hooks"
+  - "nextjs"
+reference-links:
+  - link: "https://react.dev/reference/react/use"
+    text: "React use() Hook Documentation"
+  - link: "https://nextjs.org/docs/app/api-reference/file-conventions/page"
+    text: "Next.js Page Props"
+planted-in: 2025-01-27
+last-watered-in: 2025-01-27
+---
+
+# React use() Hook
+
+React's `use()` hook is a powerful utility that unwraps Promises and Context values. It's essential for handling async data in client components, especially with Next.js 15+ where route parameters are now Promises.
+
+## What is `use()`?
+
+The `use()` hook allows you to unwrap Promises and Context values synchronously in React components. It's React's solution for handling async data in client components where you can't use `await`.
+
+## Why It Exists
+
+In React, you can't use `await` directly in component bodies (only in async functions). Client components can't be async functions, so `use()` provides a way to unwrap Promises synchronously while maintaining React's rendering model.
+
+## Basic Usage
+
+### Unwrapping Promises
+
+```tsx
+"use client"
+import { use } from "react";
+
+interface Props {
+  params: Promise<{ topic: string }>;
+}
+
+export default function TopicScreen({ params }: Props) {
+  const resolvedParams = use(params);
+  const topic = resolvedParams.topic;
+  
+  return <div>{topic}</div>;
+}
+```
+
+### Unwrapping Context
+
+```tsx
+"use client"
+import { use, createContext } from "react";
+
+const ThemeContext = createContext<Promise<string>>();
+
+export default function Component() {
+  const theme = use(ThemeContext);
+  return <div>Current theme: {theme}</div>;
+}
+```
+
+## Before vs After (Next.js 15+ Migration)
+
+### Before (Next.js 14 and earlier)
+
+```tsx
+interface Props {
+  params: { topic: string }; // Synchronous object
+}
+
+export default function TopicScreen({ params }: Props) {
+  const topic = params.topic; // Direct access
+  return <div>{topic}</div>;
+}
+```
+
+### After (Next.js 15+)
+
+```tsx
+"use client"
+import { use } from "react";
+
+interface Props {
+  params: Promise<{ topic: string }>; // Async Promise
+}
+
+export default function TopicScreen({ params }: Props) {
+  const resolvedParams = use(params); // Unwrap with use()
+  const topic = resolvedParams.topic;
+  return <div>{topic}</div>;
+}
+```
+
+## When to Use `use()` vs `await`
+
+| Scenario | Use `await` | Use `use()` |
+|----------|-------------|-------------|
+| Server Components | ✅ Yes | ❌ No |
+| Client Components | ❌ No | ✅ Yes |
+| Async Functions | ✅ Yes | ❌ No |
+| Component Body | ❌ No | ✅ Yes |
+| Event Handlers | ✅ Yes | ❌ No |
+
+## Key Benefits
+
+1. **Works in Client Components**: No need to make the component async
+2. **Suspense Integration**: React can suspend while the Promise resolves
+3. **Type-Safe**: TypeScript understands the unwrapped type
+4. **Consistent API**: Same pattern for Promises and Context
+
+## How It Works Under the Hood
+
+When you call `use(promise)`:
+
+1. React checks if the Promise is resolved
+2. **If resolved**: Returns the value immediately
+3. **If pending**: Throws the Promise (Suspense catches it)
+4. React re-renders when the Promise resolves
+
+This is why Suspense boundaries are important when using `use()` with Promises.
+
+## Error Handling
+
+Always wrap `use()` in error boundaries when dealing with Promises that might reject:
+
+```tsx
+"use client"
+import { use } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+
+function TopicContent({ params }: { params: Promise<{ topic: string }> }) {
+  const resolved = use(params);
+  return <div>{resolved.topic}</div>;
+}
+
+export default function TopicScreen({ params }: Props) {
+  return (
+    <ErrorBoundary fallback={<div>Error loading topic</div>}>
+      <Suspense fallback={<div>Loading...</div>}>
+        <TopicContent params={params} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+```
+
+## Real-World Example: Next.js Route Params
+
+This is the exact pattern used when handling async route parameters in Next.js 15+:
+
+```tsx
+"use client";
+import { use } from "react";
+import { PageHeading } from "@/domains/garden-components/page-heading";
+
+interface Props {
+  params: Promise<{ topic: string }>;
+}
+
+export default function TopicScreen({ params }: Props) {
+  const resolvedParams = use(params);
+  const topicData = getTopicData(resolvedParams.topic);
+  
+  return (
+    <PageHeading title={topicData.title}>
+      {/* Component content */}
+    </PageHeading>
+  );
+}
+```
+
+## Related Concepts
+
+- **Suspense Boundaries**: `use()` works seamlessly with Suspense for loading states
+- **Streaming**: Enables progressive rendering as data becomes available
+- **Server Components**: Server components use `await`, client components use `use()`
+- **React 19**: The `use()` hook is part of React's modern async data handling
+
+## Production Considerations
+
+1. **Error Handling**: Always wrap `use()` in error boundaries
+2. **Loading States**: Use Suspense boundaries for pending Promises
+3. **Type Safety**: Ensure Promise types match expected values
+4. **Performance**: `use()` enables React to optimize rendering and streaming
+
+## Common Pitfalls
+
+### ❌ Don't Use `await` in Client Components
+
+```tsx
+// ❌ Wrong - Client components can't be async
+"use client"
+export default async function Component({ params }) {
+  const resolved = await params; // This won't work!
+}
+```
+
+### ✅ Use `use()` Instead
+
+```tsx
+// ✅ Correct - Use use() hook
+"use client"
+import { use } from "react";
+
+export default function Component({ params }: { params: Promise<any> }) {
+  const resolved = use(params); // This works!
+}
+```
+
+### ❌ Don't Forget Suspense Boundaries
+
+```tsx
+// ❌ Wrong - Missing Suspense boundary
+export default function Component({ params }) {
+  const resolved = use(params); // Might cause issues
+}
+```
+
+### ✅ Wrap in Suspense
+
+```tsx
+// ✅ Correct - Proper Suspense handling
+export default function Component({ params }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Content params={params} />
+    </Suspense>
+  );
+}
+
+function Content({ params }) {
+  const resolved = use(params);
+  return <div>{resolved.data}</div>;
+}
+```
+
+## Why Next.js 15+ Made Params Async
+
+Next.js 15+ made route parameters async to enable:
+
+- **Better Streaming**: Progressive rendering as params resolve
+- **Suspense Integration**: Proper loading states during navigation
+- **Performance**: Optimized rendering and data fetching
+- **Consistency**: Unified async data handling across the framework
+
+The `use()` hook is React's elegant solution for handling this in client components!
+
