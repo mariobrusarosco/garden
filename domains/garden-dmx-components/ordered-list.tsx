@@ -1,6 +1,6 @@
 const OrderedList = ({ ...props }) => (
   <ol
-    className="my-4 list-decimal list-inside lg:text-2xl font-sans"
+    className="list-decimal list-inside lg:text-xl font-sans text-night-brown"
     {...props}
   />
 );

@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bitter.variable} ${raleway.variable} bg-neutral-white grid grid-rows-[70px_1fr]`}
+        className={`${bitter.variable} ${raleway.variable} bg-ghost-white grid grid-rows-[70px_1fr]`}
       >
         <Script
           id="microsoft-clarity"

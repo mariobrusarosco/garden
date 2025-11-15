@@ -1,6 +1,6 @@
 const Paragraph = ({ ...props }) => {
   return (
-    <p className="my-4 text-lg font-sans font-light lg:text-2xl" {...props} />
+    <p className="mt-4 text-lg font-sans text-night-brown font-light lg:text-xl leading-10" {...props} />
   );
 };
 

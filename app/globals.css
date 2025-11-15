@@ -23,6 +23,27 @@
   --color-forest-green: #286533;
   --color-cloud-blue: #538293;
 
+
+  /* Palette 1 */
+  --color-spring-lobster-brown: #6E2E2F;
+  --color-tundra-frost: #E0E1DB;
+  --color-deep-sea-diver: #246061;
+  --color-aged-antics: #896E2B;
+  --color-little-league: #6C9B91;
+  --color-night-brown: #412519;
+  --color-sunken-cascades: #293D3C;
+  --color-strawberry-jam: #87423B;
+
+  /* Palette 2 */
+  --color-blue-whale: #003849;
+  --color-ghost-white: #F5F9FC;
+  --color-lipstick-red: #B40234;
+  --color-blue-feather: #AED8F0;
+  --color-desert-sunrise: #FDB38E;
+  --color-chocolate: #34000A;
+  --color-bordeaux: #590017;
+
+  
   /* Deprecated colors */
   --color-french_gray-100: #2f2225;
   --color-french_gray-200: #5f4549;

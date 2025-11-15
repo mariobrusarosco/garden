@@ -4,10 +4,10 @@ export default function HomeScreen() {
     <div data-ui="home-screen" className="container global-x-spacing">
       <section
         data-ui="intro"
-        className="mt-6"
+        className="mt-6 text-sunken-cascades"
       >
-        <p className="text-8xl font-sans mt-16 text-midnight-blue font-thin">
-          <strong className="text-dark-pink font-semibold">Software Development</strong> collection of notes, tutorials and other stuff.
+        <p className="text-8xl font-sans mt-16  font-thin">
+          <strong className="font-semibold text-spring-lobster-brown">Software Development</strong> collection of notes, tutorials and other stuff.
         </p>
 
         <p className="text-xl font-serif font-thin mt-14 max-w-[550px] font-thin">

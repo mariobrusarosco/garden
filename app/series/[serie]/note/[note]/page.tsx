@@ -53,7 +53,7 @@ export default async function SerieNoteScreen({ params }: Props) {
             <div className="w-[400px]">
               <Accordion
                 header={
-                  <h2 className="text-wenge lowercase font-sans font-thin text-lg">
+                  <h2 className="text-sunken-cascades lowercase font-sans font-thin text-lg">
                     Related Topics
                   </h2>
                 }
@@ -61,7 +61,7 @@ export default async function SerieNoteScreen({ params }: Props) {
                   <ul className="flex gap-4 my-2">
                     {metadata["related-topics"].map((topic) => (
                       <li
-                        className="rounded-lg bg-misty_rose-700 p-2 text-wenge lowecase uppercase font-sans font-light text-xs cursor-pointer"
+                        className="rounded-lg bg-deep-sea-diver text-ghost-white p-2 lowecase uppercase font-sans font-light text-xs cursor-pointer"
                         key={topic}
                       >
                         <a target="_blank" href={`/topic/${topic}`}>
@@ -79,7 +79,7 @@ export default async function SerieNoteScreen({ params }: Props) {
             <div className="w-[400px]">
               <Accordion
                 header={
-                  <h2 className="text-wenge lowercase font-sans font-thin text-lg">
+                  <h2 className="text-sunken-cascades lowercase font-sans font-thin text-lg">
                     Referece Links
                   </h2>
                 }
@@ -87,7 +87,7 @@ export default async function SerieNoteScreen({ params }: Props) {
                   <ul className="flex gap-4 my-2">
                     {metadata["reference-links"].map((link) => (
                       <li
-                        className="rounded-lg bg-misty_rose-700 p-2 text-wenge uppercase font-sans font-light text-xs cursor-pointer"
+                        className="rounded-lgbg-deep-sea-diver text-ghost-white  p-2 uppercase font-sans font-light text-xs cursor-pointer"
                         key={link.url}
                       >
                         <a href={link.url} target="_blank">

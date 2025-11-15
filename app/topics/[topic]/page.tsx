@@ -31,7 +31,7 @@ export default function TopicScreen({ params }: Props) {
         <ListSearcher onInputChange={handleInputChange} term={term} />
       </PageHeading>
 
-      <div data-ui="list-of-notes" className="global-spacing">
+      <div data-ui="list-of-notes">
         <TopicNotesList
           notes={filteredList}
           topicCategory={topicData.category}
