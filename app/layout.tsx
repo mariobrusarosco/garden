@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { Header } from "@/domains/garden-components/header";
 import { Navbar } from "@/domains/garden-components/navbar";
+import { HeapAnalytics } from "@/domains/garden-components/heap-analytics";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -48,6 +49,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <HeapAnalytics />
         <Header />
 
         <main data-ui="main-container">{children}</main>

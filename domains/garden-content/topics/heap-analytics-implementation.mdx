@@ -1,0 +1,319 @@
+---
+title: "Implementing Heap Analytics in Next.js"
+summary: "Complete guide to integrating Heap Analytics in a Next.js application with IP tracking for visitor identification"
+category: "analytics"
+icon: "analytics"
+author: mariobrusarosco.github.com
+related-topics:
+  - "nextjs"
+  - "analytics"
+  - "user-tracking"
+  - "privacy"
+reference-links:
+  - link: "https://developers.heap.io/docs/web"
+    text: "Heap Web SDK Installation"
+  - link: "https://developers.heap.io/docs/install-heapjs"
+    text: "Install Heap.js"
+  - link: "https://developers.heap.io/reference/api-reference-overview"
+    text: "Heap API Reference"
+  - link: "https://samelogic.com/blog/heap-analytics-in-nextjs-with-nextauthjs"
+    text: "Heap Analytics in Next.js Guide"
+  - link: "https://help.heap.io/hc/en-us/articles/18700032972060-Heap-Privacy-Features"
+    text: "Heap Privacy Features"
+planted-in: 2025-11-15
+last-watered-in: 2025-11-15
+---
+
+# Recap
+
+Heap Analytics is a digital product analytics platform that automatically captures user interactions without requiring manual event tracking. Unlike traditional analytics, Heap's web SDK is installed via a script snippet (not an NPM package) and can be configured to capture IP addresses for visitor identification—especially useful for detecting suspicious traffic patterns.
+
+**Real Example:** This digital garden uses Heap to track anonymous visitors and identify suspicious repeated access from specific locations by enabling IP autocapture.
+
+# Why Heap Analytics?
+
+## Automatic Event Tracking
+
+Traditional analytics (like Google Analytics) require you to manually instrument every event you want to track. Heap automatically captures all user interactions:
+
+- Page views
+- Clicks
+- Form submissions
+- Input changes
+- Navigation patterns
+
+## Retroactive Analysis
+
+Since Heap captures everything, you can define events retroactively. If you realize you want to track button clicks from 3 months ago, the data is already there.
+
+## Anonymous User Tracking
+
+Heap automatically assigns unique IDs to anonymous users and maintains their journey across sessions via cookies—no authentication required.
+
+# Installation Methods
+
+## No Official NPM Package for Web
+
+**Important:** Heap does NOT have an official NPM package for web applications. The official installation method is via script injection.
+
+### Available NPM Packages (What They're For):
+
+- `@heap/react-native-heap` - Official React Native SDK
+- `heap-api` - Server-side API client for Node.js (not for browser)
+- `reactjs-heap` - Community package (not officially maintained)
+- Package named `heap` - UNRELATED (it's a binary heap data structure)
+
+## Recommended Approach: Script-Based Installation
+
+The official Heap installation uses a JavaScript snippet that loads asynchronously.
+
+# Next.js Implementation
+
+## Step 1: Create HeapAnalytics Component
+
+Create a client component in `domains/garden-components/heap-analytics.tsx`:
+
+```tsx
+"use client";
+
+import Script from "next/script";
+
+export const HeapAnalytics = () => {
+  const heapAppId = process.env.NEXT_PUBLIC_HEAP_APP_ID;
+
+  // Only load Heap if the environment variable is set
+  if (!heapAppId) {
+    return null;
+  }
+
+  return (
+    <Script
+      id="heap-analytics"
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{
+        __html: `
+          window.heapReadyCb=window.heapReadyCb||[],window.heap=window.heap||[],heap.load=function(e,t){window.heap.envId=e,window.heap.clientConfig=t=t||{},window.heap.clientConfig.shouldFetchServerConfig=!1;var a=document.createElement("script");a.type="text/javascript",a.async=!0,a.src="https://cdn.us.heap-api.com/config/"+e+"/heap_config.js";var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(a,r);var n=["init","startTracking","stopTracking","track","resetIdentity","identify","identifyHashed","getSessionId","getUserId","getIdentity","addUserProperties","addEventProperties","removeEventProperty","clearEventProperties","addAccountProperties","addAdapter","addTransformer","addTransformerFn","onReady","addPageviewProperties","removePageviewProperty","clearPageviewProperties","trackPageview"],i=function(e){return function(){var t=Array.prototype.slice.call(arguments,0);window.heapReadyCb.push({name:e,fn:function(){heap[e]&&heap[e].apply(heap,t)}})}};for(var p=0;p<n.length;p++)heap[n[p]]=i(n[p])};
+          heap.load("${heapAppId}");
+        `,
+      }}
+    />
+  );
+};
+```
+
+**Key Details:**
+- `"use client"` directive required for Next.js client component
+- Uses Next.js `Script` component with `strategy="afterInteractive"` for optimal loading
+- Conditionally loads only when environment variable is set
+- Prevents analytics data pollution in development
+
+## Step 2: Add Environment Variables
+
+Create `.env.local` (gitignored by default in Next.js):
+
+```bash
+# Heap Analytics
+# Get your App ID from: https://heapanalytics.com/app/settings/projects
+NEXT_PUBLIC_HEAP_APP_ID=your-app-id-here
+```
+
+Create `.env.local.example` for team reference:
+
+```bash
+# Heap Analytics
+# Leave empty to disable Heap Analytics
+NEXT_PUBLIC_HEAP_APP_ID=
+```
+
+## Step 3: Integrate into Layout
+
+Add the component to your `app/layout.tsx`:
+
+```tsx
+import { HeapAnalytics } from "@/domains/garden-components/heap-analytics";
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        <HeapAnalytics />
+        {/* Rest of your app */}
+      </body>
+    </html>
+  );
+}
+```
+
+# User Identification Strategies
+
+## Option 1: Anonymous Tracking (Recommended for Content Sites)
+
+**Don't call `heap.identify()` at all.** Heap will automatically:
+- Assign unique anonymous user IDs
+- Track sessions across visits (via cookies)
+- Maintain user journeys
+- Provide all analytics without collecting PII
+
+**Best for:** Blogs, digital gardens, marketing sites
+
+## Option 2: Authenticated User Tracking
+
+For applications with user authentication, identify users after login:
+
+```tsx
+useEffect(() => {
+  if (session?.user?.email) {
+    window.heap?.identify(session.user.email);
+    window.heap?.addUserProperties({
+      name: session.user.name,
+      userId: session.user.id,
+    });
+  }
+}, [session]);
+```
+
+# IP Address Tracking
+
+## Default Behavior
+
+**By default, Heap does NOT capture IP addresses.** It collects:
+- ✅ Geolocation (city/country level)
+- ✅ Anonymous user IDs
+- ✅ Device and browser information
+- ❌ IP addresses (disabled for privacy)
+
+## Enabling IP Autocapture
+
+To track IP addresses (useful for identifying suspicious traffic):
+
+1. Navigate to your Heap dashboard
+2. Go to **Account > Manage > Privacy & Security**
+3. Enable the **"IP Autocapture"** toggle
+4. Confirm your choice in the popup
+
+**Important:** This setting is per-environment (development/production separate).
+
+## Use Case: Identifying Suspicious Traffic
+
+If your analytics shows repeated suspicious access from specific locations (e.g., unexplained Singapore traffic on an unpromoted site), enabling IP autocapture allows you to:
+
+- See actual IP addresses of visitors
+- Identify patterns or bot traffic
+- Cross-reference with other analytics platforms
+- Block malicious IPs if needed
+
+# Content Security Policy (CSP)
+
+If your site uses CSP headers, authorize these domains:
+
+**For US data centers:**
+- `cdn.us.heap-api.com`
+- `c.us.heap-api.com`
+- `heapanalytics.com`
+
+**For EU data centers:** Check Heap documentation for regional endpoints.
+
+# Verification
+
+## Check Installation in Browser Console
+
+```javascript
+// Check if Heap loaded
+window.heap
+
+// Check SDK version (should be 5.x.x)
+heap?.getConfig?.().sdk?.version || heap.version.heapJsVersion
+
+// Get current user ID
+heap.getUserId()
+
+// Get session ID
+heap.getSessionId()
+```
+
+## Common Issues
+
+**Heap not loading:**
+- Verify `NEXT_PUBLIC_HEAP_APP_ID` is set correctly
+- Check browser console for CSP violations
+- Ensure script strategy is `afterInteractive` or `lazyOnload`
+
+**TypeScript errors:**
+- Add type declaration for `window.heap` if needed
+- Use optional chaining: `window.heap?.identify()`
+
+# Privacy Considerations
+
+## GDPR Compliance
+
+- Anonymous tracking is generally GDPR-compliant
+- IP address collection may require user consent in EU
+- Provide cookie consent banners if required by your jurisdiction
+
+## Data Retention
+
+Configure data retention policies in Heap dashboard under Data Management settings.
+
+## User Opt-Out
+
+Respect "Do Not Track" headers or provide opt-out mechanisms:
+
+```javascript
+// Stop tracking for a user
+window.heap?.stopTracking()
+
+// Resume tracking
+window.heap?.startTracking()
+```
+
+# Advanced Configuration
+
+## Custom Events
+
+Track specific actions:
+
+```javascript
+heap.track('Newsletter Signup', {
+  source: 'footer',
+  timestamp: new Date().toISOString()
+});
+```
+
+## Event Properties
+
+Add properties to all future events:
+
+```javascript
+heap.addEventProperties({
+  theme: 'dark',
+  language: 'en'
+});
+```
+
+## User Properties
+
+Attach metadata to user profiles:
+
+```javascript
+heap.addUserProperties({
+  accountType: 'premium',
+  signupDate: '2025-01-15'
+});
+```
+
+# Comparison with Other Analytics
+
+| Feature | Heap | Google Analytics | Mixpanel |
+|---------|------|------------------|----------|
+| Auto-capture | ✅ Yes | ❌ No | ❌ No |
+| Retroactive events | ✅ Yes | ❌ No | ❌ Limited |
+| IP tracking | ⚙️ Optional | ✅ Yes | ⚙️ Optional |
+| NPM package | ❌ No (web) | ✅ Yes | ✅ Yes |
+| User sessions | ✅ Automatic | ✅ Automatic | ⚙️ Manual |
+
+# Resources
+
+- [Official Heap Web Documentation](https://developers.heap.io/docs/web)
+- [Heap API Reference](https://developers.heap.io/reference/api-reference-overview)
+- [Privacy Features Guide](https://help.heap.io/hc/en-us/articles/18700032972060-Heap-Privacy-Features)
+- [Next.js Integration Tutorial](https://samelogic.com/blog/heap-analytics-in-nextjs-with-nextauthjs)
