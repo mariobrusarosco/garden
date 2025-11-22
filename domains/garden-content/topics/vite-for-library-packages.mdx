@@ -1,0 +1,340 @@
+---
+title: "Vite for Library Packages"
+category: "development"
+author:
+  name: "Mario Brusarosco"
+  url: "https://github.com/mariobrusarosco"
+planted-in: "2025-10-01"
+last-watered-in: "2025-10-01"
+related-topics: ["vite", "libraries", "packages", "build-tools", "npm"]
+---
+
+
+
+What is Vite? (The Foundation)
+
+  Vite is a build tool created by Evan You (Vue.js creator). Most people know it for
+  building applications - like Next.js apps or Vite React apps. But Vite also has a
+  powerful library mode for building distributable packages.
+
+  Key difference:
+  - App mode: Builds HTML, CSS, JS for a website you deploy
+  - Library mode: Builds a package that OTHER developers import into their projects
+
+  Think of it like this:
+  - App mode = Building a house to live in
+  - Library mode = Building LEGO bricks that others use to build houses
+
+  Why Vite for Libraries?
+
+  Before Vite, building libraries typically used:
+  - Rollup (powerful but complex config)
+  - Webpack (overkill for libraries, slow)
+  - tsc (TypeScript compiler only, no bundling)
+
+  Vite's advantages:
+  1. Fast - Uses esbuild for dependencies (10-100x faster than webpack)
+  2. Simple - Library mode is one config option
+  3. Modern defaults - ESM, tree-shaking built-in
+  4. Rollup under the hood - Gets Rollup's power with simpler config
+
+  Our React SDK Config (Let's Break It Down)
+
+  Let me walk through our packages/react-sdk/vite.config.ts piece by piece:
+
+  import { defineConfig } from 'vitest/config';
+  import { resolve } from 'path';
+
+  Line 1: Notice we import from vitest/config not vite. Why?
+  - Vitest is the testing framework (like Jest but for Vite)
+  - vitest/config includes both Vite types AND test types
+  - If we used vite, TypeScript would error on the test block
+
+  Line 2: resolve from Node's path module helps create absolute paths (more on this
+  soon)
+
+  ---
+  export default defineConfig({
+    build: {
+      lib: {
+        entry: resolve(__dirname, 'src/index.ts'),
+        name: 'PeekabooReactSDK',
+        formats: ['es', 'cjs'],
+        fileName: (format) => `index.${format === 'es' ? 'esm' : format}.js`
+      },
+
+  The build.lib object - This is what activates library mode!
+
+  Let me explain each field:
+
+  entry: resolve(__dirname, 'src/index.ts')
+
+  What it does: Tells Vite where your library starts
+
+  Why absolute path?
+  - __dirname = current directory (/home/mario/coding/peek-a-boo/packages/react-sdk)
+  - resolve(__dirname, 'src/index.ts') = absolute path to entry
+  - Relative paths (./src/index.ts) can break in different contexts
+
+  This file becomes your public API:
+  // src/index.ts
+  export { FeatureFlagProvider } from './react/FeatureFlagProvider';
+  export { useFeatureFlag } from './react/hooks/useFeatureFlag';
+  // Only what you export here is available to users!
+
+  name: 'PeekabooReactSDK'
+
+  What it does: Global variable name for UMD builds
+
+  In our case: We're not using UMD format (we use ESM + CJS), but it's required by
+  TypeScript
+
+  When would this matter?
+  If someone used a <script> tag in HTML:
+  <script src="peek-a-boo.umd.js"></script>
+  <script>
+    // Would be available as window.PeekabooReactSDK
+    const { useFeatureFlag } = PeekabooReactSDK;
+  </script>
+
+  formats: ['es', 'cjs']
+
+  This is crucial! You're specifying output formats.
+
+  ESM (ES Modules):
+  // Modern format
+  import { useFeatureFlag } from '@peek-a-boo/react-sdk';
+  - Tree-shakeable (unused code gets removed)
+  - Modern bundlers (Vite, Webpack 5, Rollup) prefer this
+  - Smaller final bundles
+
+  CJS (CommonJS):
+  // Legacy format
+  const { useFeatureFlag } = require('@peek-a-boo/react-sdk');
+  - Node.js default (until v12+)
+  - Older build tools expect this
+  - Not tree-shakeable
+
+  Why both? Maximum compatibility!
+  - Modern apps get ESM (better performance)
+  - Older Node.js scripts get CJS (still works)
+
+  Other format options:
+  - 'umd' - Universal Module Definition (browser <script> tags)
+  - 'iife' - Immediately Invoked Function Expression (standalone bundle)
+
+  fileName: (format) => ...
+
+  What it does: Controls output filenames
+
+  fileName: (format) => `index.${format === 'es' ? 'esm' : format}.js`
+
+  Translation:
+  - If format is 'es' → index.esm.js
+  - If format is 'cjs' → index.cjs.js
+
+  Why rename 'es' to 'esm'?
+  Convention - makes it clearer to users which file is which.
+
+  Result in dist/:
+  dist/
+  ├── index.esm.js   // ESM version
+  ├── index.cjs.js   // CommonJS version
+  └── index.d.ts     // TypeScript types
+
+  ---
+      rollupOptions: {
+        external: ['react'],
+        output: {
+          globals: { react: 'React' }
+        }
+      }
+
+  external: ['react']
+
+  Most important config for library packages!
+
+  What it does: Don't bundle React into the output
+
+  Why?
+  // ❌ BAD (if React is bundled):
+  // Your library: 45KB React + 5KB your code = 50KB
+  // User's app: 45KB React (their version) + 50KB your library = 95KB total!
+  // TWO copies of React = bugs (different instances, version conflicts)
+
+  // ✅ GOOD (React external):
+  // Your library: 5KB your code only
+  // User's app: 45KB React + 5KB your library = 50KB total
+  // One copy of React, no conflicts
+
+  This is why we use peerDependencies in package.json:
+  {
+    "peerDependencies": {
+      "react": ">=16.8.0"  // User must provide React
+    }
+  }
+
+  Rule: Always externalize peer dependencies!
+
+  globals: { react: 'React' }
+
+  What it does: For UMD builds, map react import to global React variable
+
+  In browser context:
+  <script src="https://unpkg.com/react"></script>  <!-- Creates window.React -->
+  <script src="peek-a-boo.umd.js"></script>        <!-- Uses window.React -->
+
+  Since we're not building UMD, this doesn't affect us, but it's good practice to
+  include.
+
+  ---
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/test/setup.ts'
+    }
+
+  Test Configuration (Vitest)
+
+  globals: true
+  - Makes describe, it, expect available everywhere
+  - No need to import them in every test file
+
+  environment: 'jsdom'
+  - Simulates browser DOM in Node.js
+  - Needed for React component testing
+  - Alternative: 'node' for non-DOM code
+
+  setupFiles: './src/test/setup.ts'
+  - Runs before all tests
+  - Perfect for:
+    - Setting up MSW (API mocking)
+    - Adding custom matchers
+    - Global test configuration
+
+  Package.json Integration
+
+  Your vite config needs to match your package.json:
+
+  {
+    "type": "module",           // ← Uses ESM
+    "main": "dist/index.cjs.js",     // ← CJS entry (for require())
+    "module": "dist/index.esm.js",   // ← ESM entry (for import)
+    "types": "dist/index.d.ts",      // ← TypeScript types
+
+    "scripts": {
+      "build": "vite build",         // ← Builds library
+      "dev": "vite build --watch"    // ← Watch mode for development
+    }
+  }
+
+  How bundlers choose:
+  1. Modern bundler (Vite, Webpack 5): Reads "module" → uses index.esm.js
+  2. Old bundler: Reads "main" → uses index.cjs.js
+  3. TypeScript: Reads "types" → uses index.d.ts
+
+  Common Pitfalls & Solutions
+
+  Pitfall 1: Bundling Dependencies You Shouldn't
+
+  ❌ Wrong:
+  // vite.config.ts
+  export default defineConfig({
+    build: { lib: { /* ... */ } }
+    // No external specified!
+  })
+
+  Your library bundles ALL dependencies = massive size!
+
+  ✅ Right:
+  rollupOptions: {
+    external: ['react', 'react-dom', 'lodash'] // Don't bundle these
+  }
+
+  Pro tip: Use this pattern to auto-externalize:
+  import { readFileSync } from 'fs';
+
+  const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
+
+  export default defineConfig({
+    build: {
+      rollupOptions: {
+        external: [
+          ...Object.keys(pkg.peerDependencies || {}),
+          ...Object.keys(pkg.dependencies || {})
+        ]
+      }
+    }
+  });
+
+  Pitfall 2: Wrong Import in Config
+
+  ❌ Wrong:
+  import { defineConfig } from 'vite';
+
+  export default defineConfig({
+    test: { /* ... */ }  // TypeScript error!
+  })
+
+  ✅ Right:
+  import { defineConfig } from 'vitest/config';  // Includes test types
+
+  Pitfall 3: No Type Declarations
+
+  Problem: You build the library but TypeScript users get no autocomplete
+
+  Solution: Add to tsconfig.json:
+  {
+    "compilerOptions": {
+      "declaration": true,  // Generate .d.ts files
+      "outDir": "dist"
+    }
+  }
+
+  Then run BOTH:
+  tsc --emitDeclarationOnly  # Generate .d.ts files
+  vite build                  # Generate .js files
+
+  Or use a plugin like vite-plugin-dts:
+  import dts from 'vite-plugin-dts';
+
+  export default defineConfig({
+    plugins: [dts()]  // Auto-generates .d.ts during build
+  });
+
+  Testing Your Library Build
+
+  After pnpm build, verify your output:
+
+  # Check what files were created
+  ls -lh dist/
+
+  # Expected:
+  # index.esm.js   - ESM version
+  # index.cjs.js   - CJS version  
+  # index.d.ts     - TypeScript types
+
+  # Check file sizes (should be small!)
+  du -sh 'dist/*'
+
+  Size targets:
+  - < 10KB = Excellent (our goal)
+  - 10-50KB = Good
+  - 50-100KB = Review what's being bundled
+  -  100KB = Probably bundling dependencies incorrectly
+
+  Test imports:
+  // Test ESM (Node 14+)
+  node --input-type=module -e "import x from './dist/index.esm.js'; console.log(x)"
+
+  // Test CJS
+  node -e "const x = require('./dist/index.cjs.js'); console.log(x)"
+
+  Key Takeaways
+
+  1. Library mode ≠ App mode - Different goals, different configs
+  2. Always externalize peer dependencies - Don't bundle React, Vue, etc.
+  3. Build multiple formats - ESM for modern, CJS for legacy
+  4. Match package.json fields - main, module, types must point to real files
+  5. Keep it small - Libraries should be < 50KB ideally
+  6. Test the output - Build it, import it, make sure it works!

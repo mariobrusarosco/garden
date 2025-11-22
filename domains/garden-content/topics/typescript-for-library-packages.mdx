@@ -1,0 +1,587 @@
+---
+title: "TypeScript for Library Packages"
+summary: "How to create TypeScript libraries with excellent developer experience through proper type declarations, generic types, and package configuration"
+category: "typescript"
+icon: "typescript"
+author: mariobrusarosco.github.com
+related-topics:
+  - "vite"
+  - "libraries"
+  - "type-safety"
+  - "developer-experience"
+reference-links:
+  - link: "https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html"
+    text: "TypeScript Declaration Files"
+  - link: "/home/mario/coding/peek-a-boo/packages/react-sdk/tsconfig.json"
+    text: "Peek-a-boo React SDK TypeScript Config"
+planted-in: 2025-11-16
+last-watered-in: 2025-11-16
+series: ["building-react-sdk"]
+---
+
+# Recap
+
+Creating a TypeScript library that provides an amazing developer experience requires more than just writing TypeScript code. You need proper type declarations (.d.ts files), smart use of generics for flexibility, and correct package.json configuration so consumers get perfect autocomplete and IntelliSense.
+
+**Key Achievement:** Understanding how to structure TypeScript types for library packages to provide the best possible developer experience for consumers.
+
+# The Goal: Great TypeScript Library DX
+
+When someone installs your library, they should get:
+
+```typescript
+// ✅ Perfect autocomplete
+import { useFeatureFlag } from '@peek-a-boo/react-sdk';
+//      ^ IDE suggests this as they type
+
+const flag = useFeatureFlag('new-checkout');
+//    ^ IDE shows: const flag: FeatureFlag | null
+
+flag.
+//   ^ IDE shows: .enabled, .value, .key, etc.
+```
+
+## Three Ingredients for This Magic
+
+1. **Type declarations** (.d.ts files)
+2. **Proper exports** (what's public vs private)
+3. **Package.json configuration** (telling tools where types live)
+
+# Part 1: Declaration Files (.d.ts)
+
+## What Are They?
+
+`.d.ts` files are like a "contract" - they describe your JavaScript's shape without implementation.
+
+**TypeScript source file:**
+```typescript
+// src/client/types.ts
+export interface FeatureFlag {
+  key: string;
+  enabled: boolean;
+  value: unknown;
+}
+```
+
+**Compiled JavaScript:**
+```javascript
+// dist/client/types.js
+export {};  // Empty! Interfaces don't exist at runtime
+```
+
+**Declaration file:**
+```typescript
+// dist/client/types.d.ts
+export interface FeatureFlag {
+  key: string;
+  enabled: boolean;
+  value: unknown;
+}
+```
+
+**The consumer only needs the `.d.ts`!** Their TypeScript reads it, their IDE gets autocomplete.
+
+## Generating Declaration Files
+
+### Option 1: TypeScript Compiler
+
+In `tsconfig.json`:
+```json
+{
+  "compilerOptions": {
+    "declaration": true,        // Generate .d.ts files
+    "declarationMap": true,     // Generate .d.ts.map (for "Go to Definition")
+    "emitDeclarationOnly": true, // Only output .d.ts (Vite handles .js)
+    "outDir": "dist"
+  }
+}
+```
+
+Build process:
+```bash
+tsc              # Generates .d.ts files in dist/
+vite build       # Generates .js files in dist/
+```
+
+### Option 2: vite-plugin-dts (Recommended)
+
+**Simpler approach:**
+
+```bash
+pnpm add -D vite-plugin-dts
+```
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vitest/config';
+import dts from 'vite-plugin-dts';
+
+export default defineConfig({
+  plugins: [
+    dts({
+      insertTypesEntry: true,  // Creates index.d.ts entry point
+      rollupTypes: true        // Bundles all .d.ts into one file
+    })
+  ],
+  build: {
+    lib: { /* ... */ }
+  }
+});
+```
+
+Now `vite build` does everything - `.js` AND `.d.ts`!
+
+**Why vite-plugin-dts?**
+- One command builds everything
+- Handles complex scenarios (bundling types)
+- Less configuration
+- Better for libraries
+
+# Part 2: Structuring Your Types
+
+## Example: Feature Flag SDK Types
+
+```typescript
+// src/client/types.ts
+
+/**
+ * Environment where feature flag is active
+ */
+export type Environment = 'DEVELOPMENT' | 'STAGING' | 'PRODUCTION';
+
+/**
+ * Feature flag from the API
+ */
+export interface FeatureFlag {
+  /** Unique flag key (e.g., "new-checkout") */
+  key: string;
+
+  /** Human-readable name */
+  name: string;
+
+  /** Whether flag is enabled */
+  enabled: boolean;
+
+  /** Flag value (any JSON-serializable data) */
+  value: unknown;
+
+  /** Environment this flag belongs to */
+  environment: Environment;
+
+  /** Optional description */
+  description?: string;
+}
+
+/**
+ * API response when fetching all flags
+ */
+export interface FlagsResponse {
+  flags: FeatureFlag[];
+  environment: string;
+}
+
+/**
+ * Configuration for FeatureFlagClient
+ */
+export interface ClientConfig {
+  /** Project ID from Peek-a-boo dashboard */
+  projectId: string;
+
+  /** API endpoint (defaults to production) */
+  apiUrl?: string;
+
+  /** Environment to fetch flags for */
+  environment?: Environment;
+
+  /** Enable polling for flag updates (in ms, default: disabled) */
+  pollingInterval?: number;
+}
+```
+
+**Notice:**
+- **JSDoc comments** (`/** ... */`) - These show up in IDE tooltips!
+- **Optional properties** (`?`) - Makes API flexible
+- **`unknown` type** - Safer than `any` (forces type checking before use)
+
+# Part 3: Type vs Interface
+
+## When to Use Interface
+
+**Use `interface` for:**
+- Object shapes
+- Things you might extend later
+- Public API types
+
+```typescript
+export interface FeatureFlag {
+  key: string;
+  enabled: boolean;
+}
+
+// Consumers can extend it:
+interface MyCustomFlag extends FeatureFlag {
+  customField: string;
+}
+```
+
+## When to Use Type
+
+**Use `type` for:**
+- Unions, intersections
+- Primitives, tuples
+- Computed types
+
+```typescript
+export type Environment = 'DEVELOPMENT' | 'STAGING' | 'PRODUCTION';
+export type FlagValue = string | number | boolean | object;
+export type Maybe<T> = T | null;
+```
+
+## For Our SDK
+
+```typescript
+export interface FeatureFlag { /* ... */ }      // ✅ Interface (extendable)
+export type Environment = 'DEV' | 'PROD';       // ✅ Type (union)
+export interface ClientConfig { /* ... */ }     // ✅ Interface (extendable)
+```
+
+# Part 4: Generic Types for Flexibility
+
+Our flag `value` is `unknown` - but users often know its type!
+
+## The Problem
+
+```typescript
+const flag = useFeatureFlag('new-checkout');
+const config = flag.value;  // Type: unknown 😞
+config.timeout  // TypeScript error: unknown has no properties
+```
+
+## The Solution: Generics
+
+```typescript
+// src/client/types.ts
+export interface FeatureFlag<T = unknown> {
+  key: string;
+  enabled: boolean;
+  value: T;  // Generic type parameter
+  environment: Environment;
+}
+```
+
+**Now users can specify the type:**
+```typescript
+interface CheckoutConfig {
+  timeout: number;
+  retries: number;
+}
+
+const flag = useFeatureFlag<CheckoutConfig>('new-checkout');
+//                         ^^^^^^^^^^^^^^ Type parameter
+
+if (flag) {
+  flag.value.timeout  // ✅ TypeScript knows this exists!
+}
+```
+
+**Default behavior still works:**
+```typescript
+const flag = useFeatureFlag('some-flag');
+// Uses default: FeatureFlag<unknown>
+```
+
+**Hook signature:**
+```typescript
+// src/react/hooks/useFeatureFlag.ts
+export function useFeatureFlag<T = unknown>(
+  key: string
+): FeatureFlag<T> | null {
+  // implementation...
+}
+```
+
+This pattern gives users **flexibility without complexity**.
+
+# Part 5: Type-Only Exports
+
+Sometimes you export types that have NO runtime value:
+
+```typescript
+// src/client/types.ts
+export interface FeatureFlag {  // Type-only
+  key: string;
+  enabled: boolean;
+}
+
+export class FeatureFlagClient {  // Has runtime value
+  constructor(config: ClientConfig) {}
+  async getFlags() {}
+}
+```
+
+## Best Practice: Use `export type`
+
+```typescript
+// ✅ Explicit type export
+export type { FeatureFlag, ClientConfig };
+
+// ✅ Runtime export
+export { FeatureFlagClient };
+```
+
+## Why Does This Matter?
+
+1. **Bundlers can optimize better** - They know `FeatureFlag` doesn't need to be in the runtime bundle
+
+2. **Consumers can re-export safely:**
+```typescript
+// Consumer's code
+export type { FeatureFlag } from '@peek-a-boo/react-sdk';
+// Won't accidentally include runtime code
+```
+
+3. **Clearer intent** - Reading the code, you know what's runtime vs compile-time
+
+## In Your Main Entry Point
+
+```typescript
+// src/index.ts
+export type {
+  FeatureFlag,
+  Environment,
+  ClientConfig,
+  FlagsResponse
+} from './client/types';
+
+export {
+  FeatureFlagClient
+} from './client/FeatureFlagClient';
+
+export {
+  FeatureFlagProvider
+} from './react/FeatureFlagProvider';
+
+export {
+  useFeatureFlag,
+  useFeatureFlags
+} from './react/hooks';
+```
+
+# Part 6: Package.json Types Configuration
+
+After building, you need to tell tools where your types live:
+
+```json
+{
+  "name": "@peek-a-boo/react-sdk",
+  "version": "0.0.1",
+  "type": "module",
+
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",     // ← TypeScript looks here
+
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",   // ← Modern way (preferred)
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js"
+    }
+  }
+}
+```
+
+## The `exports` Field (Modern Approach)
+
+The `exports` field is the modern, recommended approach. It:
+- Maps import paths to actual files
+- Supports conditional exports (Node vs browser, dev vs prod)
+- Provides better encapsulation
+
+**Example with subpath exports:**
+```json
+{
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.esm.js"
+    }
+  }
+}
+```
+
+Allows:
+```typescript
+import { useFeatureFlag } from '@peek-a-boo/react-sdk';      // Main export
+import { FeatureFlagClient } from '@peek-a-boo/react-sdk/client';  // Subpath
+```
+
+# Part 7: Ensuring Great DX
+
+## JSDoc Comments
+
+TypeScript reads JSDoc comments and shows them in IDE tooltips:
+
+```typescript
+/**
+ * Fetches all feature flags for the configured project and environment.
+ *
+ * @returns Promise resolving to array of feature flags
+ * @throws {Error} If projectId is not configured
+ * @throws {Error} If API request fails after retries
+ *
+ * @example
+ * ```typescript
+ * const flags = await client.getFlags();
+ * console.log(flags.length); // Number of flags
+ * ```
+ */
+export async getFlags(): Promise<FeatureFlag[]> {
+  // implementation
+}
+```
+
+**When hovering over `client.getFlags()` in VS Code, users see the full comment!**
+
+**Best practices:**
+- Document public API methods
+- Include `@example` for complex usage
+- Document `@throws` for error cases
+- Keep it concise (2-4 lines usually enough)
+
+## Readonly Properties
+
+Prevent consumers from mutating library internals:
+
+```typescript
+export interface FeatureFlag {
+  readonly key: string;        // Can't reassign
+  readonly enabled: boolean;
+  readonly value: unknown;
+}
+```
+
+**Why?**
+```typescript
+const flag = await client.getFlag('new-checkout');
+flag.enabled = true;  // TypeScript error! ✅
+```
+
+Prevents bugs and makes your API's contract clearer.
+
+## Discriminated Unions for Error Handling
+
+Instead of throwing errors, consider result types:
+
+```typescript
+export type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+export async function getFlags(): Promise<Result<FeatureFlag[]>> {
+  try {
+    const flags = await fetch(/* ... */);
+    return { success: true, data: flags };
+  } catch (error) {
+    return { success: false, error: error as Error };
+  }
+}
+```
+
+**Usage:**
+```typescript
+const result = await client.getFlags();
+
+if (result.success) {
+  result.data  // TypeScript knows this exists
+} else {
+  result.error  // TypeScript knows this exists
+}
+```
+
+TypeScript enforces checking both cases!
+
+# Part 8: Testing Your Types
+
+## Type-Only Tests
+
+You can test that your types work correctly using `tsd`:
+
+```typescript
+// src/client/__tests__/types.test-d.ts
+import { expectType, expectError } from 'tsd';
+import type { FeatureFlag } from '../types';
+
+// Test: FeatureFlag with generic works
+expectType<FeatureFlag<string>>({
+  key: 'test',
+  enabled: true,
+  value: 'hello',  // Must be string
+  environment: 'DEVELOPMENT'
+});
+
+// Test: Wrong type should error
+expectError<FeatureFlag<string>>({
+  key: 'test',
+  enabled: true,
+  value: 123,  // ❌ Not a string!
+  environment: 'DEVELOPMENT'
+});
+```
+
+**Install and setup:**
+```bash
+pnpm add -D tsd
+```
+
+```json
+{
+  "scripts": {
+    "test:types": "tsd"
+  }
+}
+```
+
+This catches type regressions when you refactor!
+
+# Key Takeaways
+
+1. **Declaration files (.d.ts)** are your library's public contract
+2. **vite-plugin-dts** simplifies type generation for Vite libraries
+3. **Generic types** (`FeatureFlag<T>`) give flexibility without complexity
+4. **export type** vs **export** - use the right one for better optimization
+5. **JSDoc comments** provide IDE tooltips for better DX
+6. **readonly** properties prevent mutation bugs
+7. **package.json exports field** is the modern way to expose your library
+8. **Type-only tests** with `tsd` catch regressions
+
+# Used in Projects
+
+- **Peek-a-boo React SDK** - Type-safe feature flag library with generics
+- Pattern applicable to any TypeScript library
+
+# Questions to Check Understanding
+
+1. **What's the difference between `.ts` files and `.d.ts` files?**
+   - .ts files contain implementation code; .d.ts files only contain type declarations (the contract)
+
+2. **Why use `FeatureFlag<T = unknown>` instead of just `FeatureFlag`?**
+   - Allows consumers to specify the value type while maintaining a safe default
+
+3. **When should you use `export type` vs regular `export`?**
+   - Use `export type` for type-only exports (interfaces, types) to help bundlers optimize better
+
+4. **How does the `exports` field in package.json differ from `main` and `module`?**
+   - `exports` is modern, supports conditions and subpaths; `main`/`module` are legacy single-entry fields
+
+# Next Steps
+
+After understanding TypeScript for libraries:
+
+1. **Testing Strategy for Libraries** - Vitest, MSW, Testing Library
+2. **Bundle Size Optimization** - Keeping your library under size targets
+3. **Monorepo Dependency Management** - Workspace dependencies and build order

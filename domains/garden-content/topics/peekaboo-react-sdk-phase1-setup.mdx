@@ -1,0 +1,817 @@
+---
+title: "Peek-a-boo React SDK: Phase 1 Core Client (Vanilla TypeScript)"
+summary: "Building the vanilla TypeScript core client with proper type definitions, HTTP client with retry logic, and the FeatureFlagClient class"
+category: "architecture"
+icon: "react"
+author: mariobrusarosco.github.com
+related-topics:
+  - "typescript"
+  - "monorepo"
+  - "pnpm-workspaces"
+  - "feature-flags"
+  - "react-sdk"
+reference-links:
+  - link: "/home/mario/coding/peek-a-boo/planning/react-sdk-master-plan.md"
+    text: "React SDK Master Plan"
+  - link: "/home/mario/coding/peek-a-boo/planning/peekaboo-react-sdk-pdr.md"
+    text: "Product Design Review"
+  - link: "/home/mario/coding/peek-a-boo/packages/react-sdk/src/client/types.ts"
+    text: "Type Definitions Source"
+planted-in: 2025-11-16
+last-watered-in: 2025-11-16
+series:
+  - "creating-a-feature-flag-saas-platform"
+---
+
+# Recap
+
+Phase 1 focuses on building the vanilla TypeScript core client - the foundation that will later be wrapped by React hooks. This phase creates the framework-agnostic logic for fetching and managing feature flags, ensuring we can potentially support other frameworks (Vue, Svelte) in the future.
+
+**Key Achievement:** Created type-safe client foundation that imports shared types from `@peek-a-boo/core`, maintaining single source of truth in the monorepo.
+
+# Phase 1.1: Type Definitions
+
+## The Problem
+
+The React SDK needs type definitions for:
+- Feature flags (structure matching API responses)
+- Client configuration (projectId, environment, baseUrl, timeout)
+- Hook return values (enabled, value, loading, error states)
+- Error handling (custom error classes with codes)
+
+**Initial mistake:** Almost created duplicate `FeatureFlag` and `Environment` types locally in the React SDK.
+
+**Critical realization:** These types already exist in `@peek-a-boo/core` from the Prisma schema. Creating duplicates would:
+- ❌ Create two sources of truth
+- ❌ Cause type mismatches if schema changes
+- ❌ Defeat the purpose of a monorepo
+
+## The Solution: Import from Core
+
+### Single Source of Truth Pattern
+
+```typescript
+// src/client/types.ts
+
+// ============================================================================
+// IMPORTED FROM CORE (Single Source of Truth)
+// ============================================================================
+
+import type { FeatureFlag, Environment } from '@peek-a-boo/core';
+
+// Re-export for SDK consumers
+export type { FeatureFlag, Environment };
+
+// ============================================================================
+// SDK-SPECIFIC TYPES
+// ============================================================================
+
+export interface ClientConfig {
+  projectId: string;
+  environment: Environment;  // ← Uses imported type
+  baseUrl?: string;
+  timeout?: number;
+}
+
+export interface FlagResult<T = unknown> {
+  enabled: boolean;
+  value?: T;
+  loading: boolean;
+  error?: Error;
+}
+```
+
+**The pattern:**
+- **Import from core:** Database models, enums, anything from Prisma
+- **Create in SDK:** API shapes, client configuration, React-specific types
+- **Re-export:** Make core types available to SDK consumers
+
+### Adding the Workspace Dependency
+
+To import from `@peek-a-boo/core`, we needed to add it as a dependency:
+
+```json
+// packages/react-sdk/package.json
+{
+  "name": "@peek-a-boo/react-sdk",
+  "dependencies": {
+    "@peek-a-boo/core": "workspace:*"
+    //                  ^^^^^^^^^^^^
+    //                  pnpm workspace protocol
+  }
+}
+```
+
+**What `workspace:*` does:**
+1. Tells pnpm to link the local `@peek-a-boo/core` package
+2. Creates symlink: `node_modules/@peek-a-boo/core` → `../../core`
+3. No npm registry lookup - uses local code
+4. Turborepo uses this to determine build order (core builds before react-sdk)
+
+**Installation:**
+```bash
+# Added dependency to package.json, then:
+pnpm install
+
+# Result:
+# node_modules/@peek-a-boo/core → ../../core (symlink created)
+```
+
+## SDK-Specific Types Created
+
+### ClientConfig
+
+```typescript
+export interface ClientConfig {
+  /** Project ID from Peek-a-boo dashboard */
+  projectId: string;
+
+  /** Environment to fetch flags for */
+  environment: Environment;
+
+  /** API base URL (defaults to http://localhost:6001 in development) */
+  baseUrl?: string;
+
+  /** Request timeout in milliseconds (default: 5000) */
+  timeout?: number;
+}
+```
+
+**Design decisions:**
+- `projectId` is required (can't fetch flags without it)
+- `environment` is required (flags are environment-specific)
+- `baseUrl` is optional (defaults to local dev server)
+- `timeout` is optional (sensible default of 5 seconds)
+
+### FlagResult (Hook Return Type)
+
+```typescript
+export interface FlagResult<T = unknown> {
+  /** Whether the flag is enabled */
+  enabled: boolean;
+
+  /** Flag value (typed based on generic parameter) */
+  value?: T;
+
+  /** Loading state (true while fetching) */
+  loading: boolean;
+
+  /** Error if fetch failed */
+  error?: Error;
+}
+```
+
+**Why generic `<T = unknown>`?**
+Allows consumers to specify the value type:
+
+```typescript
+interface CheckoutConfig {
+  timeout: number;
+  retries: number;
+}
+
+const { enabled, value } = useFeatureFlag<CheckoutConfig>('new-checkout');
+//                                        ^^^^^^^^^^^^^^^ Type parameter
+
+if (enabled && value) {
+  value.timeout  // ✅ TypeScript knows this exists
+}
+```
+
+**Default `unknown` instead of `any`:**
+- Forces type checking before use (safer)
+- Consumer must provide type or handle `unknown`
+- Prevents accidental bugs from assuming structure
+
+### PeekabooError (Custom Error Class)
+
+```typescript
+export class PeekabooError extends Error {
+  constructor(
+    message: string,
+    public code: ErrorCode
+  ) {
+    super(message);
+    this.name = 'PeekabooError';
+
+    // Maintains proper stack trace (V8 only)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, PeekabooError);
+    }
+  }
+}
+
+export enum ErrorCode {
+  INVALID_PROJECT_ID = 'INVALID_PROJECT_ID',
+  INVALID_ENVIRONMENT = 'INVALID_ENVIRONMENT',
+  NOT_FOUND = 'NOT_FOUND',
+  HTTP_ERROR = 'HTTP_ERROR',
+  NETWORK_ERROR = 'NETWORK_ERROR',
+  TIMEOUT = 'TIMEOUT',
+  UNKNOWN = 'UNKNOWN',
+}
+```
+
+**Why custom error class?**
+- Programmatic error handling (check `error.code`)
+- Better error messages
+- Clear distinction from generic errors
+
+**Usage:**
+```typescript
+try {
+  await client.initialize();
+} catch (error) {
+  if (error instanceof PeekabooError) {
+    switch (error.code) {
+      case ErrorCode.INVALID_PROJECT_ID:
+        // Handle invalid project
+        break;
+      case ErrorCode.NETWORK_ERROR:
+        // Handle network issues
+        break;
+    }
+  }
+}
+```
+
+### FlagsResponse (API Response Shape)
+
+```typescript
+export interface FlagsResponse {
+  /** Array of feature flags */
+  flags: FeatureFlag[];
+
+  /** Environment the flags belong to */
+  environment: string;
+}
+```
+
+**Matches SDK service API:**
+```bash
+GET /api/v1/flags?projectId=xxx&environment=DEVELOPMENT
+
+Response:
+{
+  "flags": [...],
+  "environment": "DEVELOPMENT"
+}
+```
+
+## Developer Experience Enhancements
+
+### JSDoc Comments
+
+Added JSDoc comments for IDE tooltips:
+
+```typescript
+/**
+ * Configuration for FeatureFlagClient
+ */
+export interface ClientConfig {
+  /** Project ID from Peek-a-boo dashboard */
+  projectId: string;
+  // ...
+}
+```
+
+**When developers hover over `ClientConfig` in VS Code:**
+- They see the description
+- Each field shows its purpose
+- No need to read source code
+
+### Type-Only Exports
+
+Used `export type` for type-only exports:
+
+```typescript
+// ✅ Explicit type export
+export type { FeatureFlag, Environment };
+
+// ✅ Runtime export
+export { PeekabooError };
+```
+
+**Why this matters:**
+- Bundlers can optimize better (know what's compile-time only)
+- Prevents accidentally including types in runtime bundle
+- Clearer intent when reading code
+
+## Verification
+
+```bash
+# Type check passed
+pnpm run type:check
+# ✅ No errors
+
+# Verify symlink created
+ls -la node_modules/@peek-a-boo/
+# core -> ../../core  ✅
+```
+
+## Key Lessons
+
+### 1. Think Monorepo-First
+
+**Wrong approach:**
+```typescript
+// ❌ Duplicating types
+export interface FeatureFlag {
+  key: string;
+  enabled: boolean;
+  // ... duplicate from core
+}
+```
+
+**Right approach:**
+```typescript
+// ✅ Import from single source
+import type { FeatureFlag } from '@peek-a-boo/core';
+export type { FeatureFlag };
+```
+
+### 2. Workspace Dependencies Enable Sharing
+
+```json
+{
+  "dependencies": {
+    "@peek-a-boo/core": "workspace:*"
+  }
+}
+```
+
+This simple line:
+- Links packages in monorepo
+- Enables type sharing
+- Tells Turborepo build order
+- Maintains single source of truth
+
+### 3. Generic Types for Flexibility
+
+```typescript
+export interface FlagResult<T = unknown> {
+  value?: T;  // User can specify type
+}
+```
+
+Gives consumers flexibility without complexity:
+- Power users: Specify exact types
+- Quick users: Use defaults (unknown)
+
+### 4. JSDoc = Better DX
+
+Small effort, huge impact:
+```typescript
+/** Project ID from Peek-a-boo dashboard */
+projectId: string;
+```
+
+Developers see this in IDE tooltips - reduces documentation lookups.
+
+# Phase 1.2: HTTP Client with Retry Logic
+
+## The Purpose
+
+Create a resilient HTTP client to communicate with the SDK service API endpoints (`GET /api/v1/flags`) with built-in retry logic, timeout handling, and proper error classification.
+
+**Design Goal:** Zero dependencies - use native browser/Node.js APIs only.
+
+## Key Features Implemented
+
+### 1. Exponential Backoff Retry Strategy
+
+When network errors occur (connection failures), retry with increasing delays:
+
+```typescript
+Attempt 1: Immediate
+Attempt 2: Wait 500ms  (baseDelay * 2^0)
+Attempt 3: Wait 1000ms (baseDelay * 2^1)
+Attempt 4: Wait 2000ms (baseDelay * 2^2)
+```
+
+**Why exponential backoff?**
+- Gives the server time to recover
+- Prevents thundering herd (all clients retrying immediately)
+- Industry standard pattern (AWS SDK, Google Cloud SDK use this)
+
+**Implementation:**
+```typescript
+private async fetchWithRetry<T>(url: string, attempt: number): Promise<T> {
+  try {
+    // ... fetch logic
+  } catch (error) {
+    // Calculate delay: 500ms * 2^attempt
+    const delay = this.retryConfig.baseDelay * Math.pow(2, attempt);
+    await this.sleep(delay);
+    return this.fetchWithRetry<T>(url, attempt + 1);
+  }
+}
+```
+
+### 2. Timeout Handling with AbortController
+
+Use native `AbortController` - no dependencies needed!
+
+```typescript
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+const response = await fetch(url, {
+  signal: controller.signal  // ← Attach abort signal
+});
+
+clearTimeout(timeoutId);
+```
+
+**How it works:**
+1. Create `AbortController`
+2. Set timeout that calls `controller.abort()` after 5 seconds
+3. Pass `controller.signal` to fetch
+4. If timeout fires, fetch throws `AbortError`
+5. Clear timeout if fetch succeeds
+
+**Why AbortController?**
+- Native API (no dependencies)
+- Supported in all modern browsers + Node 18+
+- Proper cancellation (not just ignoring the response)
+
+### 3. Query Parameter Building
+
+Clean API for building URLs with query params:
+
+```typescript
+client.get('/api/v1/flags', {
+  projectId: 'xxx',
+  environment: 'DEVELOPMENT'
+})
+
+// Internally builds:
+// → GET /api/v1/flags?projectId=xxx&environment=DEVELOPMENT
+```
+
+**Implementation:**
+```typescript
+private buildUrl(path: string, params?: Record<string, string>): string {
+  const url = `${this.baseUrl}${path}`;
+
+  if (!params || Object.keys(params).length === 0) {
+    return url;
+  }
+
+  const searchParams = new URLSearchParams(params);
+  return `${url}?${searchParams.toString()}`;
+}
+```
+
+**Why URLSearchParams?**
+- Native API (no dependencies)
+- Automatically handles URL encoding
+- Works with complex characters (spaces, special chars)
+
+### 4. Error Classification (Smart Retry Logic)
+
+**Not all errors should be retried!**
+
+```typescript
+// ✅ RETRY: Network errors (transient failures)
+fetch('http://api.example.com/flags')
+// → Connection refused → RETRY
+// → DNS lookup failed → RETRY
+// → Network cable unplugged → RETRY
+
+// ❌ DON'T RETRY: HTTP errors (persistent issues)
+fetch('http://api.example.com/flags')
+// → 404 Not Found → Throw immediately (flag doesn't exist)
+// → 500 Server Error → Throw immediately (server bug, won't fix itself)
+// → 401 Unauthorized → Throw immediately (wrong credentials)
+```
+
+**Implementation:**
+```typescript
+if (!response.ok) {
+  // HTTP error (404, 500, etc.) - throw immediately, don't retry
+  throw new PeekabooError(
+    `HTTP ${response.status}: ${response.statusText}`,
+    ErrorCode.HTTP_ERROR
+  );
+}
+
+// ... later in catch block
+
+if (error instanceof PeekabooError) {
+  throw error;  // Already classified, don't retry
+}
+
+// Network error - retry with backoff
+const isLastAttempt = attempt >= this.retryConfig.maxRetries;
+if (isLastAttempt) {
+  throw new PeekabooError(
+    `Network error after ${attempt + 1} attempts: ${message}`,
+    ErrorCode.NETWORK_ERROR
+  );
+}
+```
+
+**Why this matters:**
+- Retrying 404s wastes time (flag still won't exist)
+- Retrying 500s might overload already-struggling server
+- Only network errors are transient and worth retrying
+
+### 5. Simple Public API
+
+```typescript
+export class HttpClient {
+  constructor(
+    private baseUrl: string,
+    private timeout: number = 5000
+  ) {}
+
+  async get<T>(path: string, params?: Record<string, string>): Promise<T>
+}
+```
+
+**Usage:**
+```typescript
+const client = new HttpClient('http://localhost:6001', 5000);
+
+const response = await client.get<FlagsResponse>('/api/v1/flags', {
+  projectId: 'abc123',
+  environment: 'DEVELOPMENT'
+});
+
+console.log(response.flags); // Array of FeatureFlag
+```
+
+## Design Decisions Explained
+
+### Why Only GET Method?
+
+```typescript
+async get<T>(path: string, params?: Record<string, string>): Promise<T>
+```
+
+**MVP scope:**
+- SDK only needs to **fetch** flags (read-only)
+- No create/update/delete from client
+- Keeps implementation simple
+
+**Future phases:**
+- If we add client-side flag creation → Add `post()`
+- If we add flag updates → Add `patch()`
+- For now: YAGNI (You Ain't Gonna Need It)
+
+### Why No Authentication Yet?
+
+```typescript
+headers: {
+  'Content-Type': 'application/json',
+  // No Authorization header yet
+}
+```
+
+**Reason:**
+- Phase 0 SDK service endpoints don't require authentication
+- API keys will be added in future phase when we implement SDK key generation in dashboard
+
+**Future:**
+```typescript
+headers: {
+  'Authorization': `Bearer ${this.apiKey}`,
+  'Content-Type': 'application/json',
+}
+```
+
+### Why Native Fetch (No Axios)?
+
+**Benefits:**
+- ✅ Zero dependencies (smaller bundle)
+- ✅ Native to browsers + Node 18+
+- ✅ Built-in AbortController support
+- ✅ Simpler (no learning curve)
+
+**Comparison:**
+```typescript
+// Our implementation (0 dependencies)
+const client = new HttpClient('http://api.example.com');
+const data = await client.get('/flags', { projectId: 'xxx' });
+
+// With Axios (adds ~14KB to bundle)
+import axios from 'axios';
+const { data } = await axios.get('/flags', {
+  params: { projectId: 'xxx' },
+  timeout: 5000
+});
+```
+
+**Trade-off:**
+- We write more code (retry logic, timeout handling)
+- But we control everything and have zero dependencies
+
+### Configuration Defaults
+
+```typescript
+private readonly retryConfig: RetryConfig = {
+  maxRetries: 3,    // Total 4 attempts (1 initial + 3 retries)
+  baseDelay: 500,   // 500ms → 1000ms → 2000ms
+};
+
+constructor(
+  private baseUrl: string,
+  private timeout: number = 5000  // 5 second default
+) {}
+```
+
+**Why these values?**
+- **3 retries:** Industry standard, balances resilience vs responsiveness
+- **500ms base delay:** Fast enough for users, slow enough to help recovery
+- **5 second timeout:** Long enough for slow connections, short enough users won't wait forever
+
+## Implementation Highlights
+
+### Clean URL Building
+
+```typescript
+constructor(private baseUrl: string, ...) {
+  // Remove trailing slash for consistent URL building
+  this.baseUrl = baseUrl.replace(/\/$/, '');
+}
+
+private buildUrl(path: string, params?: Record<string, string>): string {
+  const url = `${this.baseUrl}${path}`;
+  // ...
+}
+```
+
+**Handles edge cases:**
+```typescript
+// Both work correctly:
+new HttpClient('http://localhost:6001/')  // ← trailing slash
+new HttpClient('http://localhost:6001')   // ← no trailing slash
+
+// Both produce: http://localhost:6001/api/v1/flags
+```
+
+### Proper Timeout Cleanup
+
+```typescript
+const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+try {
+  const response = await fetch(url, { signal: controller.signal });
+  clearTimeout(timeoutId);  // ← Important! Prevent memory leak
+  // ...
+} catch (error) {
+  clearTimeout(timeoutId);  // ← Also clear on error
+  // ...
+}
+```
+
+**Why clear timeout?**
+- If fetch succeeds quickly, timeout is still scheduled
+- Clearing prevents unnecessary timer firing
+- Prevents memory leaks in long-running apps
+
+### Type-Safe Generic Response
+
+```typescript
+async get<T>(path: string, params?: Record<string, string>): Promise<T> {
+  // ...
+  return (await response.json()) as T;
+}
+```
+
+**Usage with type safety:**
+```typescript
+interface FlagsResponse {
+  flags: FeatureFlag[];
+  environment: string;
+}
+
+const response = await client.get<FlagsResponse>('/api/v1/flags', {...});
+//    ^^^^^^^^ TypeScript knows the shape!
+
+response.flags.forEach(flag => {
+  console.log(flag.key);  // ✅ TypeScript knows FeatureFlag has .key
+});
+```
+
+## Testing Strategy
+
+**How we'll test this (Phase 1.4):**
+
+```typescript
+import { setupServer } from 'msw/node';
+import { rest } from 'msw';
+
+describe('HttpClient', () => {
+  it('retries on network error', async () => {
+    let attempts = 0;
+
+    server.use(
+      rest.get('/api/v1/flags', (req, res, ctx) => {
+        attempts++;
+        if (attempts < 3) {
+          return res.networkError('Connection failed');
+        }
+        return res(ctx.json({ flags: [] }));
+      })
+    );
+
+    const client = new HttpClient('http://localhost');
+    const result = await client.get('/api/v1/flags');
+
+    expect(attempts).toBe(3); // Retried 2 times, succeeded on 3rd
+  });
+
+  it('does not retry HTTP errors', async () => {
+    let attempts = 0;
+
+    server.use(
+      rest.get('/api/v1/flags', (req, res, ctx) => {
+        attempts++;
+        return res(ctx.status(404));
+      })
+    );
+
+    const client = new HttpClient('http://localhost');
+
+    await expect(client.get('/api/v1/flags')).rejects.toThrow(
+      PeekabooError
+    );
+
+    expect(attempts).toBe(1); // No retries on 404
+  });
+});
+```
+
+## Key Lessons
+
+### 1. Retry Logic Isn't Simple
+
+**What seems simple:**
+```typescript
+// ❌ Naive retry
+for (let i = 0; i < 3; i++) {
+  try {
+    return await fetch(url);
+  } catch {
+    // Just retry
+  }
+}
+```
+
+**What's actually needed:**
+- ✅ Exponential backoff (not constant delay)
+- ✅ Error classification (don't retry everything)
+- ✅ Maximum attempts (don't retry forever)
+- ✅ Proper error messages (include attempt count)
+
+### 2. Native APIs Are Powerful
+
+We built production-ready HTTP client with:
+- Zero dependencies
+- ~200 lines of code
+- Full TypeScript support
+- Retry logic
+- Timeout handling
+- Query parameters
+
+**All using native APIs:**
+- `fetch` (HTTP requests)
+- `AbortController` (cancellation)
+- `URLSearchParams` (URL building)
+- `setTimeout` (delays)
+
+### 3. Error Classification Matters
+
+Not all errors are equal:
+- **Transient errors** (network) → Retry makes sense
+- **Permanent errors** (404, 500) → Retry wastes time
+
+**Real-world impact:**
+- User sees "Loading..." for 10 seconds
+- Because we're retrying a 404 that will never succeed
+- Bad UX!
+
+### 4. Cleanup Prevents Memory Leaks
+
+```typescript
+clearTimeout(timeoutId);  // Always clear timers
+```
+
+**In long-running apps (SPAs):**
+- Forgotten timers accumulate
+- Memory usage grows
+- Browser slows down
+- Eventually crashes
+
+**Proper cleanup = Professional code**
+
+# Used in Projects
+
+- **Peek-a-boo React SDK** - Resilient API communication layer
+- Pattern applicable to any client SDK requiring HTTP communication
+
+# Next Steps
+
+With HTTP client complete, Phase 1.3 will create the `FeatureFlagClient` class that uses this HTTP client to fetch and manage feature flags.

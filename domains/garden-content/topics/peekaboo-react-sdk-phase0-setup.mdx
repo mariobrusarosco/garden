@@ -16,14 +16,18 @@ reference-links:
   - link: "/home/mario/coding/peek-a-boo/planning/peekaboo-react-sdk-pdr.md"
     text: "Product Design Review"
 planted-in: 2025-11-08
-last-watered-in: 2025-11-08
+last-watered-in: 2025-11-16
 ---
 
 # Recap
 
-Successfully completed Phase 0 prerequisites for the Peek-a-boo React SDK by implementing environment-aware feature flags with proper database schema, migrations, and SDK service endpoints. The critical blocker was **lack of environment support** in the database schema - feature flags were only scoped to organization/project without dev/staging/prod separation.
+Successfully completed **Phase 0 (Prerequisites + Package Setup)** for the Peek-a-boo React SDK. This phase accomplished two major goals:
 
-**Key Achievement:** Created a production-ready foundation where flags can be managed per environment, with proper API endpoints for the React SDK to consume.
+1. **Prerequisites:** Implemented environment-aware feature flags with proper database schema, migrations, and SDK service endpoints. The critical blocker was **lack of environment support** in the database schema - feature flags were only scoped to organization/project without dev/staging/prod separation.
+
+2. **Package Setup:** Created the `@peek-a-boo/react-sdk` package structure with TypeScript, Vite build configuration, and monorepo integration ready for Phase 1 implementation.
+
+**Key Achievement:** Created a production-ready foundation where flags can be managed per environment, with proper API endpoints for the React SDK to consume, and a zero-dependency package structure ready for core client implementation.
 
 # The Problem
 
@@ -190,6 +194,211 @@ curl "http://localhost:6001/api/v1/flags?projectId=xxx&environment=development"
 # 4. Verify different environments work
 curl "http://localhost:6001/api/v1/flags?projectId=xxx&environment=production"
 ```
+
+# Package Setup & Monorepo Integration
+
+With the database foundation and API endpoints complete, Phase 0 continues with creating the React SDK package structure and integrating it into the Turborepo monorepo.
+
+## Package Structure Created
+
+```
+packages/react-sdk/
+├── src/
+│   ├── client/          # Vanilla JS client (no React)
+│   ├── react/           # React-specific code
+│   │   └── hooks/       # useFeatureFlag, useFeatureFlags
+│   └── test/            # Test utilities and setup
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
+```
+
+**Design Decision:** Separate `client/` from `react/` to enable future framework adapters (Vue, Svelte) to reuse the core client logic.
+
+## Package Configuration
+
+**packages/react-sdk/package.json:**
+```json
+{
+  "name": "@peek-a-boo/react-sdk",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+
+  "peerDependencies": {
+    "react": ">=16.8.0"  // Hooks support
+  },
+
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@vitest/ui": "^1.0.0",
+    "jsdom": "^23.0.0",
+    "msw": "^2.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
+```
+
+**Key Characteristics:**
+- **Zero runtime dependencies** - Only React as peer dependency
+- **ESM + CJS outputs** - Supports both module systems
+- **Testing stack:** Vitest + Testing Library + MSW (for API mocking)
+- **Target bundle size:** less than 10KB (goal from PDR)
+
+## TypeScript Configuration
+
+**packages/react-sdk/tsconfig.json:**
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "jsx": "react",
+    "declaration": true,    // Generate .d.ts files
+    "outDir": "dist",
+    "strict": true,         // Full type safety
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+**Design Choices:**
+- `strict: true` - Catch errors at compile time
+- `declaration: true` - TypeScript users get full autocomplete
+- `moduleResolution: "bundler"` - Modern resolution for Vite
+- `noEmit: true` - Vite handles building, TSC only type-checks
+
+## Vite Build Configuration
+
+**packages/react-sdk/vite.config.ts:**
+```typescript
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
+
+export default defineConfig({
+  build: {
+    lib: {
+      entry: resolve(__dirname, 'src/index.ts'),
+      name: 'PeekabooReactSDK',
+      formats: ['es', 'cjs'],
+      fileName: (format) => `index.${format === 'es' ? 'esm' : format}.js`
+    },
+    rollupOptions: {
+      external: ['react'],
+      output: {
+        globals: { react: 'React' }
+      }
+    }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts'
+  }
+});
+```
+
+**Build Strategy:**
+- **Library mode** - Not building an app, building a distributable package
+- **External React** - Don't bundle React, expect consumer to provide it
+- **Two formats:**
+  - `dist/index.esm.js` - For modern bundlers (tree-shakeable)
+  - `dist/index.cjs.js` - For legacy Node/CommonJS
+
+**Test Strategy:**
+- jsdom environment (simulates browser DOM)
+- Global test utilities (describe, it, expect available everywhere)
+- MSW setup file for mocking API requests
+
+## Critical Fix: Vitest Types
+
+Initial version used `import { defineConfig } from 'vite'` which caused TypeScript error:
+```
+Object literal may only specify known properties, and 'test' does not exist
+```
+
+**Solution:** Import from `vitest/config` instead:
+```typescript
+import { defineConfig } from 'vitest/config';  // ✅ Includes test types
+```
+
+This provides proper typing for the `test` configuration block.
+
+## Monorepo Integration
+
+The React SDK automatically integrates with the existing Turborepo configuration:
+
+**Root turbo.json:**
+```json
+{
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**"]
+    }
+  }
+}
+```
+
+**Why it works:**
+- `"^build"` dependency means build dependencies first
+- `"dist/**"` output pattern matches React SDK output
+- No package-specific configuration needed
+
+**Build command:**
+```bash
+# Build React SDK (builds @peek-a-boo/core first if needed)
+pnpm build --filter=@peek-a-boo/react-sdk
+
+# Or use the root-level script
+pnpm build:react-sdk
+```
+
+## Installation & Verification
+
+```bash
+# Install all dependencies
+pnpm install
+
+# Verify TypeScript setup (will error until source files created)
+cd packages/react-sdk
+pnpm run type:check
+
+# Expected: "No inputs were found" - normal, no .ts files yet
+```
+
+## Phase 0 Completion Status
+
+**Prerequisites:** ✅
+- Schema supports environments
+- Migration applied
+- API endpoints created
+- Environment variables configured
+
+**Package Setup:** ✅
+- Directory structure created
+- package.json configured
+- TypeScript configured
+- Vite build configured
+- Monorepo integration verified
+- Dependencies installed
+
+**Ready for Phase 1:** ✅ All foundational work complete
 
 # Used in Projects
 
