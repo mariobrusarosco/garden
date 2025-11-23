@@ -1,0 +1,594 @@
+---
+title: "pnpm: Fast, Disk Space Efficient Package Manager"
+summary: "Understanding pnpm's workspace protocol, symlink strategy, and how it integrates with Turborepo for monorepo development"
+category: "package-management"
+icon: "pnpm"
+author: mariobrusarosco.github.com
+related-topics:
+  - "monorepo"
+  - "turborepo"
+  - "node-modules"
+  - "package-management"
+reference-links:
+  - link: "https://pnpm.io/workspaces"
+    text: "pnpm Workspaces Documentation"
+  - link: "https://pnpm.io/cli/install"
+    text: "pnpm CLI Reference"
+planted-in: 2025-11-16
+last-watered-in: 2025-11-16
+---
+
+# Recap
+
+pnpm (performant npm) is a fast, disk space efficient package manager that uses a content-addressable store and symlinks to manage dependencies. In monorepo contexts, it provides workspace protocol features that allow packages to reference each other locally without publishing to npm.
+
+**Key Achievement:** Understanding how pnpm's workspace protocol enables local package linking in monorepos, and how this integrates with Turborepo's build orchestration.
+
+# What is pnpm?
+
+pnpm is an alternative to npm and yarn that solves several problems with traditional Node.js package managers:
+
+## The Traditional npm Problem
+
+**npm and yarn (classic):**
+```
+node_modules/
+├── project-a/
+│   └── node_modules/
+│       └── lodash/  (copy 1)
+└── project-b/
+    └── node_modules/
+        └── lodash/  (copy 2)
+```
+
+**Problems:**
+1. **Disk space waste** - Same package installed multiple times
+2. **Slow installs** - Copying files repeatedly
+3. **Phantom dependencies** - Can import packages not in package.json
+4. **Hoisting issues** - Flattening creates version conflicts
+
+## The pnpm Solution
+
+**pnpm uses a content-addressable store:**
+
+```
+~/.pnpm-store/
+└── v3/
+    └── files/
+        └── ab/
+            └── 1234.../lodash@4.17.21/  (single copy)
+
+project/
+└── node_modules/
+    └── .pnpm/
+        └── lodash@4.17.21/
+            └── node_modules/
+                └── lodash/ → symlink to ~/.pnpm-store
+```
+
+**Benefits:**
+1. **One global store** - Each package version stored once
+2. **Hard links** - Files reference the store (instant, no copies)
+3. **Strict dependencies** - Can only import what's in package.json
+4. **Fast** - 2x faster than npm, comparable to yarn
+
+## How pnpm Symlinks Work
+
+When you run `pnpm install`:
+
+1. **Download to store**: Package goes to `~/.pnpm-store/v3/files/...`
+2. **Create virtual store**: In `node_modules/.pnpm/package@version/`
+3. **Hard link**: Virtual store hard-links to global store
+4. **Symlink**: `node_modules/package/` symlinks to virtual store
+
+**Example:**
+```bash
+# What you import
+import lodash from 'lodash';
+
+# Actual path resolution
+node_modules/lodash →
+  node_modules/.pnpm/lodash@4.17.21/node_modules/lodash →
+    ~/.pnpm-store/v3/files/.../lodash
+```
+
+**Why this matters:**
+- Installing same package in 10 projects = 1 copy on disk
+- Changing project dependencies = just update symlinks (fast!)
+- No phantom dependencies - strict resolution
+
+# Link Local Package into Turborepo
+
+When building a monorepo package that depends on another local package, you need to tell pnpm to link them together instead of fetching from npm.
+
+## The Problem
+
+We're building `@peek-a-boo/react-sdk` which needs types from `@peek-a-boo/core`:
+
+```typescript
+// src/client/types.ts
+import type { FeatureFlag, Environment } from '@peek-a-boo/core';
+//                                              ^^^^^^^^^^^^^^^^^^
+//                                              How does this resolve?
+```
+
+**Without workspace linking:**
+- TypeScript error: "Cannot find module '@peek-a-boo/core'"
+- pnpm would try to fetch from npm registry (doesn't exist yet)
+
+## The Solution: workspace:* Protocol
+
+Add the local package as a dependency using pnpm's workspace protocol:
+
+```json
+// packages/react-sdk/package.json
+{
+  "name": "@peek-a-boo/react-sdk",
+  "dependencies": {
+    "@peek-a-boo/core": "workspace:*"
+    //                  ^^^^^^^^^^^^
+    //                  pnpm workspace protocol
+  }
+}
+```
+
+### What `workspace:*` Means
+
+**workspace:** - Protocol telling pnpm "this is a local package in the monorepo"
+
+**\*** - Version range meaning "use whatever version the local package defines"
+
+**Alternatives:**
+```json
+"@peek-a-boo/core": "workspace:*"      // Any version (most flexible)
+"@peek-a-boo/core": "workspace:^"      // Compatible version
+"@peek-a-boo/core": "workspace:~"      // Patch version
+"@peek-a-boo/core": "workspace:1.0.0"  // Exact version
+```
+
+**Recommendation:** Use `workspace:*` for monorepo packages - lets you change versions freely.
+
+## Step-by-Step: What I Did
+
+### Step 1: Identify the Missing Dependency
+
+Created `src/client/types.ts` with import:
+```typescript
+import type { FeatureFlag, Environment } from '@peek-a-boo/core';
+```
+
+Ran type check:
+```bash
+pnpm run type:check
+# Error: Cannot find module '@peek-a-boo/core'
+```
+
+### Step 2: Add to package.json
+
+Edited `packages/react-sdk/package.json`:
+
+```json
+{
+  "name": "@peek-a-boo/react-sdk",
+  "version": "0.0.1",
+
+  // Added this section
+  "dependencies": {
+    "@peek-a-boo/core": "workspace:*"
+  },
+
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  // ...
+}
+```
+
+**Why in dependencies, not devDependencies?**
+- `@peek-a-boo/core` types are needed at runtime (TypeScript consumers need them)
+- devDependencies = only needed during development
+- dependencies = bundled or needed by consumers
+
+### Step 3: Run pnpm install
+
+```bash
+cd packages/react-sdk
+pnpm install
+```
+
+**What happened:**
+
+1. **pnpm reads `workspace:*`**
+   - Looks for `@peek-a-boo/core` in workspace
+   - Finds it at `packages/core`
+
+2. **Creates symlink**
+   ```
+   packages/react-sdk/node_modules/@peek-a-boo/core →
+     ../../core
+   ```
+
+3. **Outputs**
+   ```
+   Scope: all 5 workspace projects  ← pnpm scans entire workspace
+   +10 -117                         ← Added 10 new, removed 117 unused
+   ```
+
+### Step 4: Verify It Works
+
+```bash
+pnpm run type:check
+# ✅ No errors - TypeScript can now resolve @peek-a-boo/core
+```
+
+Check the actual symlink:
+```bash
+ls -la node_modules/@peek-a-boo/
+# core -> ../../core  ← Symlink created by pnpm
+```
+
+## How This Integrates with Turborepo
+
+**pnpm handles linking, Turborepo handles build order.**
+
+### The Build Dependency Graph
+
+Once pnpm creates the symlinks, Turborepo reads package.json dependencies to build a graph:
+
+```
+turbo.json:
+{
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"]  ← "^" means "dependencies first"
+    }
+  }
+}
+```
+
+**When you run `pnpm build`:**
+
+1. **Turborepo reads the graph:**
+   ```
+   react-sdk depends on core
+   ↓
+   Must build core first
+   ```
+
+2. **Build order:**
+   ```bash
+   [1/2] Building @peek-a-boo/core...
+   [2/2] Building @peek-a-boo/react-sdk...
+   ```
+
+3. **Caching:**
+   - If core hasn't changed, Turborepo uses cached output
+   - Only rebuilds what changed
+
+### The Complete Flow
+
+```
+1. Developer adds dependency:
+   "dependencies": { "@peek-a-boo/core": "workspace:*" }
+
+2. pnpm install:
+   node_modules/@peek-a-boo/core → ../../core (symlink)
+
+3. TypeScript compiles:
+   import from '@peek-a-boo/core' → resolves via symlink
+
+4. Turborepo builds:
+   Reads dependency → builds core → builds react-sdk
+
+5. Runtime (published package):
+   workspace:* → replaced with actual version (e.g., "^1.0.0")
+```
+
+## Common Patterns
+
+### Pattern 1: Shared Types (Our Use Case)
+
+```json
+// packages/react-sdk/package.json
+{
+  "dependencies": {
+    "@peek-a-boo/core": "workspace:*"  // Import shared types
+  }
+}
+```
+
+### Pattern 2: Shared Utilities
+
+```json
+// apps/dashboard/package.json
+{
+  "dependencies": {
+    "@peek-a-boo/core": "workspace:*",  // Database access
+    "@peek-a-boo/ui": "workspace:*"     // Shared UI components
+  }
+}
+```
+
+### Pattern 3: Development Tools
+
+```json
+// packages/eslint-config/package.json
+{
+  "devDependencies": {
+    "@peek-a-boo/typescript-config": "workspace:*"  // Shared TS config
+  }
+}
+```
+
+# Adding Packages in a Monorepo
+
+One common question: **Where do I run `pnpm add`?** At the root or in the specific package?
+
+The answer depends on **who needs the package**.
+
+## Option 1: Add to Specific Package (Most Common)
+
+**When to use:** Package is only needed by ONE workspace package.
+
+**Example:** Adding `vite-plugin-dts` to react-sdk (TypeScript declaration generator for Vite).
+
+### Method A: Using --filter (Recommended)
+
+Run from **anywhere** in the monorepo:
+
+```bash
+# From root or any directory
+pnpm add -D vite-plugin-dts --filter=@peek-a-boo/react-sdk
+#           ^^              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#           devDependency   Target package
+```
+
+**What happens:**
+1. pnpm finds the package by name (`@peek-a-boo/react-sdk`)
+2. Adds `vite-plugin-dts` to its devDependencies
+3. Installs only for that package
+4. Updates package.json automatically
+
+**Result:**
+```json
+// packages/react-sdk/package.json
+{
+  "devDependencies": {
+    "vite-plugin-dts": "^0.10.0"  // ← Added here
+  }
+}
+```
+
+### Method B: Change Directory First
+
+```bash
+# Navigate to package first
+cd packages/react-sdk
+
+# Then add normally
+pnpm add -D vite-plugin-dts
+```
+
+**When to use Method B:**
+- You're already working in that directory
+- Running multiple package-specific commands
+- Simpler for quick local development
+
+**When to use Method A:**
+- Running from root (common with scripts)
+- Want to stay in current directory
+- Adding to multiple packages in sequence
+
+## Option 2: Add to Root (Shared Dependencies)
+
+**When to use:** Package is needed by MULTIPLE workspace packages, or for workspace-wide tooling.
+
+### Example: Shared Dev Tools
+
+```bash
+# From root directory
+pnpm add -D -w typescript
+#              ^^
+#              --workspace-root flag
+```
+
+**What the `-w` flag does:**
+- `-w` or `--workspace-root` tells pnpm "install at workspace root"
+- Without it, pnpm refuses (safety measure - prevents accidental root installs)
+
+**When to install at root:**
+
+✅ **Good use cases:**
+```bash
+# Linting/formatting (used by all packages)
+pnpm add -D -w eslint prettier
+
+# TypeScript (workspace-wide config)
+pnpm add -D -w typescript
+
+# Turborepo itself
+pnpm add -D -w turbo
+
+# Testing tools (if shared across packages)
+pnpm add -D -w vitest @vitest/ui
+```
+
+❌ **Bad use cases:**
+```bash
+# React (only some packages use it)
+pnpm add -w react  # ❌ Should be in specific packages
+
+# Vite (only build packages need it)
+pnpm add -D -w vite  # ❌ Should be in packages that use Vite
+```
+
+**Rule of thumb:** If it's in the root package.json, it should be used by ALL or MOST packages.
+
+## Real-World Example: Adding vite-plugin-dts
+
+Let's add `vite-plugin-dts` to the react-sdk (needed for TypeScript declaration generation).
+
+### Step 1: Decide Where It Goes
+
+**Question:** Who needs `vite-plugin-dts`?
+- Answer: Only `@peek-a-boo/react-sdk` (it's a Vite plugin for our library build)
+
+**Decision:** Add to react-sdk package, not root.
+
+### Step 2: Choose Method
+
+**Using --filter (from root):**
+```bash
+pnpm add -D vite-plugin-dts --filter=@peek-a-boo/react-sdk
+```
+
+**Or cd first:**
+```bash
+cd packages/react-sdk
+pnpm add -D vite-plugin-dts
+```
+
+### Step 3: Verify Installation
+
+```bash
+# Check package.json was updated
+cat packages/react-sdk/package.json | grep vite-plugin-dts
+
+# Output:
+# "vite-plugin-dts": "^0.10.0"
+```
+
+### Step 4: Use in Code
+
+```typescript
+// packages/react-sdk/vite.config.ts
+import { defineConfig } from 'vitest/config';
+import dts from 'vite-plugin-dts';  // ← Now available
+
+export default defineConfig({
+  plugins: [
+    dts({
+      insertTypesEntry: true,
+      rollupTypes: true
+    })
+  ],
+  // ...
+});
+```
+
+## Quick Reference
+
+| Command | Where it installs | When to use |
+|---------|-------------------|-------------|
+| `pnpm add pkg --filter=@scope/name` | Specific package (from anywhere) | Most common - package-specific deps |
+| `cd path/to/pkg && pnpm add pkg` | Specific package (after cd) | When already in package directory |
+| `pnpm add -D -w pkg` | Workspace root | Shared tooling (ESLint, TypeScript, etc.) |
+| `pnpm add -D pkg` (from root) | ❌ Error | Safety - use `-w` flag explicitly |
+
+## Common Patterns
+
+### Adding Multiple Packages
+
+```bash
+# Add multiple to same package
+pnpm add -D prettier eslint --filter=@peek-a-boo/react-sdk
+
+# Add to multiple packages at once
+pnpm add -D vitest --filter=@peek-a-boo/react-sdk --filter=@peek-a-boo/core
+```
+
+### Check What's Installed Where
+
+```bash
+# List all dependencies in a specific package
+pnpm list --filter=@peek-a-boo/react-sdk
+
+# Show dependency tree
+pnpm list --filter=@peek-a-boo/react-sdk --depth=1
+
+# Find where a package is installed
+pnpm list -r vite-plugin-dts
+# -r = recursive (searches all workspace packages)
+```
+
+### Remove Packages
+
+```bash
+# Remove from specific package
+pnpm remove vite-plugin-dts --filter=@peek-a-boo/react-sdk
+
+# Remove from root
+pnpm remove -w typescript
+```
+
+## Troubleshooting
+
+**Error: "Running this command will add the dependency to the workspace root"**
+
+```bash
+pnpm add eslint
+# Error: Use -w flag for workspace root
+```
+
+**Fix:** Add `-w` flag if you really want root install:
+```bash
+pnpm add -D -w eslint
+```
+
+**Package not found after install:**
+```bash
+# Clean and reinstall
+pnpm install
+
+# If still broken, clean everything
+rm -rf node_modules
+pnpm install
+```
+
+**Wrong package.json was updated:**
+```bash
+# Always verify with --filter
+pnpm add -D pkg --filter=correct-package-name
+
+# Check where it went
+git diff  # Shows what changed
+```
+
+# Key Takeaways
+
+1. **pnpm is fast and efficient** - Uses symlinks + hard links to global store
+2. **workspace:*** - Protocol for linking local monorepo packages
+3. **pnpm handles linking** - Creates symlinks in node_modules
+4. **Turborepo handles builds** - Orchestrates build order based on those links
+5. **Single source of truth** - No duplicate types, shared code lives in one place
+
+# Used in Projects
+
+- **Peek-a-boo monorepo** - All packages use `workspace:*` for internal dependencies
+- Pattern applicable to any pnpm workspace + Turborepo setup
+
+# Debugging Tips
+
+**Check if symlink exists:**
+```bash
+ls -la packages/react-sdk/node_modules/@peek-a-boo/
+# Should show: core -> ../../core
+```
+
+**Verify workspace resolution:**
+```bash
+pnpm list @peek-a-boo/core
+# Should show: @peek-a-boo/core 0.1.0 → link:../../core
+```
+
+**Force reinstall:**
+```bash
+rm -rf node_modules
+pnpm install
+```
+
+**Check Turborepo graph:**
+```bash
+pnpm dlx turbo run build --graph
+# Opens visualization of build dependencies
+```

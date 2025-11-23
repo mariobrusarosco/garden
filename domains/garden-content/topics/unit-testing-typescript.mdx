@@ -1,0 +1,788 @@
+---
+title: Unit Testing TypeScript with Vitest
+description: A comprehensive guide to writing unit tests for TypeScript code, based on real-world learnings from testing the Peek-a-boo React SDK
+category: Testing
+tags: [typescript, vitest, testing, mocking, async]
+difficulty: intermediate
+dateCreated: 2025-11-22
+---
+
+# Unit Testing TypeScript with Vitest
+
+## Introduction
+
+**Unit testing** is writing code that verifies your code works correctly. It's like having a robot that checks your work automatically!
+
+### Why Unit Test?
+
+```
+Without Tests:                    With Tests:
+Code → Ship → 💥 Bug             Code → Test → 💥 Bug Caught → Fix → ✅ Ship
+       ↓                                                                  ↓
+   User complaints                                                 Happy users
+```
+
+**Benefits:**
+- 🐛 Catch bugs early (before users see them)
+- 🛡️ Confidence when refactoring
+- 📚 Living documentation
+- 🔄 Prevent regressions (old bugs can't come back)
+- 💰 Save time (automated vs manual testing)
+
+---
+
+## The AAA Pattern
+
+Every good test follows the **AAA pattern**:
+
+```typescript
+test('description of what we are testing', () => {
+  // 1️⃣ ARRANGE - Set up the test data
+  const client = new HttpClient('http://localhost:6001', 5000);
+  const mockData = { flags: [] };
+
+  // 2️⃣ ACT - Perform the action
+  const result = await client.get('/api/v1/flags');
+
+  // 3️⃣ ASSERT - Check the result
+  expect(result).toEqual(mockData);
+});
+```
+
+### Visual Flow:
+
+```
+ARRANGE          ACT           ASSERT
+   ↓              ↓               ↓
+Set up  →  Do the thing  →  Check result
+```
+
+---
+
+## Vitest Basics
+
+### Core Functions
+
+```typescript
+// Group related tests
+describe('HttpClient', () => {
+  // Individual test
+  test('should fetch data', () => { ... });
+  // or
+  it('should fetch data', () => { ... });  // Same as test()
+
+  // Run before each test
+  beforeEach(() => {
+    // Fresh setup
+  });
+
+  // Run after each test
+  afterEach(() => {
+    // Cleanup
+  });
+});
+```
+
+### Assertions
+
+```typescript
+// Exact equality
+expect(result).toBe(5);
+
+// Deep equality (objects, arrays)
+expect(result).toEqual({ a: 1 });
+
+// Type checks
+expect(result).toBeDefined();
+expect(result).toBeNull();
+expect(result).toBeInstanceOf(Error);
+
+// String matching
+expect(message).toContain('error');
+
+// Mock checks
+expect(mockFn).toHaveBeenCalled();
+expect(mockFn).toHaveBeenCalledTimes(3);
+expect(mockFn).toHaveBeenCalledWith('arg1', 'arg2');
+```
+
+---
+
+## Mocking: The Critical Concept
+
+### The Problem
+
+```
+Test → HttpClient.get() → fetch() → REAL API
+                                       ↓
+                                  ❌ Problems:
+                                  - Slow
+                                  - Requires network
+                                  - Requires server running
+                                  - Can't test error cases
+```
+
+### The Solution: Mocking
+
+```
+Test → HttpClient.get() → fetch() → FAKE API (Mock)
+                                       ↓
+                                  ✅ Benefits:
+                                  - Fast (milliseconds)
+                                  - No network needed
+                                  - Full control
+                                  - Test any scenario
+```
+
+**Mock = Fake version of something that you control**
+
+### Vitest Mocking
+
+```typescript
+// Create a mock function
+const mockFn = vi.fn();
+
+// Control what it returns
+mockFn.mockReturnValue(42);
+
+// Control async return
+mockFn.mockResolvedValue({ data: [...] });
+
+// Make it throw an error
+mockFn.mockRejectedValue(new Error('Network error'));
+
+// Check if it was called
+expect(mockFn).toHaveBeenCalled();
+expect(mockFn).toHaveBeenCalledTimes(3);
+```
+
+### Real Example from Peek-a-boo SDK
+
+```typescript
+describe('HttpClient', () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    // Replace global fetch with our mock
+    fetchMock = vi.fn();
+    global.fetch = fetchMock as any;
+  });
+
+  it('should successfully fetch data', async () => {
+    // ARRANGE - Tell mock what to return
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ flags: [] }),
+    });
+
+    // ACT - Call our code
+    const result = await client.get('/api/v1/flags');
+
+    // ASSERT - Check it worked
+    expect(result).toEqual({ flags: [] });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+```
+
+---
+
+## Fake Timers: Time Travel for Tests
+
+### The Problem with Real Time
+
+```typescript
+// Real code uses delays
+await sleep(500);   // Wait 500ms
+await sleep(1000);  // Wait 1000ms
+await sleep(2000);  // Wait 2000ms
+
+// Real test (BAD!)
+test('retries with delays', async () => {
+  await client.get('/flags');  // Takes 3.5 seconds! 😫
+});
+```
+
+**Problem:** Tests are SLOW! ⏰
+
+### The Solution: Fake Timers
+
+```typescript
+test('retries with delays', async () => {
+  vi.useFakeTimers();  // ← Time is now fake!
+
+  const promise = client.get('/flags');
+  await vi.runAllTimersAsync();  // ← Fast-forward instantly!
+
+  // Test completes in milliseconds! ✅
+});
+```
+
+**Visual:**
+```
+Real Time:    [----500ms----][----1000ms----][----2000ms----] = 3.5s
+Fake Time:    [0ms] ← Instant! ⚡
+```
+
+### Example: Testing Retry Logic
+
+```typescript
+it('should retry 3 times on network error', async () => {
+  // Use fake timers
+  vi.useFakeTimers();
+
+  // Mock: fail 3 times, then succeed
+  fetchMock
+    .mockRejectedValueOnce(new Error('Network error'))  // Attempt 1: ❌
+    .mockRejectedValueOnce(new Error('Network error'))  // Attempt 2: ❌
+    .mockRejectedValueOnce(new Error('Network error'))  // Attempt 3: ❌
+    .mockResolvedValueOnce({ ok: true, json: async () => ({ flags: [] }) });  // Attempt 4: ✅
+
+  const promise = client.get('/api/v1/flags');
+
+  // Fast-forward through all delays (500ms, 1000ms, 2000ms)
+  await vi.runAllTimersAsync();
+
+  const result = await promise;
+
+  // Should have retried and succeeded
+  expect(result).toEqual({ flags: [] });
+  expect(fetchMock).toHaveBeenCalledTimes(4);
+});
+```
+
+---
+
+## Testing Async Errors: Our Key Learning
+
+### ⚠️ The Problem We Hit
+
+When testing async code that throws errors **with fake timers**, we got this error:
+
+```
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+PeekabooError: Network error after 4 attempts
+Vitest caught 1 unhandled error during the test run.
+```
+
+### Why It Happened
+
+```typescript
+// ❌ WRONG - Promise rejects during timer advancement
+const promise = client.get('/flags');
+await vi.runAllTimersAsync();  // ← Promise REJECTS HERE! 💥
+await expect(promise).rejects.toThrow();  // ← Too late! Already rejected
+```
+
+**The Issue:**
+1. We start the async operation (promise created)
+2. We advance fake timers
+3. During timer advancement, the promise **rejects**
+4. But we haven't attached an error handler yet!
+5. Result: Unhandled rejection warning
+
+### ✅ The Solution We Discovered
+
+**Attach the error handler BEFORE advancing timers!**
+
+```typescript
+// ✅ CORRECT - Handle errors immediately
+const promise = client.get('/flags');
+
+// Attach error handler RIGHT AWAY
+const errorPromise = promise.catch((error) => error);
+
+// NOW it's safe to advance timers
+await vi.runAllTimersAsync();
+
+// Get the error
+const error = await errorPromise;
+
+// Check it's the right error
+expect(error).toBeInstanceOf(Error);
+expect((error as Error).message).toContain('Network error');
+```
+
+### Why This Works
+
+```
+Timeline:
+
+1. promise = client.get('/flags')          ← Promise created
+2. errorPromise = promise.catch(...)       ← Handler attached ✅
+3. await vi.runAllTimersAsync()            ← Promise rejects
+   ↓
+   Error is CAUGHT by our handler!
+4. const error = await errorPromise        ← We get the error
+5. expect(error).toBeInstanceOf(Error)     ← Test it
+```
+
+**Key Insight:** By attaching `.catch()` immediately, the promise rejection is **handled**, so Vitest doesn't see it as "unhandled."
+
+---
+
+## Complete Test Example from Peek-a-boo
+
+Here's a real test from our SDK that uses all these patterns:
+
+```typescript
+describe('HttpClient', () => {
+  let client: HttpClient;
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    // 1. Fresh client for each test
+    client = new HttpClient('http://localhost:6001', 5000);
+
+    // 2. Mock fetch
+    fetchMock = vi.fn();
+    global.fetch = fetchMock as any;
+
+    // 3. Use fake timers
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();    // Restore real timers
+    vi.clearAllMocks();    // Clear mock data
+  });
+
+  it('should fail after max retries exceeded', async () => {
+    // ═══════════════════════════════════════════════════════════════
+    // ARRANGE
+    // ═══════════════════════════════════════════════════════════════
+
+    // Make ALL attempts fail (4 total)
+    fetchMock.mockRejectedValue(new Error('Network error'));
+
+    // ═══════════════════════════════════════════════════════════════
+    // ACT
+    // ═══════════════════════════════════════════════════════════════
+
+    // Start the request
+    const promise = client.get('/api/v1/flags');
+
+    // Attach error handler IMMEDIATELY (critical!)
+    const errorPromise = promise.catch((error) => error);
+
+    // Advance timers (safe now)
+    await vi.runAllTimersAsync();
+
+    // ═══════════════════════════════════════════════════════════════
+    // ASSERT
+    // ═══════════════════════════════════════════════════════════════
+
+    // Get the error
+    const error = await errorPromise;
+
+    // Check it's the right error
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toContain('Network error after 4 attempts');
+
+    // Should have tried 4 times
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+  });
+});
+```
+
+---
+
+## Common Patterns We Tested
+
+### 1. Success Case (Baseline)
+
+```typescript
+it('should successfully fetch data', async () => {
+  // Mock successful response
+  fetchMock.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({ flags: [] }),
+  });
+
+  const promise = client.get('/api/v1/flags');
+  await vi.runAllTimersAsync();
+  const result = await promise;
+
+  expect(result).toEqual({ flags: [] });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+```
+
+**What we learned:** Start simple! Test the happy path first.
+
+### 2. Retry Logic (Network Errors)
+
+```typescript
+it('should retry 3 times on network error', async () => {
+  // Chain multiple responses
+  fetchMock
+    .mockRejectedValueOnce(new Error('Network error'))  // Fail
+    .mockRejectedValueOnce(new Error('Network error'))  // Fail
+    .mockRejectedValueOnce(new Error('Network error'))  // Fail
+    .mockResolvedValueOnce({ ok: true, json: async () => ({ flags: [] }) });  // Success!
+
+  const promise = client.get('/api/v1/flags');
+  await vi.runAllTimersAsync();  // Fast-forward through delays
+  const result = await promise;
+
+  expect(result).toEqual({ flags: [] });
+  expect(fetchMock).toHaveBeenCalledTimes(4);  // 1 initial + 3 retries
+});
+```
+
+**What we learned:**
+- Use `.mockRejectedValueOnce()` to chain failures
+- `runAllTimersAsync()` advances through ALL delays instantly
+- Check call count to verify retry behavior
+
+### 3. Max Retries (Give Up)
+
+```typescript
+it('should fail after max retries exceeded', async () => {
+  // Fail forever
+  fetchMock.mockRejectedValue(new Error('Network error'));
+
+  const promise = client.get('/api/v1/flags');
+  const errorPromise = promise.catch((error) => error);  // ← Critical!
+  await vi.runAllTimersAsync();
+
+  const error = await errorPromise;
+  expect(error).toBeInstanceOf(Error);
+  expect((error as Error).message).toContain('Network error after 4 attempts');
+  expect(fetchMock).toHaveBeenCalledTimes(4);
+});
+```
+
+**What we learned:**
+- **MUST attach `.catch()` before `runAllTimersAsync()`**
+- This prevents "unhandled rejection" errors
+
+### 4. HTTP Errors (Don't Retry)
+
+```typescript
+it('should NOT retry on HTTP errors (404)', async () => {
+  // HTTP error response
+  fetchMock.mockResolvedValueOnce({
+    ok: false,
+    status: 404,
+    statusText: 'Not Found',
+  });
+
+  const promise = client.get('/api/v1/flags');
+  const errorPromise = promise.catch((error) => error);  // ← Critical!
+  await vi.runAllTimersAsync();
+
+  const error = await errorPromise;
+  expect(error).toBeInstanceOf(Error);
+  expect((error as Error).message).toBe('HTTP 404: Not Found');
+
+  // Only 1 attempt (no retries for HTTP errors!)
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+```
+
+**What we learned:**
+- Test error classification (retry vs no-retry)
+- Verify behavior with call counts
+
+### 5. Timeout with AbortController (Advanced)
+
+```typescript
+it('should timeout after configured duration', async () => {
+  // Use REAL timers for this test
+  vi.useRealTimers();
+
+  // Create client with SHORT timeout (100ms for fast testing)
+  const fastClient = new HttpClient('http://localhost:6001', 100);
+
+  // Mock fetch that responds to abort signals
+  fetchMock.mockImplementationOnce(
+    (_url: string, options: any) =>
+      new Promise((resolve, reject) => {
+        if (options?.signal) {
+          options.signal.addEventListener('abort', () => {
+            const error = new Error('The operation was aborted');
+            error.name = 'AbortError';
+            reject(error);
+          });
+        }
+      })
+  );
+
+  const promise = fastClient.get('/api/v1/flags');
+  const errorPromise = promise.catch((error) => error);
+  const error = await errorPromise;
+
+  expect(error).toBeInstanceOf(PeekabooError);
+  expect((error as PeekabooError).code).toBe(ErrorCode.TIMEOUT);
+}, 1000);  // Test timeout: 1 second
+```
+
+**What we learned:**
+- **AbortController + fake timers don't mix** - Use real timers
+- **Short timeout (100ms)** keeps tests fast
+- **Mock must listen to abort signals** - Just like real fetch does
+- This was the trickiest test to get right!
+
+---
+
+## Patterns That Succeeded
+
+### ✅ Pattern 1: Immediate Error Handler
+
+```typescript
+const promise = asyncOperation();
+const errorPromise = promise.catch((error) => error);
+await vi.runAllTimersAsync();
+const error = await errorPromise;
+```
+
+**Why it works:** Error is handled before timers advance.
+
+### ✅ Pattern 2: Chain Mock Responses
+
+```typescript
+mockFn
+  .mockRejectedValueOnce(error1)
+  .mockRejectedValueOnce(error2)
+  .mockResolvedValueOnce(success);
+```
+
+**Why it works:** Each call gets a different response in sequence.
+
+### ✅ Pattern 3: Test Call Counts
+
+```typescript
+expect(mockFn).toHaveBeenCalledTimes(4);
+```
+
+**Why it works:** Verifies retry behavior without caring about internal implementation.
+
+### ✅ Pattern 4: Testing AbortController with Mocked Fetch (Advanced)
+
+**The Challenge:** Testing timeout logic with `AbortController` is tricky because:
+- Fake timers don't work well with AbortController
+- Mock fetch needs to respond to abort signals
+
+**The Solution:** Make your mock fetch listen to abort signals!
+
+```typescript
+it('should timeout after configured duration', async () => {
+  // Use REAL timers (AbortController needs real time)
+  vi.useRealTimers();
+
+  // Create client with SHORT timeout for fast testing
+  const fastClient = new HttpClient('http://localhost:6001', 100);
+
+  // Mock fetch that RESPONDS to abort signals
+  fetchMock.mockImplementationOnce(
+    (_url: string, options: any) =>
+      new Promise((resolve, reject) => {
+        // Listen to the abort signal
+        if (options?.signal) {
+          options.signal.addEventListener('abort', () => {
+            // When aborted, reject with AbortError
+            const error = new Error('The operation was aborted');
+            error.name = 'AbortError';
+            reject(error);
+          });
+        }
+        // Never resolve normally - will be aborted by timeout
+      })
+  );
+
+  const promise = fastClient.get('/api/v1/flags');
+  const errorPromise = promise.catch((error) => error);
+
+  // Wait for real timeout (100ms)
+  const error = await errorPromise;
+
+  expect(error).toBeInstanceOf(PeekabooError);
+  expect((error as PeekabooError).message).toContain('timeout');
+}, 1000);  // Give test 1 second to complete
+```
+
+**Why it works:**
+- We use **real timers** (not fake) so AbortController works naturally
+- We use a **short timeout (100ms)** so tests are still fast
+- Mock fetch **listens to `options.signal.addEventListener('abort')`** just like real fetch
+- When abort happens, we reject with `AbortError` (matching real behavior)
+
+**Key Insight:** Real `fetch` listens to abort signals. Our mock must do the same to properly test timeout behavior!
+
+---
+
+## Patterns That Failed (And Why)
+
+### ❌ Pattern: Await Then Expect
+
+```typescript
+// DON'T DO THIS
+const promise = client.get('/flags');
+await vi.runAllTimersAsync();
+await expect(promise).rejects.toThrow();  // ← Unhandled rejection!
+```
+
+**Why it fails:** Promise rejects during `runAllTimersAsync()` before `.rejects` handler is attached.
+
+### ❌ Pattern: Try-Catch Without Immediate Handler
+
+```typescript
+// DON'T DO THIS
+try {
+  const promise = client.get('/flags');
+  await vi.runAllTimersAsync();  // ← Promise rejects here!
+  await promise;
+} catch (error) {
+  expect(error).toBeInstanceOf(Error);
+}
+```
+
+**Why it fails:** Same issue - rejection happens during timer advancement.
+
+---
+
+## Testing Checklist
+
+When writing tests, ask yourself:
+
+- [ ] Does it follow AAA pattern? (Arrange, Act, Assert)
+- [ ] Are mocks set up in `beforeEach`?
+- [ ] Are mocks cleaned up in `afterEach`?
+- [ ] Am I testing async code? (Use `async`/`await`)
+- [ ] Am I using fake timers? (Call `vi.useFakeTimers()`)
+- [ ] Am I testing errors? (Attach `.catch()` before `runAllTimersAsync()`)
+- [ ] Are my test descriptions clear? (Read like sentences)
+- [ ] Am I testing ONE thing per test? (Not multiple scenarios)
+- [ ] Can this test fail? (If it can't fail, it's not testing anything)
+
+---
+
+## Best Practices
+
+### 1. One Test, One Thing
+
+```typescript
+// ❌ BAD - Testing multiple things
+it('should work correctly', async () => {
+  // Tests success AND errors AND retries...
+});
+
+// ✅ GOOD - Focused tests
+it('should succeed on valid request', async () => { ... });
+it('should retry on network error', async () => { ... });
+it('should fail after max retries', async () => { ... });
+```
+
+### 2. Clear Test Names
+
+```typescript
+// ❌ BAD
+it('works', async () => { ... });
+
+// ✅ GOOD
+it('should retry 3 times on network error, then succeed', async () => { ... });
+```
+
+**Test names should read like documentation!**
+
+### 3. Fresh Setup
+
+```typescript
+beforeEach(() => {
+  // Create fresh instances for EACH test
+  client = new HttpClient('http://localhost:6001', 5000);
+  fetchMock = vi.fn();
+  global.fetch = fetchMock as any;
+});
+```
+
+**Why:** Tests should be independent. One test shouldn't affect another.
+
+### 4. Clean Up
+
+```typescript
+afterEach(() => {
+  vi.useRealTimers();    // Restore real timers
+  vi.clearAllMocks();    // Clear mock data
+});
+```
+
+**Why:** Prevent side effects between tests.
+
+---
+
+## Our Testing Journey: Lessons Learned
+
+### What We Struggled With
+
+1. **Unhandled promise rejections** - Took us several attempts to figure out the right pattern
+2. **Fake timers + async errors** - The combination is tricky
+3. **AbortController + fake timers** - Doesn't work well together
+4. **Testing timeout with mocked fetch** - Mock wasn't responding to abort signals
+
+### How We Fixed It
+
+1. **Research** - Searched Vitest docs and GitHub issues
+2. **Pattern discovery** - Found the "attach .catch() first" pattern
+3. **Real timers for AbortController** - Used 100ms timeout with real timers (fast enough!)
+4. **Mock signal listeners** - Made mock fetch listen to `options.signal.addEventListener('abort')`
+5. **Test iteration** - Tried multiple approaches until all 5 tests passed cleanly
+
+### Key Takeaway
+
+**Testing is a skill that requires practice!** Even experienced developers struggle with async + mocks + fake timers. The important thing is:
+- 🧪 Start simple (test success case first)
+- 🔍 Debug failures systematically
+- 📝 Document what you learn
+- 🔄 Refactor tests as you learn better patterns
+
+---
+
+## Resources
+
+- [Vitest Documentation](https://vitest.dev/)
+- [Testing Library](https://testing-library.com/)
+- [Vitest GitHub Issues](https://github.com/vitest-dev/vitest/issues) - Great for troubleshooting
+- [Our Peek-a-boo SDK Tests](../../../packages/react-sdk/src/client/__tests__/http.test.ts) - Real examples!
+
+---
+
+## Our Complete Test Suite
+
+After all our learning and iteration, we ended up with **5 comprehensive tests** for our HttpClient:
+
+```
+✓ Test 1: Successful GET request (baseline)
+✓ Test 2: Retry 3 times on network error, then succeed
+✓ Test 3: Fail after max retries (4 attempts total)
+✓ Test 4: HTTP 404 errors don't retry (error classification)
+✓ Test 5: Timeout after 100ms (AbortController with real timers)
+
+Test Results:
+✓ src/client/__tests__/http.test.ts  (5 tests) 109ms
+  Test Files  1 passed (1)
+       Tests  5 passed (5)
+```
+
+**Coverage achieved:**
+- ✅ Success path
+- ✅ Retry logic with exponential backoff
+- ✅ Max retry limits
+- ✅ Error classification
+- ✅ Timeout handling
+
+**Total test time:** 109ms (including 100ms real timeout - still fast!)
+
+---
+
+## Next Steps
+
+Now that you understand unit testing basics, you can:
+
+1. **Test more complex scenarios** - Race conditions, idempotent behavior
+2. **Integration tests** - Test multiple components together
+3. **React component testing** - Use @testing-library/react
+4. **Coverage reports** - Ensure you test all code paths
+
+**Remember:** Good tests give you confidence to ship great code! ✨

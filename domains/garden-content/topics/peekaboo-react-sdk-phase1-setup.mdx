@@ -807,11 +807,593 @@ clearTimeout(timeoutId);  // Always clear timers
 
 **Proper cleanup = Professional code**
 
+# Phase 1.3: FeatureFlagClient - Bringing It All Together
+
+## The Purpose
+
+Create a client class that uses our HTTP client to fetch and manage feature flags with a simple, intuitive API. This is the vanilla JavaScript client that React hooks will wrap in Phase 2.
+
+**Design Goals:**
+- Lazy loading (don't fetch until needed)
+- In-memory caching (fast lookups)
+- Type-safe value access
+- Graceful error handling
+- Race condition protection
+
+## Understanding `initialize()`: The Foundation
+
+### The Goal: Lazy Loading
+
+**Problem:** When should we fetch flags from the API?
+
+**❌ Bad: Fetch in Constructor**
+```
+User creates client → Immediate API call
+   ↓
+const client = new FeatureFlagClient({...})  ← API call happens here!
+```
+
+**Why bad?**
+- User can't handle errors during construction
+- Blocks synchronously (constructors can't be async)
+- Wastes network if user never uses the client
+
+**✅ Good: Lazy Loading with initialize()**
+```
+User creates client → No API call (instant)
+   ↓
+const client = new FeatureFlagClient({...})  ← Instant!
+   ↓
+User calls initialize → API call happens NOW
+   ↓
+await client.initialize()  ← Can handle errors with try/catch
+```
+
+**Why good?**
+- Instant construction (no blocking)
+- User controls WHEN to fetch
+- User can handle errors gracefully
+- Testable (can mock initialize)
+
+### Visual Flow: First Initialize Call
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ User calls: await client.initialize()                       │
+└─────────────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Check: Is initialized already?                              │
+│ → this.initialized === false                                │
+└─────────────────────────────────────────────────────────────┘
+                        ↓ NO
+┌─────────────────────────────────────────────────────────────┐
+│ Check: Is initialization in progress?                       │
+│ → this.initializing === null                                │
+└─────────────────────────────────────────────────────────────┘
+                        ↓ NO
+┌─────────────────────────────────────────────────────────────┐
+│ Start initialization:                                        │
+│ this.initializing = this.fetchFlags()                       │
+│                                                              │
+│ State now:                                                   │
+│ • this.initialized = false                                  │
+│ • this.initializing = Promise<void> (pending)               │
+└─────────────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────────────┐
+│ fetchFlags() runs:                                           │
+│   1. Call API: GET /api/v1/flags                            │
+│   2. Wait for response...                                   │
+│   3. Parse JSON                                             │
+│   4. Populate this.flags Map                                │
+└─────────────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Success!                                                     │
+│ State update:                                                │
+│ • this.initialized = true                                   │
+│ • this.initializing = null                                  │
+│ • this.flags = Map with all flags                           │
+└─────────────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Return to user                                               │
+│ User's await completes                                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Pattern 1: Idempotent (Safe to Call Multiple Times)
+
+### What is "Idempotent"?
+
+From mathematics: f(f(x)) = f(x)
+
+In programming: **Calling a function multiple times has the same effect as calling it once.**
+
+**Example:**
+```typescript
+await client.initialize();  // Fetches flags from API
+await client.initialize();  // Does NOTHING (already initialized)
+await client.initialize();  // Does NOTHING (already initialized)
+
+// Only ONE API call was made!
+```
+
+### Visual Flow: Second Initialize Call
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ User calls: await client.initialize() AGAIN                 │
+└─────────────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Check: Is initialized already?                              │
+│ → this.initialized === true  ✅                             │
+└─────────────────────────────────────────────────────────────┘
+                        ↓ YES!
+┌─────────────────────────────────────────────────────────────┐
+│ Return immediately                                           │
+│ if (this.initialized) {                                     │
+│   return;  ← Early exit!                                    │
+│ }                                                            │
+│                                                              │
+│ NO API CALL! ✅                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Why Idempotent Matters
+
+```typescript
+// React component might call initialize multiple times
+useEffect(() => {
+  client.initialize();  // First render
+}, []);
+
+useEffect(() => {
+  client.initialize();  // Some other effect
+}, [someDep]);
+
+// ✅ Only ONE API call (idempotent)
+// ❌ Without idempotency → TWO API calls (wasteful!)
+```
+
+## Pattern 2: Race Condition Protection
+
+### The Problem: Concurrent Calls
+
+```typescript
+// User accidentally calls initialize multiple times simultaneously
+Promise.all([
+  client.initialize(),  // Call 1
+  client.initialize(),  // Call 2
+  client.initialize(),  // Call 3
+]);
+```
+
+**❌ WITHOUT Race Protection:**
+```
+Call 1 → API Request 1 → Fetch flags
+Call 2 → API Request 2 → Fetch flags (DUPLICATE!)
+Call 3 → API Request 3 → Fetch flags (DUPLICATE!)
+
+Result: 3 API calls for same data! 😱
+```
+
+**✅ WITH Race Protection:**
+```
+Call 1 → Start fetch → this.initializing = Promise
+Call 2 → Wait for Call 1's promise
+Call 3 → Wait for Call 1's promise
+
+Result: 1 API call, all callers wait for same fetch! ✅
+```
+
+### Visual Flow: Concurrent Calls
+
+```
+Timeline →
+
+T0: Call 1 arrives
+    ↓
+    Check: initialized? NO
+    Check: initializing? NO
+    Start fetch: this.initializing = fetchFlags()
+    State: { initialized: false, initializing: Promise (pending) }
+
+T1: Call 2 arrives (while Call 1 is still fetching)
+    ↓
+    Check: initialized? NO
+    Check: initializing? YES! ← There's already a promise
+    ↓
+    Return this.initializing  ← Wait for the SAME promise
+
+T2: Call 3 arrives (while Call 1 is still fetching)
+    ↓
+    Check: initialized? NO
+    Check: initializing? YES! ← There's already a promise
+    ↓
+    Return this.initializing  ← Wait for the SAME promise
+
+T3: API responds
+    ↓
+    All three callers' promises resolve simultaneously
+    State: { initialized: true, initializing: null }
+```
+
+### The Code That Enables This
+
+```typescript
+async initialize(): Promise<void> {
+  // Already done? Return immediately (Idempotent)
+  if (this.initialized) {
+    return;
+  }
+
+  // In progress? Wait for existing promise (Race Protection)
+  if (this.initializing) {
+    return this.initializing;  // ← KEY LINE!
+  }
+
+  // Start new initialization
+  this.initializing = this.fetchFlags();
+
+  try {
+    await this.initializing;
+    this.initialized = true;
+  } finally {
+    this.initializing = null;  // Clear promise (success or failure)
+  }
+}
+```
+
+## Pattern 3: State Machine
+
+The client has **3 states**:
+
+```
+┌─────────────────┐
+│ UNINITIALIZED   │  ← Initial state after construction
+│                 │
+│ initialized: false
+│ initializing: null
+└─────────────────┘
+        ↓ initialize() called
+        ↓
+┌─────────────────┐
+│ INITIALIZING    │  ← API call in progress
+│                 │
+│ initialized: false
+│ initializing: Promise
+└─────────────────┘
+        ↓ API responds
+        ↓
+┌─────────────────┐
+│ INITIALIZED     │  ← Ready to use
+│                 │
+│ initialized: true
+│ initializing: null
+└─────────────────┘
+```
+
+### State Transitions
+
+```
+UNINITIALIZED → INITIALIZING
+  Trigger: First initialize() call
+  Action: Start API fetch
+
+INITIALIZING → INITIALIZED
+  Trigger: API success
+  Action: Set flags, mark as initialized
+
+INITIALIZING → UNINITIALIZED
+  Trigger: API failure
+  Action: Clear initializing promise, stay uninitialized
+```
+
+### Handling Each State
+
+```typescript
+const client = new FeatureFlagClient({...});
+
+// State: UNINITIALIZED
+console.log(client.isInitialized());  // false
+
+try {
+  client.isEnabled('foo');
+  // ❌ Throws: "Client not initialized. Call initialize() first."
+} catch (error) {
+  // User is forced to initialize first
+}
+
+// State: INITIALIZING (briefly)
+await client.initialize();
+
+// State: INITIALIZED
+console.log(client.isInitialized());  // true
+client.isEnabled('foo');  // ✅ Works now
+```
+
+## Real-World Analogy
+
+Think of `initialize()` like **turning on your car:**
+
+**Without initialize pattern:**
+```
+Buy car → Engine starts automatically (constructor)
+  ↓
+What if you're not ready to drive?
+What if there's no gas?
+Can't catch errors during purchase!
+```
+
+**With initialize pattern:**
+```
+Buy car → Just gets keys (constructor)
+  ↓
+Turn ignition → Engine starts (initialize)
+  ↓
+Can handle:
+  - No gas? Try/catch
+  - Not ready? Wait to turn ignition
+  - Already running? Ignition does nothing (idempotent)
+```
+
+## The Complete FeatureFlagClient API
+
+### Lifecycle Methods
+
+```typescript
+// Create client (instant, no API call)
+const client = new FeatureFlagClient({
+  projectId: 'my-project',
+  environment: 'PRODUCTION',
+  baseUrl: 'https://api.peekaboo.com',  // optional
+  timeout: 10000                         // optional
+});
+
+// Initialize (fetches flags)
+await client.initialize();
+
+// Refresh (re-fetch flags)
+await client.refresh();
+
+// Check state
+client.isInitialized();  // boolean
+```
+
+### Flag Access Methods
+
+```typescript
+// Get full flag object
+const flag = client.getFlag('new-checkout');
+if (flag) {
+  console.log(flag.key, flag.enabled, flag.value);
+}
+
+// Get all flags
+const allFlags = client.getAllFlags();
+console.log(`Loaded ${allFlags.length} flags`);
+
+// Check if enabled (simple boolean)
+if (client.isEnabled('new-checkout')) {
+  // Feature is on
+}
+
+// Get typed value
+interface CheckoutConfig {
+  timeout: number;
+  retries: number;
+}
+
+const config = client.getValue<CheckoutConfig>('new-checkout');
+if (config) {
+  console.log(config.timeout);  // TypeScript knows this exists
+}
+
+// Get value with fallback
+const timeout = client.getValueWithFallback<number>('timeout', 5000);
+console.log(timeout);  // Flag value or 5000 if not found
+```
+
+### Utility Methods
+
+```typescript
+// Count flags
+console.log(`Loaded ${client.size()} flags`);
+
+// Check initialization state
+if (!client.isInitialized()) {
+  await client.initialize();
+}
+```
+
+## Key Implementation Details
+
+### Config Validation (Fail Fast)
+
+```typescript
+constructor(config: ClientConfig) {
+  // Validate immediately on construction
+  const projectId = config.projectId.trim();
+  if (!projectId) {
+    throw new PeekabooError(
+      'projectId is required',
+      ErrorCode.INVALID_PROJECT_ID
+    );
+  }
+
+  if (!config.environment) {
+    throw new PeekabooError(
+      'environment is required',
+      ErrorCode.INVALID_ENVIRONMENT
+    );
+  }
+
+  // Setup HTTP client
+  const baseUrl = config.baseUrl || 'http://localhost:6001';
+  this.http = new HttpClient(baseUrl, config.timeout);
+}
+```
+
+**Why fail fast?**
+- User knows immediately if config is wrong
+- Better than failing later during initialize()
+- Clear error messages guide user to fix
+
+### In-Memory Caching with Map
+
+```typescript
+private flags: Map<string, FeatureFlag> = new Map();
+
+// Populate cache
+response.flags.forEach((flag) => {
+  this.flags.set(flag.key, flag);  // O(1) insert
+});
+
+// Fast lookups
+getFlag(key: string): FeatureFlag | null {
+  return this.flags.get(key) || null;  // O(1) lookup
+}
+```
+
+**Why Map instead of Array?**
+
+```typescript
+// ❌ Array: O(n) lookup
+const flags: FeatureFlag[] = [...];
+const flag = flags.find(f => f.key === 'new-checkout');  // Loops through all
+
+// ✅ Map: O(1) lookup
+const flags = new Map<string, FeatureFlag>();
+const flag = flags.get('new-checkout');  // Instant hash lookup
+```
+
+### Ensure Initialized Guard
+
+```typescript
+private ensureInitialized(): void {
+  if (!this.initialized) {
+    throw new PeekabooError(
+      'Client not initialized. Call initialize() first.',
+      ErrorCode.UNKNOWN
+    );
+  }
+}
+
+// Used in all flag access methods
+getFlag(key: string): FeatureFlag | null {
+  this.ensureInitialized();  // ← Throws if not initialized
+  return this.flags.get(key) || null;
+}
+```
+
+**Forces proper usage:**
+```typescript
+const client = new FeatureFlagClient({...});
+
+// ❌ This will throw
+client.isEnabled('foo');
+// Error: "Client not initialized. Call initialize() first."
+
+// ✅ This works
+await client.initialize();
+client.isEnabled('foo');  // Works!
+```
+
+### Type-Safe Value Access
+
+```typescript
+getValue<T = unknown>(key: string): T | undefined {
+  this.ensureInitialized();
+  const flag = this.flags.get(key);
+
+  // Only return value if flag exists AND is enabled
+  if (flag && flag.enabled) {
+    return flag.value as T;
+  }
+
+  return undefined;
+}
+```
+
+**Usage patterns:**
+
+```typescript
+// Pattern 1: Check undefined
+const timeout = client.getValue<number>('timeout');
+if (timeout !== undefined) {
+  console.log(timeout * 2);
+}
+
+// Pattern 2: Use fallback
+const timeout = client.getValueWithFallback<number>('timeout', 5000);
+console.log(timeout);  // Always has a value
+
+// Pattern 3: Complex types
+interface CheckoutConfig {
+  timeout: number;
+  retries: number;
+  apiUrl: string;
+}
+
+const config = client.getValue<CheckoutConfig>('checkout-config');
+if (config) {
+  // TypeScript knows config has timeout, retries, apiUrl
+  console.log(config.timeout);
+}
+```
+
+## Key Lessons
+
+### 1. Lazy Loading > Eager Loading
+
+**Don't fetch until needed:**
+- Faster construction
+- User controls timing
+- Errors are handleable
+
+### 2. Idempotency Prevents Bugs
+
+**Safe to call multiple times:**
+- React effects can call freely
+- No duplicate API calls
+- Predictable behavior
+
+### 3. Race Protection is Critical
+
+**Concurrent calls must wait for same fetch:**
+- Only ONE API call
+- All callers get same result
+- No race conditions
+
+### 4. State Machines Clarify Logic
+
+**Three clear states:**
+- UNINITIALIZED: Created, not ready
+- INITIALIZING: Fetching from API
+- INITIALIZED: Ready to use
+
+### 5. Fail Fast with Clear Errors
+
+**Validate immediately:**
+- Constructor validates config
+- Methods throw if not initialized
+- Clear error messages guide users
+
+### 6. O(1) Lookups with Map
+
+**Map > Array for lookups:**
+- Constant time access
+- Scales to thousands of flags
+- No performance degradation
+
 # Used in Projects
 
-- **Peek-a-boo React SDK** - Resilient API communication layer
-- Pattern applicable to any client SDK requiring HTTP communication
+- **Peek-a-boo React SDK** - Complete vanilla TypeScript client for feature flags
+- Pattern applicable to any SDK requiring initialization and caching
 
 # Next Steps
 
-With HTTP client complete, Phase 1.3 will create the `FeatureFlagClient` class that uses this HTTP client to fetch and manage feature flags.
+With the vanilla TypeScript client complete (types, HTTP client, FeatureFlagClient), Phase 2 will wrap this in React hooks (useFeatureFlag, useFeatureFlags) and Context for easy integration into React apps.

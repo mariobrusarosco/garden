@@ -11,7 +11,6 @@
       "next-js.mdx",
       "react-context.mdx",
       "react-form-elements.mdx",
-      "react-native-basic-elements.mdx",
       "react-native.mdx",
       "react-passing-props-strategies.mdx",
       "react-query-mutations-working-alongside-useQuery.mdx",
@@ -67,7 +66,8 @@
   "feature-flags": {
     "files": [
       "api-design-admin-vs-runtime-endpoints.mdx",
-      "peekaboo-react-sdk-phase0-setup.mdx"
+      "peekaboo-react-sdk-phase0-setup.mdx",
+      "peekaboo-react-sdk-phase1-setup.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -353,6 +353,42 @@
     "category": "concepts",
     "icon": ""
   },
+  "nextjs": {
+    "files": [
+      "heap-analytics-implementation.mdx",
+      "microsoft-clarity.mdx",
+      "react-use-hook.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "analytics": {
+    "files": [
+      "heap-analytics-implementation.mdx",
+      "microsoft-clarity.mdx",
+      "next-analytics.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "user-tracking": {
+    "files": [
+      "heap-analytics-implementation.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "privacy": {
+    "files": [
+      "heap-analytics-implementation.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
   "icons": {
     "files": [
       "icons-in-a-react-app.mdx",
@@ -389,24 +425,6 @@
     "summary": "React component library implementing Google's Material Design",
     "category": "frameworks",
     "icon": "puzzle"
-  },
-  "analytics": {
-    "files": [
-      "microsoft-clarity.mdx",
-      "next-analytics.mdx"
-    ],
-    "summary": "",
-    "category": "concepts",
-    "icon": ""
-  },
-  "nextjs": {
-    "files": [
-      "microsoft-clarity.mdx",
-      "react-use-hook.mdx"
-    ],
-    "summary": "",
-    "category": "concepts",
-    "icon": ""
   },
   "performance": {
     "files": [
@@ -445,6 +463,7 @@
   "typescript": {
     "files": [
       "nestjs-creating-a-new-module.mdx",
+      "peekaboo-react-sdk-phase1-setup.mdx",
       "project-typying.mdx",
       "typescript.mdx",
       "typing-express-routes.mdx"
@@ -558,7 +577,49 @@
   },
   "react-sdk": {
     "files": [
-      "peekaboo-react-sdk-phase0-setup.mdx"
+      "peekaboo-react-sdk-phase0-setup.mdx",
+      "peekaboo-react-sdk-phase1-setup.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "monorepo": {
+    "files": [
+      "peekaboo-react-sdk-phase1-setup.mdx",
+      "pnpm.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "pnpm-workspaces": {
+    "files": [
+      "peekaboo-react-sdk-phase1-setup.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "turborepo": {
+    "files": [
+      "pnpm.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "node-modules": {
+    "files": [
+      "pnpm.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "package-management": {
+    "files": [
+      "pnpm.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -599,7 +660,8 @@
   },
   "type-safety": {
     "files": [
-      "pydantic-objects-x-dicts.mdx"
+      "pydantic-objects-x-dicts.mdx",
+      "typescript-for-library-packages.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -623,7 +685,6 @@
   },
   "expo": {
     "files": [
-      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -632,7 +693,6 @@
   },
   "react-native": {
     "files": [
-      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -641,7 +701,6 @@
   },
   "mobile": {
     "files": [
-      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -650,7 +709,6 @@
   },
   "mobile-development": {
     "files": [
-      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -659,7 +717,6 @@
   },
   "mobile-app": {
     "files": [
-      "react-native-basic-elements.mdx",
       "react-native.mdx"
     ],
     "summary": "",
@@ -818,6 +875,8 @@
   "vite": {
     "files": [
       "tanstack-router-root-route-404.mdx",
+      "typescript-for-library-packages.mdx",
+      "vite-for-library-packages.mdx",
       "vite.mdx"
     ],
     "summary": "Next generation frontend tooling with lightning-fast HMR and optimized builds",
@@ -851,6 +910,23 @@
   "domain-driven-design": {
     "files": [
       "transaction-schema-unification.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "libraries": {
+    "files": [
+      "typescript-for-library-packages.mdx",
+      "vite-for-library-packages.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "developer-experience": {
+    "files": [
+      "typescript-for-library-packages.mdx"
     ],
     "summary": "",
     "category": "concepts",
@@ -891,6 +967,30 @@
   "menu": {
     "files": [
       "ui-menu-for-applications.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "packages": {
+    "files": [
+      "vite-for-library-packages.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "build-tools": {
+    "files": [
+      "vite-for-library-packages.mdx"
+    ],
+    "summary": "",
+    "category": "concepts",
+    "icon": ""
+  },
+  "npm": {
+    "files": [
+      "vite-for-library-packages.mdx"
     ],
     "summary": "",
     "category": "concepts",

@@ -39,6 +39,22 @@ Component to group, position multiple elements
 
 ### Button
 
+We have two types of buttons:
+
+1. Button
+
+Simple component to detect a press
+```tsx
+<Button title="Click me" onPress={() => alert('Button pressed')} />
+```
+
+2. TouchableOpacity
+Customizable component to detect a press, doesn't have to a be a button.
+
+```tsx
+<TouchableOpacity onPress={() => alert('Button pressed')} />
+```
+
 ### Stylesheet
 
 ```tsx
@@ -91,16 +107,84 @@ TODO: Read more about FlatList and understand which optmizations are made and, w
 </Callout>
 
 
+##### Syntax
+
 ```tsx
 import { FlatList, Text } from 'react-native';
 
-const fruits = ['apple', 'banana', 'cherry', 'date', 'elderberry'];
+const fruits = [{ id: '1', name: 'apple' }, { id: '2', name: 'banana' }, { id: '3', name: 'cherry' }, { id: '4', name: 'date' }, { id: '5', name: 'elderberry' }];
 
 
 const FruitsList = ({ data, renderItem }: { data: any[], renderItem: (item: any) => React.ReactNode }) => {
-  return <FlatList data={fruits} renderItem={({ item }) => <Text>{item}</Text>} />;
+  return <FlatList data={data} renderItem={({ item }) => <Text>{item.name}</Text>} />;
 };
 
 export default FruitsList;
 ```
+
+##### Key Prop
+
+Key prop is a required prop for FlatList. It's used to identify the item in the list. 
+If we don't provide a key prop, React Native will drop all the items and re-render them, which is not efficient.
+
+1. With a string for the key prop
+
+```tsx
+const fruits = [{ id: '1', name: 'apple' }, { id: '2', name: 'banana' }, { id: '3', name: 'cherry' }, { id: '4', name: 'date' }, { id: '5', name: 'elderberry' }];
+<FruitsList data={fruits} renderItem={({ item }) => <Text>{item.id}</Text>} />
+```
+
+2. With keyExtractor where we provide the key for each item
+```tsx
+const fruits = [{ name: 'apple' }, {  name: 'banana' }, { name: 'cherry' }, { name: 'date' }, { name: 'elderberry' }];
+<FruitsList data={fruits} renderItem={({ item }) => <Text>{item.name}</Text>} keyExtractor={(item) => item.name} />
+```
+
+##### Styling
+
+
+##### Axis
+
+
+We can add margin for a axis: 
+
+```tsx
+const styles = StyleSheet.create({
+  marginVertical: number
+});
+```
+
+```tsx
+<FruitsList data={fruits} renderItem={({ item }) => <Text>{item.name}</Text>} style={styles.container} />
+```
+
+We can define the direction of the items with a prop called `horizontal` or `vertical`
+
+```tsx
+<FruitsList data={fruits} renderItem={({ item }) => <Text>{item.name}</Text>} horizontal />
+```
+
+```tsx
+<FruitsList data={fruits} renderItem={({ item }) => <Text>{item.name}</Text>} vertical />
+```
+
+##### Scroll Indicators
+
+We can add scroll indicators with a prop called `showsHorizontalScrollIndicator` or `showsVerticalScrollIndicator`
+
+```tsx
+<FruitsList data={fruits} renderItem={({ item }) => <Text>{item.name}</Text>} showsHorizontalScrollIndicator />
+```
+
+```tsx
+<FruitsList data={fruits} renderItem={({ item }) => <Text>{item.name}</Text>} showsVerticalScrollIndicator />
+```
+
+##### Item Layout
+
+We can define the layout of the items with a prop called `itemLayout`
+
+```tsx
+
+## Screen Navigation
 
